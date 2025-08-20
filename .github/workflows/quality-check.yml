@@ -1,0 +1,233 @@
+name: Content Quality Check
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'src/data/**'
+      - '*.py'
+      - 'new_quiz_questions.js'
+      - 'resistance_scenarios.js'
+
+jobs:
+  medical-content-validation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests pandas matplotlib seaborn numpy
+    
+    - name: Run comprehensive content validation
+      run: |
+        echo "🔍 Running comprehensive content validation..."
+        
+        # Run content tester
+        if [ -f "content_tester.py" ]; then
+          echo "📊 Running content tester..."
+          python content_tester.py
+        else
+          echo "⚠️ Content tester not found"
+        fi
+        
+        # Run data validator
+        if [ -f "data_validator.py" ]; then
+          echo "🔬 Running data validator..."
+          python data_validator.py
+        else
+          echo "⚠️ Data validator not found"
+        fi
+        
+        # Run difficulty classifier
+        if [ -f "difficulty_classifier.py" ]; then
+          echo "📈 Running difficulty classifier..."
+          python difficulty_classifier.py
+        else
+          echo "⚠️ Difficulty classifier not found"
+        fi
+    
+    - name: Analyze content quality metrics
+      run: |
+        echo "📈 Analyzing content quality metrics..."
+        
+        if [ -f "comprehensive_test_report.txt" ]; then
+          echo "=== CONTENT QUALITY SUMMARY ==="
+          grep -A 5 "=== OVERALL SUMMARY ===" comprehensive_test_report.txt || echo "Summary not found"
+          
+          # Extract pass rate
+          PASS_RATE=$(grep -o "Total Passed: [0-9]* ([0-9.]*%)" comprehensive_test_report.txt | grep -o "[0-9.]*%" | head -1 | sed 's/%//')
+          echo "Current pass rate: $PASS_RATE%"
+          
+          # Set status based on pass rate
+          if (( $(echo "$PASS_RATE < 50" | bc -l) )); then
+            echo "🔴 CRITICAL: Content quality severely below standards"
+            echo "pass_rate_status=critical" >> $GITHUB_OUTPUT
+          elif (( $(echo "$PASS_RATE < 80" | bc -l) )); then
+            echo "🟡 WARNING: Content quality below recommended standards"
+            echo "pass_rate_status=warning" >> $GITHUB_OUTPUT
+          elif (( $(echo "$PASS_RATE < 90" | bc -l) )); then
+            echo "🟠 ATTENTION: Content quality approaching standards"
+            echo "pass_rate_status=attention" >> $GITHUB_OUTPUT
+          else
+            echo "🟢 EXCELLENT: Content quality meets standards"
+            echo "pass_rate_status=good" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "❌ No test report found"
+          echo "pass_rate_status=unknown" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Generate quality report
+      run: |
+        echo "📋 Generating quality report..."
+        
+        REPORT_FILE="quality_report_$(date +%Y%m%d_%H%M%S).md"
+        
+        cat > "$REPORT_FILE" << 'EOF'
+# Medical Content Quality Report
+        
+**Generated:** $(date)
+**Repository:** ${{ github.repository }}
+**Commit:** ${{ github.sha }}
+        
+## Summary
+        
+EOF
+        
+        if [ -f "comprehensive_test_report.txt" ]; then
+          echo "### Content Validation Results" >> "$REPORT_FILE"
+          echo '```' >> "$REPORT_FILE"
+          head -20 comprehensive_test_report.txt >> "$REPORT_FILE"
+          echo '```' >> "$REPORT_FILE"
+        fi
+        
+        echo "### Recommendations" >> "$REPORT_FILE"
+        echo "- Focus on improving quiz questions with clinical context" >> "$REPORT_FILE"
+        echo "- Add evidence-based explanations to failing questions" >> "$REPORT_FILE"
+        echo "- Review medical terminology for accuracy" >> "$REPORT_FILE"
+        echo "- Ensure all content follows medical education standards" >> "$REPORT_FILE"
+        
+        echo "Quality report saved as: $REPORT_FILE"
+    
+    - name: Upload quality artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: quality-report-${{ github.run_number }}
+        path: |
+          comprehensive_test_report.txt
+          quality_report_*.md
+        retention-days: 30
+    
+    - name: Create issue for quality problems
+      if: contains(steps.*.outputs.pass_rate_status, 'critical') || contains(steps.*.outputs.pass_rate_status, 'warning')
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const title = '🔴 Content Quality Issues Detected';
+          const body = `
+          ## Medical Content Quality Alert
+          
+          **Status:** ${{ steps.*.outputs.pass_rate_status }}
+          **Generated:** ${new Date().toISOString()}
+          **Workflow:** ${{ github.workflow }}
+          **Run:** ${{ github.run_number }}
+          
+          ### Issues Detected
+          
+          The automated content validation has detected issues with medical content quality.
+          
+          ### Next Steps
+          
+          1. Review the quality report artifact from this workflow run
+          2. Fix failing quiz questions with proper clinical context
+          3. Add evidence-based explanations
+          4. Verify medical terminology accuracy
+          5. Re-run validation to confirm improvements
+          
+          ### Resources
+          
+          - [Quality Report Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - [Medical Content Guidelines](./CLAUDE.md)
+          - [Content Validation Scripts](./content_tester.py)
+          
+          **Auto-generated by:** Content Quality Check workflow
+          `;
+          
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            body: body,
+            labels: ['content-quality', 'medical-accuracy', 'priority-high']
+          });
+
+  quiz-questions-analysis:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Analyze quiz questions
+      run: |
+        echo "🧪 Analyzing quiz questions..."
+        
+        node -e "
+        const fs = require('fs');
+        
+        // Analyze main quiz questions
+        if (fs.existsSync('./src/data/quizQuestions.js')) {
+          const content = fs.readFileSync('./src/data/quizQuestions.js', 'utf8');
+          const questions = content.match(/\{[^}]+\}/g) || [];
+          console.log('📊 Main quiz questions:', questions.length);
+        }
+        
+        // Analyze new quiz questions
+        if (fs.existsSync('./new_quiz_questions.js')) {
+          const content = fs.readFileSync('./new_quiz_questions.js', 'utf8');
+          const questions = content.match(/\{[^}]+\}/g) || [];
+          console.log('📊 New quiz questions:', questions.length);
+        }
+        
+        // Analyze resistance scenarios
+        if (fs.existsSync('./resistance_scenarios.js')) {
+          const content = fs.readFileSync('./resistance_scenarios.js', 'utf8');
+          const scenarios = content.match(/\{[^}]+\}/g) || [];
+          console.log('📊 Resistance scenarios:', scenarios.length);
+        }
+        "
+    
+    - name: Check for medical accuracy requirements
+      run: |
+        echo "🩺 Checking medical accuracy requirements..."
+        
+        # Check for required medical fields
+        echo "Checking for evidence-based explanations..."
+        grep -r "explanation" src/data/ || echo "⚠️ Limited explanations found"
+        
+        echo "Checking for difficulty levels..."
+        grep -r "difficulty" src/data/ || echo "⚠️ Limited difficulty classifications found"
+        
+        echo "Checking for medical categories..."
+        grep -r "category" src/data/ || echo "⚠️ Limited category classifications found"

@@ -1,0 +1,658 @@
+/**
+ * Northwestern Group Organization Styles
+ * 
+ * Comprehensive styling system for group organization components with
+ * medical design system integration, responsive layouts, and accessibility.
+ * 
+ * Created by: Agent 3.2 - Group Organization Designer
+ * Phase: 3 - Spatial Organization System
+ * Integration: Styling for Northwestern group organization system
+ */
+
+/* CSS Custom Properties for Group Organization */
+:root {
+  /* Group color scheme based on Northwestern methodology */
+  --group-beta-lactam-bg: #e3f2fd;
+  --group-beta-lactam-border: #1976d2;
+  --group-beta-lactam-accent: #0d47a1;
+  
+  --group-protein-bg: #f3e5f5;
+  --group-protein-border: #7b1fa2;
+  --group-protein-accent: #4a148c;
+  
+  --group-dna-bg: #e8f5e8;
+  --group-dna-border: #388e3c;
+  --group-dna-accent: #1b5e20;
+  
+  --group-specialized-bg: #fff3e0;
+  --group-specialized-border: #f57c00;
+  --group-specialized-accent: #e65100;
+  
+  /* Spacing and sizing */
+  --group-header-padding-mobile: 8px 12px;
+  --group-header-padding-tablet: 12px 16px;
+  --group-header-padding-desktop: 16px 20px;
+  
+  --group-border-radius: 8px;
+  --group-transition: all 0.2s ease;
+  
+  /* Typography */
+  --group-title-mobile: 1rem;
+  --group-title-tablet: 1.125rem;
+  --group-title-desktop: 1.25rem;
+  
+  --group-context-size: 0.875rem;
+  --group-stats-size: 0.75rem;
+  --group-label-size: 0.7rem;
+  
+  /* Z-index layers */
+  --z-group-boundary: 1;
+  --z-group-connections: 5;
+  --z-group-boundary-selected: 10;
+  --z-group-header: 20;
+  
+  /* Clinical emergency mode colors */
+  --emergency-red: #d32f2f;
+  --emergency-amber: #ff9800;
+  --emergency-green: #4caf50;
+}
+
+/* Main Group Organization Container */
+.northwestern-group-organization {
+  position: relative;
+  width: 100%;
+  display: grid;
+  gap: var(--group-border-radius);
+  padding: var(--group-border-radius);
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: var(--group-border-radius);
+  transition: var(--group-transition);
+}
+
+/* Responsive grid layouts */
+.northwestern-group-organization--mobile {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 8px;
+}
+
+.northwestern-group-organization--tablet {
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px;
+}
+
+.northwestern-group-organization--desktop {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 16px;
+}
+
+/* Emergency mode optimizations */
+.northwestern-group-organization--emergency {
+  animation: none !important;
+  transition: none !important;
+}
+
+.northwestern-group-organization--emergency * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Loading state */
+.northwestern-group-organization--loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.group-loading {
+  text-align: center;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f0f0f0;
+  border-top: 3px solid var(--group-beta-lactam-border);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+/* Error state */
+.northwestern-group-organization--error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.medical-accuracy-error {
+  text-align: center;
+  max-width: 400px;
+  padding: 24px;
+  background-color: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: var(--group-border-radius);
+  color: #c62828;
+}
+
+.medical-accuracy-error h3 {
+  margin-top: 0;
+  color: #d32f2f;
+}
+
+.medical-accuracy-error ul {
+  text-align: left;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.medical-accuracy-error button {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.medical-accuracy-error button:hover {
+  background-color: #d32f2f;
+}
+
+/* Group Headers Container */
+.group-headers {
+  display: contents;
+}
+
+/* Individual Group Header */
+.group-header {
+  position: relative;
+  background-color: var(--group-beta-lactam-bg);
+  border-left: 4px solid var(--group-beta-lactam-border);
+  border-radius: var(--group-border-radius);
+  padding: var(--group-header-padding-desktop);
+  cursor: pointer;
+  transition: var(--group-transition);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.group-header:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.group-header--selected {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: var(--z-group-header);
+}
+
+.group-header--expanded {
+  border-radius: var(--group-border-radius) var(--group-border-radius) 0 0;
+}
+
+/* Group Header Variants */
+.group-header--betaLactams {
+  background-color: var(--group-beta-lactam-bg);
+  border-color: var(--group-beta-lactam-border);
+}
+
+.group-header--proteinSynthesis {
+  background-color: var(--group-protein-bg);
+  border-color: var(--group-protein-border);
+}
+
+.group-header--dnaGyrase {
+  background-color: var(--group-dna-bg);
+  border-color: var(--group-dna-border);
+}
+
+.group-header--specialized {
+  background-color: var(--group-specialized-bg);
+  border-color: var(--group-specialized-border);
+}
+
+/* Group Header Content */
+.group-header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  padding-right: 32px; /* Space for toggle button */
+}
+
+.group-title-section {
+  flex: 1;
+}
+
+.group-title {
+  margin: 0;
+  font-size: var(--group-title-desktop);
+  font-weight: bold;
+  color: var(--group-beta-lactam-accent);
+  line-height: 1.2;
+}
+
+.group-medical-context {
+  margin: 4px 0 0 0;
+  font-size: var(--group-context-size);
+  font-style: italic;
+  color: var(--group-beta-lactam-accent);
+  opacity: 0.8;
+  line-height: 1.3;
+}
+
+.group-counts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.antibiotic-count {
+  background-color: var(--group-beta-lactam-accent);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: var(--group-stats-size);
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.class-count,
+.route-info {
+  font-size: var(--group-label-size);
+  color: var(--group-beta-lactam-accent);
+  opacity: 0.7;
+}
+
+/* Group Toggle Button */
+.group-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--group-beta-lactam-accent);
+  font-size: 1.2rem;
+  font-weight: bold;
+  transition: var(--group-transition);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.group-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.group-toggle:focus {
+  outline: 2px solid var(--group-beta-lactam-border);
+  outline-offset: 2px;
+}
+
+/* Expanded Statistics Section */
+.group-stats-expanded {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: var(--group-stats-size);
+}
+
+.coverage-highlights {
+  margin-bottom: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.coverage-highlights strong {
+  color: var(--group-beta-lactam-accent);
+  margin-right: 4px;
+}
+
+.coverage-highlights span {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: var(--group-label-size);
+  font-weight: bold;
+  color: white;
+}
+
+.route-distribution {
+  margin-bottom: 8px;
+  color: var(--group-beta-lactam-accent);
+}
+
+.route-distribution strong {
+  margin-right: 8px;
+}
+
+/* Group Filter Controls */
+.group-filter-controls {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.group-filter-controls button {
+  padding: 4px 8px;
+  background-color: var(--group-beta-lactam-border);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: var(--group-label-size);
+  cursor: pointer;
+  transition: var(--group-transition);
+}
+
+.group-filter-controls button:hover {
+  opacity: 0.8;
+}
+
+.group-filter-controls button:focus {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Group Statistics Panels */
+.group-statistics-panels {
+  display: contents;
+}
+
+.group-statistics {
+  background-color: var(--group-beta-lactam-bg);
+  border: 1px solid var(--group-beta-lactam-border);
+  border-radius: 0 0 var(--group-border-radius) var(--group-border-radius);
+  padding: 16px;
+  margin-top: -1px; /* Connect with header */
+}
+
+.group-statistics h4 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: var(--group-beta-lactam-accent);
+}
+
+/* Coverage Grid */
+.coverage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.coverage-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  font-size: var(--group-stats-size);
+}
+
+.pathogen-name {
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.coverage-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.coverage-bar {
+  width: 30px;
+  height: 4px;
+  background-color: #e0e0e0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.coverage-bar div {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* Clinical Context Section */
+.clinical-context {
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 8px;
+  border-radius: 4px;
+  font-size: var(--group-stats-size);
+}
+
+.clinical-context strong {
+  color: var(--group-beta-lactam-accent);
+}
+
+.clinical-context p {
+  margin: 4px 0 0 0;
+  line-height: 1.4;
+}
+
+/* Group Boundaries Overlay */
+.group-boundaries-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: var(--z-group-boundary);
+}
+
+.group-boundary {
+  position: absolute;
+  background-color: rgba(227, 242, 253, 0.2);
+  border: 2px dashed var(--group-beta-lactam-border);
+  border-radius: var(--group-border-radius);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: var(--group-transition);
+}
+
+.group-boundary:hover {
+  background-color: rgba(227, 242, 253, 0.3);
+  border-style: solid;
+}
+
+.group-boundary--selected {
+  border-style: solid;
+  z-index: var(--z-group-boundary-selected);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.boundary-label {
+  position: absolute;
+  top: -10px;
+  left: 8px;
+  background-color: var(--group-beta-lactam-bg);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: var(--group-label-size);
+  font-weight: bold;
+  color: var(--group-beta-lactam-accent);
+  border: 1px solid var(--group-beta-lactam-border);
+}
+
+/* Group Connections */
+.group-connections-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: var(--z-group-connections);
+}
+
+.group-connections {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.connection-line {
+  stroke-width: 1;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.connection-line--generation {
+  stroke-dasharray: 5,5;
+}
+
+/* Debug Information */
+.group-debug-info {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-family: monospace;
+  z-index: 9999;
+  max-width: 300px;
+}
+
+.performance-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.performance-metrics span {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+.medical-warnings {
+  background-color: var(--emergency-amber) !important;
+  color: black !important;
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+  .group-header {
+    padding: var(--group-header-padding-mobile);
+  }
+  
+  .group-title {
+    font-size: var(--group-title-mobile);
+  }
+  
+  .group-medical-context {
+    display: none; /* Hide on mobile for space */
+  }
+  
+  .class-count,
+  .route-info {
+    display: none; /* Hide detailed counts on mobile */
+  }
+  
+  .coverage-grid {
+    grid-template-columns: 1fr; /* Single column on mobile */
+  }
+  
+  .group-filter-controls {
+    justify-content: center;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .group-header {
+    padding: var(--group-header-padding-tablet);
+  }
+  
+  .group-title {
+    font-size: var(--group-title-tablet);
+  }
+  
+  .route-info {
+    display: none; /* Hide route info on tablet */
+  }
+}
+
+/* Accessibility Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .northwestern-group-organization,
+  .group-header,
+  .group-toggle,
+  .coverage-bar div,
+  .connection-line {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .group-header {
+    border-width: 3px;
+  }
+  
+  .group-boundary {
+    border-width: 3px;
+  }
+  
+  .antibiotic-count {
+    border: 1px solid currentColor;
+  }
+}
+
+/* Focus management for keyboard navigation */
+.group-header:focus,
+.group-boundary:focus {
+  outline: 2px solid var(--group-beta-lactam-border);
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .northwestern-group-organization {
+    break-inside: avoid;
+  }
+  
+  .group-header {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+  
+  .group-connections,
+  .group-debug-info {
+    display: none;
+  }
+}

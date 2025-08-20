@@ -1,0 +1,3 @@
+[submodule "ooda-subagents"]
+	path = ooda-subagents
+	url = https://github.com/al3rez/ooda-subagents.git

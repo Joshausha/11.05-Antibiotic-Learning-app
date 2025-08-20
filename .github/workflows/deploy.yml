@@ -1,0 +1,133 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run tests before deployment
+      run: npm test -- --coverage --watchAll=false
+    
+    - name: Build production bundle
+      run: npm run build
+      env:
+        PUBLIC_URL: /Antibiotic-Learning-app
+    
+    - name: Verify build output
+      run: |
+        echo "Build directory contents:"
+        ls -la build/
+        
+        echo "Checking for critical files:"
+        if [ ! -f "build/index.html" ]; then
+          echo "❌ Missing index.html"
+          exit 1
+        fi
+        
+        if [ ! -d "build/static" ]; then
+          echo "❌ Missing static directory"
+          exit 1
+        fi
+        
+        echo "✅ Build verification passed"
+    
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+    
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: build/
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+    
+    - name: Verify deployment
+      run: |
+        echo "Deployment URL: ${{ steps.deployment.outputs.page_url }}"
+        
+        # Wait for deployment to be available
+        sleep 30
+        
+        # Check if the site is accessible
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.deployment.outputs.page_url }}")
+        
+        if [ "$HTTP_STATUS" = "200" ]; then
+          echo "✅ Deployment successful - Site is accessible"
+        else
+          echo "❌ Deployment verification failed - HTTP status: $HTTP_STATUS"
+          exit 1
+        fi
+
+  post-deploy:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Create deployment tag
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+        TAG_NAME="deploy-${TIMESTAMP}"
+        
+        git tag -a "$TAG_NAME" -m "Deployment on $(date)"
+        git push origin "$TAG_NAME"
+    
+    - name: Update deployment status
+      run: |
+        echo "Deployment completed at: $(date)"
+        echo "Repository: ${{ github.repository }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Branch: ${{ github.ref_name }}"
+        echo "Actor: ${{ github.actor }}"
+    
+    - name: Notify deployment status
+      run: |
+        if [ "${{ needs.deploy.result }}" = "success" ]; then
+          echo "✅ Deployment successful!"
+          echo "🌐 Site URL: https://${{ github.repository_owner }}.github.io/Antibiotic-Learning-app"
+        else
+          echo "❌ Deployment failed!"
+          echo "Check the logs for details."
+        fi

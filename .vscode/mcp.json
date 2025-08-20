@@ -1,0 +1,36 @@
+{
+  "sequentialthinking": {
+    "type": "stdio",
+    "command": "docker",
+    "args": [
+      "run",
+      "--rm",
+      "-i",
+      "mcp/sequentialthinking"
+    ]
+  },
+  "code-reasoning": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@mettamatt/code-reasoning"
+    ]
+  },
+  "context7": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@upstash/context7-mcp@latest"
+    ]
+  },
+  "desktop-commander": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@anthropic/desktop-commander"
+    ]
+  }
+}

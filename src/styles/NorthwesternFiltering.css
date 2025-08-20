@@ -1,0 +1,1108 @@
+/**
+ * Northwestern Filtering System Styles
+ * 
+ * Comprehensive CSS for Northwestern 8-segment antibiotic filtering interface
+ * with responsive design, accessibility compliance, and clinical workflow optimization.
+ * 
+ * Created by: Agent 3.3 - Interactive Filtering Specialist
+ * Phase: 3 - Spatial Organization System
+ * 
+ * Features:
+ * - Mobile-first responsive design with clinical device optimization
+ * - Touch-friendly controls (44px minimum targets)
+ * - High contrast accessibility compliance  
+ * - Emergency mode simplification
+ * - Performance-optimized animations and transitions
+ * - Northwestern color scheme integration
+ */
+
+/* ===== NORTHWESTERN FILTERING SYSTEM CONTAINER ===== */
+
+.northwestern-filtering-system {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.northwestern-filtering-system--mobile {
+  border-radius: 0;
+  box-shadow: none;
+  border-top: 1px solid #e0e0e0;
+}
+
+.northwestern-filtering-system--emergency {
+  border: 3px solid #f44336;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+}
+
+/* ===== FILTER CONTROL PANEL ===== */
+
+.filter-control-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  position: relative;
+}
+
+.filter-control-panel--mobile {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 60vh;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.filter-control-panel--emergency {
+  background: linear-gradient(135deg, #fff5f5 0%, #fafafa 100%);
+}
+
+/* ===== PANEL NAVIGATION TABS ===== */
+
+.filter-panel-tabs {
+  display: flex;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.filter-panel-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-tab {
+  flex: 1;
+  min-width: 120px;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: #666666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.filter-tab:hover {
+  background-color: #f5f5f5;
+  color: #333333;
+}
+
+.filter-tab--active {
+  color: #2196f3;
+  background-color: #e3f2fd;
+}
+
+.filter-tab--active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: #2196f3;
+}
+
+.filter-tab-badge {
+  background-color: #f44336;
+  color: white;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* ===== PANEL CONTENT AREAS ===== */
+
+.filter-panel-content {
+  padding: 16px;
+  max-height: 50vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cccccc transparent;
+}
+
+.filter-panel-content--mobile {
+  max-height: 40vh;
+  padding: 12px;
+}
+
+.filter-panel-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.filter-panel-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-panel-content::-webkit-scrollbar-thumb {
+  background-color: #cccccc;
+  border-radius: 2px;
+}
+
+/* ===== SEARCH INPUT ===== */
+
+.filter-search {
+  margin-bottom: 20px;
+}
+
+.filter-search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.filter-search-input:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.filter-search-input::-webkit-input-placeholder {
+  color: #999999;
+}
+
+/* ===== NORTHWESTERN CATEGORY GRID ===== */
+
+.northwestern-category-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.northwestern-category-grid--desktop {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.category-filter-card {
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background-color: #ffffff;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.category-filter-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.category-filter-card--active {
+  border-width: 3px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.category-filter-card--critical {
+  border-left: 4px solid #f44336;
+}
+
+.category-filter-card--high {
+  border-left: 4px solid #ff9800;
+}
+
+.category-filter-card--medium {
+  border-left: 4px solid #4caf50;
+}
+
+/* ===== CATEGORY TOGGLE BUTTONS ===== */
+
+.category-toggle-button {
+  width: 100%;
+  min-height: 44px; /* Touch target minimum */
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.category-toggle-button:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.category-toggle-button:active {
+  transform: scale(0.98);
+}
+
+.category-icon {
+  font-size: 20px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background-color: #f5f5f5;
+}
+
+.category-info {
+  flex: 1;
+}
+
+.category-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 4px;
+}
+
+.category-description {
+  font-size: 12px;
+  color: #666666;
+  line-height: 1.3;
+}
+
+/* ===== COVERAGE LEVEL SLIDERS ===== */
+
+.coverage-slider-container {
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.coverage-slider-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+}
+
+.coverage-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #dee2e6;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  margin-bottom: 8px;
+}
+
+.coverage-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #2196f3;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.coverage-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #2196f3;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.coverage-levels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.coverage-level {
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.coverage-level--active {
+  font-weight: 700;
+}
+
+/* ===== ROUTE FILTER SECTION ===== */
+
+.route-filter-section {
+  margin-bottom: 24px;
+}
+
+.filter-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.route-filter-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.route-filter-buttons--mobile {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.route-filter-button {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: #333333;
+}
+
+.route-filter-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.route-filter-button--active {
+  color: white;
+  border-color: currentColor;
+  font-weight: 600;
+}
+
+.route-icon {
+  font-size: 18px;
+}
+
+.route-name {
+  font-size: 13px;
+}
+
+/* ===== SPECIAL FILTERS ===== */
+
+.special-filter-section {
+  margin-bottom: 20px;
+}
+
+.special-filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.special-filter-toggle:hover {
+  background-color: #f5f5f5;
+}
+
+.special-filter-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #2196f3;
+}
+
+.special-filter-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.special-filter-description {
+  font-size: 12px;
+  color: #666666;
+  margin-left: auto;
+}
+
+/* ===== CLINICAL SCENARIOS ===== */
+
+.scenarios-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.scenarios-grid--desktop {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.scenario-button {
+  min-height: 44px;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: white;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  position: relative;
+}
+
+.scenario-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.scenario-button--active {
+  border-color: #2196f3;
+  background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+}
+
+.scenario-button--emergency {
+  border-color: #f44336;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+}
+
+.scenario-button--recommended {
+  border-color: #4caf50;
+  background: linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%);
+}
+
+.scenario-icon {
+  font-size: 24px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+}
+
+.scenario-info {
+  flex: 1;
+}
+
+.scenario-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 4px;
+}
+
+.scenario-description {
+  font-size: 12px;
+  color: #666666;
+  line-height: 1.4;
+}
+
+.emergency-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 16px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ===== RECOMMENDED SCENARIOS ===== */
+
+.recommended-scenarios {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f0f8f0 0%, #ffffff 100%);
+  border-radius: 12px;
+  border: 1px solid #c8e6c9;
+}
+
+.recommended-scenarios-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recommended-scenario-button {
+  padding: 10px 12px;
+  border: 1px solid #a5d6a7;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.recommended-scenario-button:hover {
+  background-color: #f1f8e9;
+  transform: translateX(4px);
+}
+
+.recommended-scenario-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2e7d32;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.recommended-scenario-reason {
+  font-size: 12px;
+  color: #4caf50;
+}
+
+/* ===== FILTER HISTORY & SAVED FILTERS ===== */
+
+.filter-history-section,
+.saved-filters-section {
+  margin-bottom: 24px;
+}
+
+.filter-history-list,
+.saved-filters-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-history-item,
+.saved-filter-item {
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.filter-history-item {
+  cursor: pointer;
+}
+
+.filter-history-item:hover {
+  background-color: #f5f5f5;
+  border-color: #2196f3;
+}
+
+.saved-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-history-description,
+.saved-filter-apply {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333333;
+  flex: 1;
+  border: none;
+  background: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.filter-history-timestamp {
+  font-size: 11px;
+  color: #999999;
+}
+
+.saved-filter-delete {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: #f44336;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.save-current-filter {
+  width: 100%;
+  padding: 10px;
+  border: 2px dashed #2196f3;
+  border-radius: 8px;
+  background: transparent;
+  color: #2196f3;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.save-current-filter:hover:not(:disabled) {
+  background-color: #e3f2fd;
+}
+
+.save-current-filter:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== PANEL ACTIONS ===== */
+
+.filter-panel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: #ffffff;
+  border-top: 1px solid #e0e0e0;
+}
+
+.filter-reset-button {
+  padding: 10px 20px;
+  border: 2px solid #f44336;
+  border-radius: 8px;
+  background: white;
+  color: #f44336;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-reset-button:hover:not(:disabled) {
+  background-color: #f44336;
+  color: white;
+}
+
+.filter-reset-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.filter-summary {
+  font-size: 14px;
+  color: #666666;
+}
+
+.active-filters-count {
+  font-weight: 600;
+  color: #2196f3;
+}
+
+/* ===== RESULTS SUMMARY ===== */
+
+.filter-results-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+  border-bottom: 1px solid #bbdefb;
+}
+
+.results-count {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.results-numbers {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1565c0;
+}
+
+.results-label {
+  font-size: 14px;
+  color: #666666;
+}
+
+.performance-metrics {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: #999999;
+  font-family: 'Courier New', monospace;
+}
+
+/* ===== FILTER WARNINGS ===== */
+
+.filter-warnings {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffffff 100%);
+  border: 1px solid #ffcc02;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 16px 20px;
+}
+
+.filter-warning {
+  font-size: 13px;
+  color: #f57c00;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ===== FILTER SUGGESTIONS ===== */
+
+.filter-suggestions {
+  padding: 20px;
+  background: linear-gradient(135deg, #f3e5f5 0%, #ffffff 100%);
+  border-bottom: 1px solid #e1bee7;
+}
+
+.suggestions-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 12px;
+}
+
+.suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.suggestion-button {
+  padding: 10px 14px;
+  border: 1px solid #ce93d8;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.suggestion-button:hover {
+  background-color: #f3e5f5;
+  transform: translateX(4px);
+}
+
+.suggestion-button--critical {
+  border-color: #f44336;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+}
+
+.suggestion-button--high {
+  border-color: #ff9800;
+  background: linear-gradient(135deg, #fff8e1 0%, #ffffff 100%);
+}
+
+.suggestion-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.suggestion-text {
+  font-size: 14px;
+  color: #333333;
+  font-weight: 500;
+}
+
+.suggestion-type {
+  font-size: 11px;
+  color: #9c27b0;
+  font-weight: 600;
+  background: #e1bee7;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ===== CLINICAL DECISION SUPPORT ===== */
+
+.clinical-decision-support {
+  padding: 20px;
+  background: linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%);
+  border-left: 4px solid #4caf50;
+}
+
+.decision-support-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2e7d32;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.decision-support-title::before {
+  content: '🩺';
+  font-size: 20px;
+}
+
+.recommendation-section {
+  margin-bottom: 20px;
+}
+
+.recommendation-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #388e3c;
+  margin-bottom: 10px;
+}
+
+.antibiotic-recommendations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.antibiotic-recommendation {
+  background: white;
+  border: 1px solid #a5d6a7;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.antibiotic-name {
+  font-weight: 600;
+  color: #2e7d32;
+}
+
+.antibiotic-class {
+  color: #666666;
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+.clinical-considerations {
+  margin-bottom: 16px;
+}
+
+.clinical-considerations h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #388e3c;
+  margin-bottom: 8px;
+}
+
+.clinical-considerations ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.clinical-considerations li {
+  font-size: 13px;
+  color: #333333;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.evidence-basis {
+  font-size: 12px;
+  color: #666666;
+  font-style: italic;
+  border-top: 1px solid #c8e6c9;
+  padding-top: 10px;
+}
+
+/* ===== ERROR STATES ===== */
+
+.filter-error {
+  padding: 20px;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+  border: 2px solid #f44336;
+  border-radius: 12px;
+  margin: 20px;
+  text-align: center;
+}
+
+.filter-error h3 {
+  color: #d32f2f;
+  margin-bottom: 10px;
+}
+
+.filter-error p {
+  color: #666666;
+  margin-bottom: 16px;
+}
+
+.filter-error button {
+  padding: 10px 20px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ===== LOADING STATES ===== */
+
+.filtering-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.filtering-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e3f2fd;
+  border-top: 3px solid #2196f3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.filtering-spinner span {
+  font-size: 14px;
+  color: #666666;
+  font-weight: 500;
+}
+
+/* ===== EMERGENCY MODE BANNER ===== */
+
+.emergency-mode-banner,
+.emergency-mode-indicator {
+  background: linear-gradient(135deg, #ffebee 0%, #f44336 100%);
+  color: white;
+  padding: 12px 16px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 0 0 8px 8px;
+  animation: emergencyPulse 3s infinite;
+}
+
+@keyframes emergencyPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* ===== NO SAVED FILTERS ===== */
+
+.no-saved-filters {
+  color: #999999;
+  font-style: italic;
+  text-align: center;
+  padding: 16px;
+  font-size: 14px;
+}
+
+/* ===== ACCESSIBILITY & SCREEN READERS ===== */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ===== FOCUS STATES FOR ACCESSIBILITY ===== */
+
+button:focus-visible,
+input:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 3px solid #2196f3;
+  outline-offset: 2px;
+}
+
+/* ===== HIGH CONTRAST MODE SUPPORT ===== */
+
+@media (prefers-contrast: high) {
+  .northwestern-filtering-system {
+    border: 2px solid black;
+  }
+  
+  .filter-tab--active {
+    background-color: black;
+    color: white;
+  }
+  
+  .category-filter-card--active {
+    border-width: 4px;
+  }
+}
+
+/* ===== REDUCED MOTION SUPPORT ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  .northwestern-filtering-system * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .emergency-indicator,
+  .emergency-mode-banner {
+    animation: none;
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+
+@media print {
+  .northwestern-filtering-system {
+    box-shadow: none;
+    border: 1px solid black;
+    background: white !important;
+  }
+  
+  .filter-control-panel {
+    display: none;
+  }
+  
+  .clinical-decision-support {
+    border: 2px solid black;
+    background: white !important;
+    page-break-inside: avoid;
+  }
+}

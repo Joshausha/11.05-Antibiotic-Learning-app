@@ -1,0 +1,485 @@
+/**
+ * Northwestern Spatial Layout Styles
+ * 
+ * Core CSS for the spatial organization system, integrating with Northwestern
+ * medical design system and Phase 2 visual components.
+ * 
+ * Created by: Agent 3.1 - Spatial Layout Architect
+ * Integration: Northwestern Colors, Typography, and Visual States
+ * Performance: Optimized for clinical workflows with <30s emergency access
+ */
+
+/* ========================================
+   CORE LAYOUT CONTAINER
+   ======================================== */
+
+.northwestern-spatial-layout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #fafafa;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.northwestern-spatial-layout--mobile {
+  min-height: 800px; /* Accommodate 3x10 grid */
+}
+
+.northwestern-spatial-layout--tablet {
+  min-height: 720px; /* Accommodate 5x6 grid */
+}
+
+.northwestern-spatial-layout--desktop {
+  min-height: 700px; /* Accommodate 6x5 grid */
+}
+
+/* ========================================
+   MAIN SPATIAL GRID
+   ======================================== */
+
+.spatial-grid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+/* ========================================
+   GROUP BOUNDARIES
+   ======================================== */
+
+.group-boundaries {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.group-boundary {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(2px);
+}
+
+.group-boundary:hover {
+  border-color: #1976d2 !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+  background-color: rgba(25, 118, 210, 0.05);
+}
+
+.group-boundary--selected {
+  border-color: #1976d2 !important;
+  border-width: 2px !important;
+  background-color: rgba(25, 118, 210, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+/* Individual group styling */
+.group-boundary--betaLactams {
+  background-color: rgba(227, 242, 253, 0.3); /* Light blue */
+}
+
+.group-boundary--proteinSynthesis {
+  background-color: rgba(243, 229, 245, 0.3); /* Light purple */
+}
+
+.group-boundary--dnaGyrase {
+  background-color: rgba(232, 245, 232, 0.3); /* Light green */
+}
+
+.group-boundary--specialized {
+  background-color: rgba(255, 243, 224, 0.3); /* Light orange */
+}
+
+.group-label {
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+.group-count {
+  font-weight: 400;
+  color: #888;
+  margin-left: 4px;
+}
+
+/* ========================================
+   ANTIBIOTIC POSITIONS
+   ======================================== */
+
+.antibiotic-position {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.antibiotic-position:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #1976d2;
+  z-index: 110;
+}
+
+.antibiotic-position--hovered {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(25, 118, 210, 0.2);
+  border-color: #1976d2;
+  border-width: 2px;
+  z-index: 110;
+}
+
+.antibiotic-position--highlighted {
+  border-color: #ff9800;
+  border-width: 2px;
+  background-color: rgba(255, 152, 0, 0.05);
+}
+
+.antibiotic-position--group-selected {
+  border-color: #4caf50;
+  border-width: 2px;
+  background-color: rgba(76, 175, 80, 0.05);
+}
+
+/* ========================================
+   POSITION LABELS
+   ======================================== */
+
+.position-label {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.2;
+  color: #333;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.antibiotic-name {
+  font-weight: 600;
+  color: #1976d2;
+  display: block;
+}
+
+.drug-class {
+  font-weight: 400;
+  color: #666;
+  font-size: 9px;
+  display: block;
+}
+
+/* ========================================
+   RESPONSIVE BREAKPOINTS
+   ======================================== */
+
+/* Mobile optimizations */
+@media (max-width: 767px) {
+  .northwestern-spatial-layout--mobile .spatial-grid {
+    padding: 8px;
+    gap: 1% !important;
+  }
+  
+  .northwestern-spatial-layout--mobile .antibiotic-position {
+    min-height: 70px;
+  }
+  
+  .northwestern-spatial-layout--mobile .position-label {
+    font-size: 9px;
+    bottom: 2px;
+  }
+  
+  .northwestern-spatial-layout--mobile .group-label {
+    font-size: 10px;
+  }
+  
+  /* Hide drug class on mobile for space */
+  .northwestern-spatial-layout--mobile .drug-class {
+    display: none;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .northwestern-spatial-layout--tablet .spatial-grid {
+    padding: 12px;
+  }
+  
+  .northwestern-spatial-layout--tablet .antibiotic-position {
+    min-height: 110px;
+  }
+  
+  .northwestern-spatial-layout--tablet .position-label {
+    font-size: 11px;
+  }
+}
+
+/* Desktop optimizations */
+@media (min-width: 1024px) {
+  .northwestern-spatial-layout--desktop .spatial-grid {
+    padding: 16px;
+  }
+  
+  .northwestern-spatial-layout--desktop .antibiotic-position {
+    min-height: 130px;
+  }
+  
+  .northwestern-spatial-layout--desktop .position-label {
+    font-size: 12px;
+  }
+}
+
+/* ========================================
+   LOADING AND ERROR STATES
+   ======================================== */
+
+.northwestern-spatial-layout--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background-color: #fafafa;
+}
+
+.spatial-loading {
+  text-align: center;
+  max-width: 600px;
+  padding: 32px;
+}
+
+.loading-skeleton {
+  margin-bottom: 24px;
+}
+
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.loading-cell {
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: loading-shimmer 2s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.northwestern-spatial-layout--error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background-color: #fff5f5;
+  border: 1px solid #ffcdd2;
+}
+
+.spatial-error {
+  text-align: center;
+  max-width: 500px;
+  padding: 32px;
+}
+
+.spatial-error h3 {
+  color: #d32f2f;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.spatial-error ul {
+  text-align: left;
+  color: #666;
+  margin-bottom: 24px;
+  padding-left: 20px;
+}
+
+.error-item {
+  margin-bottom: 8px;
+}
+
+.spatial-error button {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.spatial-error button:hover {
+  background-color: #1565c0;
+}
+
+/* ========================================
+   DEBUG AND DEVELOPMENT
+   ======================================== */
+
+.spatial-debug-info {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  z-index: 1000;
+}
+
+.performance-metrics {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.performance-metrics span {
+  white-space: nowrap;
+}
+
+.validation-warnings {
+  color: #ffeb3b !important;
+}
+
+/* ========================================
+   EMERGENCY MODE OPTIMIZATIONS
+   ======================================== */
+
+.northwestern-spatial-layout[data-emergency-mode="true"] {
+  /* Disable animations for performance */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: -0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.northwestern-spatial-layout[data-emergency-mode="true"] .antibiotic-position {
+  transition: none;
+}
+
+.northwestern-spatial-layout[data-emergency-mode="true"] .group-boundary {
+  transition: none;
+}
+
+/* ========================================
+   ACCESSIBILITY ENHANCEMENTS
+   ======================================== */
+
+.antibiotic-position:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+.group-boundary:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .northwestern-spatial-layout {
+    border: 2px solid #000;
+  }
+  
+  .antibiotic-position {
+    border: 2px solid #000;
+    background-color: #fff;
+  }
+  
+  .group-boundary {
+    border: 2px solid #000 !important;
+  }
+  
+  .position-label {
+    border: 1px solid #000;
+    background-color: #fff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .antibiotic-position,
+  .group-boundary,
+  .loading-cell {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .northwestern-spatial-layout {
+    background: white;
+    box-shadow: none;
+  }
+  
+  .spatial-debug-info {
+    display: none;
+  }
+  
+  .antibiotic-position {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+}

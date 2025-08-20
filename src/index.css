@@ -1,0 +1,529 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Custom Properties for Northwestern Medical System */
+:root {
+  /* Northwestern Medical Route Colors */
+  --medical-oral-primary: #dc2626;
+  --medical-oral-secondary: #fee2e2;
+  --medical-oral-text: #991b1b;
+  
+  --medical-iv-primary: #2563eb;
+  --medical-iv-secondary: #dbeafe;
+  --medical-iv-text: #1d4ed8;
+  
+  --medical-both-primary: #7c3aed;
+  --medical-both-secondary: #e9d5ff;
+  --medical-both-text: #5b21b6;
+  
+  /* Northwestern Segment Colors */
+  --segment-mrsa: #f97316;
+  --segment-mrsa-light: #fed7aa;
+  --segment-mrsa-text: #9a3412;
+  
+  --segment-vre: #dc2626;
+  --segment-vre-light: #fecaca;
+  --segment-vre-text: #991b1b;
+  
+  --segment-anaerobes: #7c3aed;
+  --segment-anaerobes-light: #ddd6fe;
+  --segment-anaerobes-text: #5b21b6;
+  
+  --segment-atypicals: #0891b2;
+  --segment-atypicals-light: #cffafe;
+  --segment-atypicals-text: #155e75;
+  
+  --segment-pseudomonas: #d97706;
+  --segment-pseudomonas-light: #fde68a;
+  --segment-pseudomonas-text: #92400e;
+  
+  --segment-gram-negative: #2563eb;
+  --segment-gram-negative-light: #dbeafe;
+  --segment-gram-negative-text: #1d4ed8;
+  
+  --segment-mssa: #16a34a;
+  --segment-mssa-light: #dcfce7;
+  --segment-mssa-text: #15803d;
+  
+  --segment-e-faecalis: #64748b;
+  --segment-e-faecalis-light: #e2e8f0;
+  --segment-e-faecalis-text: #334155;
+  
+  /* Medical Interaction Timing */
+  --medical-transition-fast: 150ms;
+  --medical-transition-standard: 200ms;
+  --medical-transition-slow: 300ms;
+  
+  /* Medical Spacing Scale */
+  --medical-spacing-xs: 0.25rem;
+  --medical-spacing-sm: 0.5rem;
+  --medical-spacing-md: 0.75rem;
+  --medical-spacing-lg: 1rem;
+  --medical-spacing-xl: 1.5rem;
+  --medical-spacing-2xl: 2rem;
+  
+  /* Emergency Access Colors */
+  --emergency-red: #dc2626;
+  --emergency-background: #ffffff;
+  --emergency-text: #000000;
+  --emergency-border: #000000;
+  
+  /* Clinical High Contrast */
+  --clinical-contrast-bg: #ffffff;
+  --clinical-contrast-text: #000000;
+  --clinical-contrast-border: #000000;
+  --clinical-contrast-accent: #ff0000;
+}
+
+/* Dark mode support for clinical environments */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --emergency-background: #000000;
+    --emergency-text: #ffffff;
+    --emergency-border: #ffffff;
+  }
+}
+
+/* Custom base styles */
+@layer base {
+  html {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  }
+  
+  body {
+    @apply bg-slate-50 text-gray-900 antialiased font-medical;
+  }
+  
+  /* Skip navigation link for screen readers */
+  .skip-link {
+    @apply sr-only absolute top-0 left-0 bg-blue-600 text-white px-4 py-2 z-50 focus:not-sr-only focus:relative focus:z-auto;
+  }
+  
+  /* Enhanced focus styles for medical accessibility */
+  *:focus {
+    @apply outline-none ring-2 ring-blue-600 ring-offset-2;
+  }
+  
+  /* Medical-grade focus for interactive elements */
+  button:focus,
+  a:focus,
+  input:focus,
+  select:focus,
+  textarea:focus {
+    @apply focus-medical;
+  }
+  
+  /* Emergency focus for critical elements */
+  .emergency-element:focus,
+  [data-emergency="true"]:focus {
+    @apply focus-emergency;
+  }
+  
+  /* High contrast mode for clinical environments */
+  @media (prefers-contrast: high) {
+    * {
+      border-color: var(--clinical-contrast-border) !important;
+      color: var(--clinical-contrast-text) !important;
+      background-color: var(--clinical-contrast-bg) !important;
+    }
+  }
+  
+  /* Reduced motion for medical settings */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* Print styles for clinical reference */
+  @media print {
+    * {
+      background: white !important;
+      color: black !important;
+      box-shadow: none !important;
+    }
+    
+    .northwestern-pie-chart {
+      break-inside: avoid;
+    }
+    
+    .clinical-tooltip {
+      display: none !important;
+    }
+  }
+}
+
+/* Custom component styles */
+@layer components {
+  /* Enhanced medical button styles */
+  .btn-primary {
+    @apply bg-blue-600 text-white px-medical-lg py-medical-sm rounded-medical font-medium hover:bg-blue-700 transition-colors duration-medical-standard focus-medical touch-target;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-300 text-gray-900 px-medical-lg py-medical-sm rounded-medical font-medium hover:bg-gray-400 transition-colors duration-medical-standard focus-medical touch-target;
+  }
+  
+  .btn-success {
+    @apply bg-success-600 text-white px-medical-lg py-medical-sm rounded-medical font-medium hover:bg-success-700 transition-colors duration-medical-standard focus-medical touch-target;
+  }
+  
+  .btn-danger {
+    @apply bg-error-600 text-white px-medical-lg py-medical-sm rounded-medical font-medium hover:bg-error-700 transition-colors duration-medical-standard focus-medical touch-target;
+  }
+  
+  .btn-emergency {
+    @apply bg-clinical-emergency text-clinical-bg px-medical-xl py-medical-md rounded-medical font-bold text-medical-emergency hover:shadow-medical-emergency transition-all duration-medical-fast focus-emergency touch-target;
+  }
+  
+  /* Medical card system */
+  .card {
+    @apply medical-card;
+  }
+  
+  .card-medical {
+    @apply medical-card medical-card-hover;
+  }
+  
+  .card-emergency {
+    @apply bg-red-50 border-red-300 rounded-medical shadow-medical-emergency p-medical-lg;
+  }
+  
+  .card-header {
+    @apply border-b border-gray-200 pb-medical-md mb-medical-lg;
+  }
+  
+  /* Medical input fields */
+  .input-field {
+    @apply w-full px-medical-sm py-medical-sm border border-gray-400 rounded-medical focus-medical transition-colors duration-medical-standard;
+  }
+  
+  .input-emergency {
+    @apply input-field border-error-500 focus:ring-error-500 focus:border-error-500;
+  }
+  
+  /* Northwestern Pie Chart Specific Styles */
+  .northwestern-pie-chart {
+    @apply relative inline-block;
+    
+    /* Ensure proper rendering performance */
+    contain: layout style paint;
+    will-change: transform;
+  }
+  
+  .northwestern-pie-chart__svg {
+    @apply w-full h-full;
+    shape-rendering: geometricPrecision;
+    text-rendering: optimizeLegibility;
+  }
+  
+  .northwestern-pie-chart__loading {
+    @apply flex items-center justify-center text-medical-base text-gray-600 animate-medical-loading;
+  }
+  
+  .northwestern-pie-chart__error {
+    @apply flex items-center justify-center text-medical-sm text-error-600 bg-error-50 border border-error-300 rounded-medical p-medical-sm;
+  }
+  
+  /* Pie chart segment base styles */
+  .pie-segment {
+    @apply segment-base;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    
+    /* Performance optimizations */
+    vector-effect: non-scaling-stroke;
+    paint-order: fill stroke;
+  }
+  
+  /* Segment interactive states */
+  .pie-segment:hover {
+    @apply segment-hover;
+  }
+  
+  .pie-segment--selected {
+    @apply segment-selected;
+  }
+  
+  .pie-segment--contraindicated {
+    @apply segment-contraindicated;
+  }
+  
+  .pie-segment--emergency-mode {
+    filter: contrast(1.5) brightness(1.1);
+  }
+  
+  /* Coverage level specific styles */
+  .pie-segment--coverage-0 {
+    @apply opacity-medical-muted;
+    fill: white !important;
+    stroke: var(--emergency-red) !important;
+    stroke-width: 3 !important;
+    stroke-dasharray: 4,2 !important;
+  }
+  
+  .pie-segment--coverage-1 {
+    @apply opacity-medical-subtle;
+    stroke-dasharray: 2,1;
+  }
+  
+  .pie-segment--coverage-2 {
+    @apply opacity-100;
+  }
+  
+  /* Segment-specific colors */
+  .pie-segment--mrsa {
+    --segment-color: var(--segment-mrsa);
+    --segment-light: var(--segment-mrsa-light);
+    --segment-text: var(--segment-mrsa-text);
+  }
+  
+  .pie-segment--vre-faecium {
+    --segment-color: var(--segment-vre);
+    --segment-light: var(--segment-vre-light);
+    --segment-text: var(--segment-vre-text);
+  }
+  
+  .pie-segment--anaerobes {
+    --segment-color: var(--segment-anaerobes);
+    --segment-light: var(--segment-anaerobes-light);
+    --segment-text: var(--segment-anaerobes-text);
+  }
+  
+  .pie-segment--atypicals {
+    --segment-color: var(--segment-atypicals);
+    --segment-light: var(--segment-atypicals-light);
+    --segment-text: var(--segment-atypicals-text);
+  }
+  
+  .pie-segment--pseudomonas {
+    --segment-color: var(--segment-pseudomonas);
+    --segment-light: var(--segment-pseudomonas-light);
+    --segment-text: var(--segment-pseudomonas-text);
+  }
+  
+  .pie-segment--gram-negative {
+    --segment-color: var(--segment-gram-negative);
+    --segment-light: var(--segment-gram-negative-light);
+    --segment-text: var(--segment-gram-negative-text);
+  }
+  
+  .pie-segment--mssa {
+    --segment-color: var(--segment-mssa);
+    --segment-light: var(--segment-mssa-light);
+    --segment-text: var(--segment-mssa-text);
+  }
+  
+  .pie-segment--enterococcus-faecalis {
+    --segment-color: var(--segment-e-faecalis);
+    --segment-light: var(--segment-e-faecalis-light);
+    --segment-text: var(--segment-e-faecalis-text);
+  }
+  
+  /* Center label styles */
+  .pie-center-label {
+    @apply pointer-events-none;
+  }
+  
+  .pie-center-label__name {
+    @apply font-bold fill-current;
+  }
+  
+  .pie-center-label__route {
+    @apply font-medium fill-current opacity-70;
+  }
+  
+  /* Segment labels */
+  .pie-segment-labels {
+    @apply pointer-events-none;
+  }
+  
+  .pie-segment-label {
+    @apply font-medium fill-current text-medical-xs;
+  }
+  
+  /* Clinical Tooltip Styles */
+  .clinical-tooltip {
+    @apply animate-tooltip-appear;
+    z-index: theme('zIndex.tooltip');
+    max-width: 20rem;
+    
+    /* Ensure tooltip is readable in clinical environments */
+    backdrop-filter: blur(8px);
+    box-shadow: 
+      0 10px 25px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05),
+      0 0 0 1px rgba(0, 0, 0, 0.05);
+  }
+  
+  .clinical-tooltip__header h3 {
+    @apply text-medical-lg font-bold text-gray-900;
+  }
+  
+  .clinical-tooltip__header p {
+    @apply text-medical-sm text-gray-600;
+  }
+  
+  .clinical-tooltip__coverage {
+    @apply flex items-center space-x-2;
+  }
+  
+  .clinical-tooltip__clinical h4,
+  .clinical-tooltip__infections h4,
+  .clinical-tooltip__emergency h4 {
+    @apply text-medical-base font-medium;
+  }
+  
+  .clinical-tooltip__emergency {
+    @apply border-l-4 border-error-500 pl-medical-sm;
+  }
+  
+  /* Northwestern Interaction System Styles */
+  .northwestern-interaction-system {
+    @apply relative;
+  }
+  
+  .northwestern-interaction-system.comparison-mode .pie-segment {
+    @apply opacity-medical-subtle;
+  }
+  
+  .northwestern-interaction-system.comparison-mode .pie-segment--selected {
+    @apply opacity-100;
+  }
+  
+  /* Interaction panel */
+  .interaction-panel {
+    @apply animate-slide-in;
+    min-width: 16rem;
+    max-height: 24rem;
+    overflow-y: auto;
+  }
+  
+  .interaction-panel h3 {
+    @apply text-medical-lg font-bold text-gray-900;
+  }
+  
+  /* Learning progress indicator */
+  .learning-progress {
+    @apply animate-fade-in;
+    backdrop-filter: blur(4px);
+  }
+  
+  .learning-progress .text-blue-700 {
+    @apply text-medical-xs font-medium;
+  }
+  
+  /* Enhanced skeleton loaders for medical context */
+  .skeleton {
+    @apply bg-gray-200 animate-medical-loading rounded-medical;
+  }
+  
+  .skeleton-text {
+    @apply skeleton h-4 mb-medical-sm;
+  }
+  
+  .skeleton-title {
+    @apply skeleton h-6 mb-medical-md;
+  }
+  
+  .skeleton-button {
+    @apply skeleton h-10 w-24;
+  }
+  
+  .skeleton-pie-chart {
+    @apply skeleton rounded-full;
+    aspect-ratio: 1;
+  }
+  
+  /* Progress indicators */
+  .progress-bar {
+    @apply w-full bg-gray-200 rounded-full h-2;
+  }
+  
+  .progress-fill {
+    @apply h-2 rounded-full transition-all duration-medical-slow;
+  }
+  
+  /* Enhanced message styles for medical context */
+  .error-message {
+    @apply bg-error-50 border border-error-300 text-error-800 px-medical-md py-medical-sm rounded-medical text-medical-sm;
+  }
+  
+  .success-message {
+    @apply bg-success-50 border border-success-300 text-success-800 px-medical-md py-medical-sm rounded-medical text-medical-sm;
+  }
+  
+  .warning-message {
+    @apply bg-warning-50 border border-warning-300 text-warning-800 px-medical-md py-medical-sm rounded-medical text-medical-sm;
+  }
+  
+  .info-message {
+    @apply bg-blue-50 border border-blue-300 text-blue-800 px-medical-md py-medical-sm rounded-medical text-medical-sm;
+  }
+  
+  .emergency-message {
+    @apply bg-red-100 border-2 border-red-500 text-red-900 px-medical-lg py-medical-md rounded-medical text-medical-lg font-bold shadow-medical-emergency;
+  }
+  
+  /* Clinical badge styles */
+  .badge-coverage-0 {
+    @apply bg-white border border-error-500 text-error-700 px-medical-sm py-1 rounded-pill text-medical-xs font-medium;
+  }
+  
+  .badge-coverage-1 {
+    @apply bg-warning-100 border border-warning-300 text-warning-800 px-medical-sm py-1 rounded-pill text-medical-xs font-medium;
+  }
+  
+  .badge-coverage-2 {
+    @apply bg-success-100 border border-success-300 text-success-800 px-medical-sm py-1 rounded-pill text-medical-xs font-medium;
+  }
+  
+  .badge-route-oral {
+    @apply bg-medical-oral-100 text-medical-oral-800 px-medical-sm py-1 rounded-pill text-medical-xs font-medium;
+  }
+  
+  .badge-route-iv {
+    @apply bg-medical-iv-100 text-medical-iv-800 px-medical-sm py-1 rounded-pill text-medical-xs font-medium;
+  }
+  
+  .badge-route-both {
+    @apply bg-medical-both-100 text-medical-both-800 px-medical-sm py-1 rounded-pill text-medical-xs font-medium;
+  }
+  
+  /* Clinical significance indicators */
+  .clinical-high-alert {
+    @apply bg-orange-100 border-l-4 border-clinical-high-alert text-orange-900 px-medical-md py-medical-sm;
+  }
+  
+  .clinical-critical {
+    @apply bg-red-100 border-l-4 border-clinical-critical text-red-900 px-medical-md py-medical-sm;
+  }
+  
+  .clinical-treatable {
+    @apply bg-green-100 border-l-4 border-clinical-treatable text-green-900 px-medical-md py-medical-sm;
+  }
+  
+  /* Touch interaction enhancements */
+  @media (hover: none) and (pointer: coarse) {
+    .pie-segment {
+      /* Increase touch target size on mobile */
+      stroke-width: 4;
+    }
+    
+    .clinical-tooltip {
+      /* Larger tooltip on touch devices */
+      max-width: 24rem;
+      font-size: theme('fontSize.medical-base')[0];
+    }
+    
+    .touch-target {
+      min-width: 3rem;
+      min-height: 3rem;
+    }
+  }
+}

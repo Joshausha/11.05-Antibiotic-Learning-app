@@ -1,0 +1,833 @@
+[
+    {
+        "id": "uncomplicated_bloodstream_infection_nonneonates",
+        "category": "Bloodstream Infection in Nonneonates",
+        "name": "Uncomplicated Bloodstream Infection",
+        "description": "Defined by ≤3 days bacteremia in nonneutropenic host without complex source (eg, endocarditis, septic thrombophlebitis, osteomyelitis) or ongoing undrained purulent focus. Common sources include vascular catheter- associated infection, urinary tract infection, intra- abdominal infection, pneumonia, skin/soft tissue infection. [cite: 1]",
+        "commonPathogens": [
+            "Staphylococcus aureus",
+            "Enterococcus faecalis",
+            "Enterococcus faecium",
+            "Enterobacterales (eg, Escherichia coli, Klebsiella species, Enterobacter species)",
+            "Pseudomonas aeruginosa",
+            "Coagulase- negative Staphylococcus (not including Staphylococcus Lugdunensis, which should be managed like S aureus)"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "MSSA",
+                "therapy": "Cefazolin OR Oxacillin OR Nafcillin"
+            },
+            {
+                "condition": "MRSA",
+                "therapy": "Vancomycin OR Linezolid OR Daptomycin OR Ceftaroline"
+            },
+            {
+                "condition": "Enterococcus faecalis",
+                "therapy": "Ampicillin"
+            },
+            {
+                "condition": "Enterococcus faecium",
+                "therapy": "Vancomycin OR Linezolid OR Daptomycin"
+            },
+            {
+                "condition": "Enterobacterales",
+                "therapy": "Choice depends on results of antibiotic susceptibility testing"
+            },
+            {
+                "condition": "Pseudomonas aeruginosa",
+                "therapy": "Choice depends on results of antibiotic susceptibility testing"
+            },
+            {
+                "condition": "Coagulase- negative Staphylococcus",
+                "therapy": "Vancomycin OR Oxacillin (if susceptible)"
+            }
+        ],
+        "antibioticDuration": [
+            "14 days from first negative blood culture [cite: 1]",
+            "7 days from first negative blood culture [cite: 1, 7]",
+            "5-7 days from first negative blood culture, OR observation following removal of foreign body source eg, catheter) [cite: 10]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Vascular catheter removal generally recommended for persistent hemodynamic instability or ongoing (≥3 days) bacteremia. [cite: 1]",
+            [cite_start
+            ]"Duration of therapy is regardless of whether vascular catheter is removed, and should not be extended solely based on presence of antibiotic resistance or retained vascular catheter. [cite: 7]",
+            "Vascular catheter removal generally recommended for persistent hemodynamic instability or ongoing (≥3 days) bacteremia. [cite: 1]",
+            "Duration of therapy is regardless of whether vascular catheter is removed, and should not be extended solely based on presence of antibiotic resistance or retained vascular catheter. [cite: 7]",
+            "Duration of therapy is based on duration of active therapy (ie, adequate dose and antibiotic susceptibility). [cite: 7]",
+            "Transition to oral antibiotics may be considered for uncomplicated gram- negative bacteremia if all of the following criteria are met: (1) susceptibility to an appropriate, highly available oral agent is demonstrated; (2) the patient is hemodynamically stable; (3) reasonable source control measures have occurred; (4) intestinal absorption is intact; and (5) there is confidence in patient adherence. [cite: 7]",
+            "A single positive culture absent hardware generally reflects skin contamination. [cite: 10]"
+            [cite_start
+            ]"Observational studies: Sutton et al⁴, Punjabi et al, Tamma et al, Heil et al, Mponponsuo et al, Tamma et al [cite: 1]"
+        ]
+    },
+    {
+        "id": "osteomyelitis",
+            "RCTs for duration of gram- negative BSI: Yahav et al¹, von Dach et al², Molina et als [cite: 1]",
+            "Observational studies: Sutton et al⁴, Punjabi et al, Tamma et al, Heil et al, Mponponsuo et al, Tamma et al [cite: 1]"
+            "Streptococcus pyogenes",
+            "Kingella kingae"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "Mild",
+                "therapy": "Cefazolin OR Oxacillin OR Nafcillin"
+            },
+            {
+                "condition": "Moderate/Severe and low suspicion of MRSA",
+                "therapy": "Cefazolin OR Oxacillin OR Nafcillin"
+            },
+            {
+                "condition": "Severe and high suspicion of MRSA",
+                "therapy": "Vancomycin OR Clindamycin OR Linezolid OR Daptomycin"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"3-4 wk. [cite: 10]",
+            [cite_start
+            ]"Chronic osteomyelitis typically requires more prolonged antibiotic treatment and may require consideration of alternate antibiotic choice. [cite: 10]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Küngella infection not effectively treated by clindamycin and not reliably susceptible to oxacillin/ nafcillin. [cite: 10]",
+            [cite_start
+            ]"Early switch to oral route recommended with clinical improvement, even for patients with transient bacteremia. [cite: 10]",
+            [cite_start
+            ]"For empiric management of children with osteomyelitis and severe sepsis, combination therapy of vancomycin PLUS oxacillin/nafcillin can be considered. [cite: 10]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Woods et al 10 [cite: 10]"
+        ]
+    },
+    {
+        "id": "septic_arthritis",
+        "category": "Bone/Joint",
+        "name": "Septic arthritis",
+        "commonPathogens": [
+            "S aureus",
+            "S pyogenes",
+            "K kingae"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "Mild-Moderate",
+                "therapy": "Cefazolin OR Oxacillin OR Nafcillin"
+            },
+            {
+                "condition": "Severe and low suspicion of MRSA",
+                "therapy": "Cefazolin OR Oxacillin OR Nafcillin"
+            },
+            {
+                "condition": "Severe and high suspicion of MRSA",
+                "therapy": "Vancomycin OR Clindamycin OR Linezolid OR Daptomycin"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"2-3 wk [cite: 13]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Kingella not effectively treated by clindamycin and not reliably susceptible to oxacillin/nafcillin. [cite: 13]",
+            [cite_start
+            ]"Early switch to oral route recommended with clinical improvement, even for patients with transient bacteremia. [cite: 13]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Woods et al11 [cite: 13]"
+        ]
+    },
+    {
+        "id": "meningitis_non_neonates",
+        "category": "Central Nervous System",
+        "name": "Meningitis (non- neonates)",
+        "commonPathogens": [
+            "Streptococcus pneumoniae",
+            "Neisseria meningitidis",
+            "Haemophilus influenzae"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": null,
+                "therapy": "Ceftriaxone PLUS Vancomycin"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"These are empiric recommendations; specific choice and duration of antibiotic therapy should be guided by culture and susceptibility results. [cite: 17]",
+            [cite_start
+            ]"S pneumoniae: 10-14 days. [cite: 17]",
+            [cite_start
+            ]"H influenzae: 7-10 days. [cite: 17]",
+            [cite_start
+            ]"N meningitidis: 5-7 days. [cite: 17]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Longer courses are necessary for patients with parenchymal brain infection (cerebritis, rhombencephalitis, brain abscess). [cite: 17]",
+            [cite_start
+            ]"Dexamethasone is beneficial for treatment of infants and children with Hib meningitis to diminish the risk of hearing loss, if administered before or concurrently with the first dose of antimicrobial agent(s). [cite: 17]",
+            [cite_start
+            ]"For all children with bacterial meningitis presumed to be caused by S pneumoniae, vancomycin should be administered in addition to ceftriaxone because of the possibility of resistant S pneumoniae. [cite: 17]",
+            [cite_start
+            ]"Consider adding acyclovir for patients with concurrent encephalitis. [cite: 17]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Streptococcus pneumoniae (Pneumococcal) Infections, p 810 [cite: 17]",
+            [cite_start
+            ]"Meningococcal Infections, p 585 [cite: 17]",
+            [cite_start
+            ]"Haemophilus influenzae Infections, p 400 [cite: 17]"
+        ]
+    },
+    {
+        "id": "mastoiditis",
+        "category": "Ear, Nose, and Throat",
+        "name": "Mastoiditis",
+        "commonPathogens": [
+            "S pneumoniae",
+            "S pyogenes",
+            "S aureus",
+            "H influenzae",
+            "Microaerophilic streptococci",
+            "Fusobacterium",
+            "P aeruginosa"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "Standard",
+                "therapy": "Consider surgical drainage/excision. Ampicillin- sulbactam OR Ceftriaxone."
+            },
+            {
+                "condition": "Allergy",
+                "therapy": "Clindamycin"
+            },
+            {
+                "condition": "If follows chronic AOM",
+                "therapy": "Cefepime OR Levofloxacin"
+            },
+            {
+                "condition": null,
+                "therapy": "Consider MRSA based on local prevalence"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"2-4 wk depending on adequate débridement, intracranial extension, extent of osteomyelitis, associated thrombosis [cite: 20]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Transition to oral with clinical improvement. [cite: 20]",
+            [cite_start
+            ]"Ampicillin-sulbactam may not be optimal for intracranial infections. [cite: 20]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Haemophilus influenzae Infections, p 400 [cite: 20]",
+            [cite_start
+            ]"Fusobacterium Infections, p 388 [cite: 20]",
+            [cite_start
+            ]"Pseudomonas aeruginosa Infections, p 697 [cite: 20]",
+            [cite_start
+            ]"Staphylococcus aureus, p 767 [cite: 20]",
+            [cite_start
+            ]"Group A Streptococcal Infections, p 785 [cite: 20]",
+            [cite_start
+            ]"Non-Group A or B Streptococcal and Enterococcal Infections, p 806 [cite: 20]",
+            [cite_start
+            ]"Streptococcus pneumoniae (Pneumococcal) Infections, p 810 [cite: 20]"
+        ]
+    },
+    {
+        "id": "acute_sinusitis",
+        "category": "Ear, Nose, and Throat",
+        "name": "Acute sinusitis",
+        "commonPathogens": [
+            "S pneumoniae",
+            "H influenzae",
+            "Moraxella catarrhalis"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "Standard",
+                "therapy": "Amoxicillin OR Amoxicillin- clavulanate"
+            },
+            {
+                "condition": "Allergy",
+                "therapy": "Clindamycin OR Levofloxacin"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"5-7 days [cite: 24]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Diagnosis of acute bacterial sinusitis requires the presence of one of the following criteria: (1) persistent nasal discharge or daytime cough without evidence of clinical improvement for ≥10 days; consider watchful waiting in this scenario (2) worsening or new onset of nasal discharge, daytime cough, or fever after initial improvement (3) temperature ≥39°C with purulent nasal discharge and/ or facial pain for at least 3 consecutive days. [cite: 24]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Haemophilus influenzae Infections, p 400 [cite: 24]",
+            [cite_start
+            ]"Moraxella catarrhalis Infections, p 604 [cite: 24]",
+            [cite_start
+            ]"Streptococcus pneumoniae (Pneumococcal) Infections, p 810 [cite: 24]",
+            [cite_start
+            ]"Chow et al12 [cite: 24]",
+            [cite_start
+            ]"Wald et al13 [cite: 24]"
+        ]
+    },
+    {
+        "id": "acute_otitis_media",
+        "category": "Ear, Nose, and Throat",
+        "name": "Acute otitis media",
+        "commonPathogens": [
+            "S pneumoniae",
+            "H influenzae",
+            "M catarrhalis"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "Standard",
+                "therapy": "Amoxicillin OR Amoxicillin- clavulanate"
+            },
+            {
+                "condition": "Allergy",
+                "therapy": "Cefdinir OR Cefpodoxime OR Cefuroxime OR Ceftriaxone for 1 (first occurrence) to 3 (treatment failure) days"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]">6 y: 5 days. [cite: 24]",
+            [cite_start
+            ]"2-5 y: 7 days. [cite: 24]",
+            [cite_start
+            ]"<2 y or severe symptoms: 10 days. [cite: 24]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Consider observation without antibiotics for 48-72 hours for children 24 months or older without severe symptoms; if symptoms persist or worsen, use same antibiotic recommendations as for those receiving immediate therapy. [cite: 24]",
+            [cite_start
+            ]"Consider S aureus and Pseudomonas infection for chronic otitis media. [cite: 24]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Haemophilus influenzae Infections, p 400 [cite: 24]",
+            [cite_start
+            ]"Moraxella catarrhalis Infections, p 604 [cite: 24]",
+            [cite_start
+            ]"Streptococcus pneumoniae (Pneumococcal) Infections, p 810 [cite: 24]",
+            [cite_start
+            ]"Lieberthal et al14 [cite: 24]",
+            [cite_start
+            ]"Rosenfeld et al15 [cite: 24]"
+        ]
+    },
+    {
+        "id": "streptococcal_pharyngitis",
+        "category": "Ear, Nose, and Throat",
+        "name": "Streptococcal pharyngitis",
+        "commonPathogens": [
+            "S pyogenes"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "First line",
+                "therapy": "Penicillin OR Amoxicillin"
+            },
+            {
+                "condition": "Allergy",
+                "therapy": "Cephalexin OR Clindamycin OR Azithromycin"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"10 days [cite: 28]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Children with rhinorrhea, cough, hoarseness, or oral ulcers should not be tested or treated for GAS infection; testing also generally is not recommended for children <3 y. [cite: 28]",
+            [cite_start
+            ]"Management of recurrent GAS pharyngitis and pharyngeal carriers is detailed in Group A Streptococcal Infections (p 785). [cite: 28]",
+            [cite_start
+            ]"Tetracyclines, TMP-SMX, and fluoroquinolones should not be used for treating GAS pharyngitis. [cite: 28]",
+            [cite_start
+            ]"Return to school after afebrile and ≥12 h of antibiotic therapy. [cite: 28]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Group A Streptococcal Infections, p 785 [cite: 28]",
+            [cite_start
+            ]"Shulman et al16 [cite: 28]"
+        ]
+    },
+    {
+        "id": "retropharyngeal_abscess",
+        "category": "Ear, Nose, and Throat",
+        "name": "Retropharyngeal abscess",
+        "commonPathogens": [
+            "S pyogenes",
+            "Anaerobes",
+            "S aureus",
+            "Streptococcus anginosus",
+            "H influenzae (often polymicrobial)"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "Mild-moderate",
+                "therapy": "Ampicillin/sulbactam OR Clindamycin"
+            },
+            {
+                "condition": "Severe",
+                "therapy": "Ampicillin/sulbactam PLUS EITHER Vancomycin OR Linezolid"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"14 days [cite: 28]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Longer duration of therapy may be required for complex infections with insufficient source control. [cite: 28]"
+        ],
+        "keyResources": []
+    },
+    {
+        "id": "uti_pyelonephritis",
+        "category": "Genitourinary",
+        "name": "UTI - pyelonephritis",
+        "commonPathogens": [
+            "E coli",
+            "Klebsiella species",
+            "Proteus species",
+            "Enterobacter species",
+            "Citrobacter species",
+            "Enterococcus species",
+            "Staphylococcus saprophyticus"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": null,
+                "therapy": "Cephalexin OR TMP-SMX OR Ampicillin PLUS Gentamicin OR Ceftriaxone OR Ciprofloxacin"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"7-10 days (hospitalized). [cite: 32]",
+            [cite_start
+            ]"5-10 days (outpatient). [cite: 32]",
+            [cite_start
+            ]"3-5 days (simple cystitis in adolescents). [cite: 32]",
+            [cite_start
+            ]"Longer durations may be required for complicated cases such as renal abscess without drainage. [cite: 32]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Drug selection should be based on local antibiogram or patient's prior urine isolates. [cite: 32]",
+            [cite_start
+            ]"Initial short course of IV therapy (2-4 days) is as effective as longer courses of IV therapy. [cite: 32]",
+            [cite_start
+            ]"Avoid nitrofurantoin for upper urinary tract infection or bacteremia. [cite: 32]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Mattoo et al17 [cite: 32]",
+            [cite_start
+            ]"Gupta et al18 [cite: 32]"
+        ]
+    },
+    {
+        "id": "intra_abdominal_infection",
+        "category": "Intra-abdominal",
+        "name": "Intra-abdominal infection",
+        "commonPathogens": [
+            "E coli",
+            "Anaerobes",
+            "Klebsiella species (often polymicrobial)"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "Drainage",
+                "therapy": ""
+            },
+            {
+                "condition": "Mild-moderate",
+                "therapy": "Ceftriaxone PLUS Metronidazole"
+            },
+            {
+                "condition": "Severe or hospital onset",
+                "therapy": "Piperacillin- tazobactam OR Ciprofloxacin PLUS Metronidazole"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"4-7 days (from source control) [cite: 32]"
+        ],
+        "notes": [
+            [cite_start
+            ]"May need longer duration if insufficient source control. [cite: 32]",
+            [cite_start
+            ]"Mild-moderate infection includes complicated appendicitis with rupture, absent sepsis. [cite: 32]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Mazuski et al19 [cite: 32]"
+        ]
+    },
+    {
+        "id": "neonatal_fever_term_neonates",
+        "category": "Neonatal Fever (Term Neonates)",
+        "name": "Suspected UTI",
+        "commonPathogens": [
+            "E coli",
+            "Enterococcus species",
+            "GBS"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": null,
+                "therapy": "Ampicillin PLUS Gentamicin"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"These are empiric recommendations; specific choice and duration of antibiotic therapy should be guided by culture results. [cite: 36]"
+        ],
+        "notes": [],
+        "keyResources": []
+    },
+    {
+        "id": "unclear_source_neonatal_fever",
+        "category": "Neonatal Fever (Term Neonates)",
+        "name": "Unclear source",
+        "commonPathogens": [
+            "GBS",
+            "E coli",
+            "HSV"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "Neonates 0-7 days of age",
+                "therapy": "Ampicillin PLUS Gentamicin"
+            },
+            {
+                "condition": "Neonates 8-28 days of age",
+                "therapy": "Ampicillin PLUS Gentamicin OR Ampicillin PLUS Cefotaxime (Ceftazidime or Cefepime if Cefotaxime not available)"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"These are empiric recommendations: specific choice and duration of antibiotic therapy should be guided by culture results. [cite: 36]"
+        ],
+        "notes": [
+            "Consider adding empiric acyclovir with surface, blood, and CSF HSV sampling for infants at increased risk of HSV, including the presence of skin vesicles, seizures, CSF pleocytosis with a negative Gram stain, leukopenia, hepatitis, thrombocytopenia, hypothermia, mucous membrane ulcers, or maternal history of genital HSV lesions or fever from 48 hours before to 48 hours after delivery. [cite_start]For further discussion of HSV, see Herpes Simplex (p 467). [cite: 36]"
+        ],
+        "keyResources": []
+    },
+    {
+        "id": "suspected_meningitis_neonatal_fever",
+        "category": "Neonatal Fever (Term Neonates)",
+        "name": "Suspected meningitis",
+        "commonPathogens": [
+            "GBS",
+            "E coli",
+            "HSV"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "Neonates 0-7 days of age",
+                "therapy": "Ampicillin PLUS Gentamicin (some experts will add a third or fourth generation cephalosporin if the cerebrospinal fluid gram stain shows gram-negative organisms)"
+            },
+            {
+                "condition": "Neonates 8-28 days of age",
+                "therapy": "Ampicillin PLUS Cefotaxime (Ceftazidime or Cefepime if Cefotaxime not available) (some experts will add an aminoglycoside if the cerebrospinal fluid Gram stain shows gram-negative organisms)"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"These are empiric recommendations; specific choice and duration of antibiotic therapy should be guided by culture results. [cite: 39]",
+            [cite_start
+            ]"GBS: 14 days penicillin G. [cite: 39]",
+            [cite_start
+            ]"E coli: 21 days of non- aminoglycoside antibiotic to which isolate is susceptible. [cite: 39]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Some experts suggest repeat lumbar puncture to document CSF sterility. [cite: 39]",
+            "Consider adding empiric acyclovir with surface, blood, and CSF HSV sampling for infants at increased risk of HSV, including the presence of skin vesicles, seizures, CSF pleocytosis with a negative Gram stain, leukopenia, hepatitis, thrombocytopenia, hypothermia, mucous membrane ulcers, or maternal history of genital HSV lesions or fever from 48 hours before to 48 hours after delivery. [cite_start]For further discussion of HSV, see Herpes Simplex (p 467). [cite: 39]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Puopolo et al 20 [cite: 39]",
+            [cite_start
+            ]"Puopolo et al21 [cite: 39]"
+        ]
+    },
+    {
+        "id": "preseptal_cellulitis",
+        "category": "Ophthalmologic",
+        "name": "Preseptal cellulitis (ie, nonsinus origin)",
+        "commonPathogens": [
+            "S pyogenes",
+            "S aureus"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "Mild-moderate",
+                "therapy": "Cefazolin OR Cephalexin (Allergyb: Clindamycin)"
+            },
+            {
+                "condition": "Severe",
+                "therapy": "Vancomycin OR Linezolid OR Ceftaroline OR Daptomycin"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"5-7 days [cite: 42]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Switch to oral with 24 hours improvement in fever, swelling, and erythema. [cite: 42]",
+            [cite_start
+            ]"Consider empiric MRSA coverage if high local MRSA rates. [cite: 42]"
+        ],
+        "keyResources": []
+    },
+    {
+        "id": "orbital_cellulitis",
+        "category": "Ophthalmologic",
+        "name": "Orbital cellulitis",
+        "commonPathogens": [
+            "S aureus",
+            "S pneumoniae",
+            "Anaerobes",
+            "S anginosus",
+            "H influenzae",
+            "M catarrhalis",
+            "S pyogenes"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "If abscess",
+                "therapy": "Surgical drainage. Ampicillin/ sulbactam (Allergyb: Clindamycin)"
+            },
+            {
+                "condition": "Severe",
+                "therapy": "Add Vancomycin OR Linezolid OR Ceftaroline OR Daptomycin"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"10-14 days. [cite: 42]",
+            [cite_start
+            ]"May extend to 3-4 wk with extensive bone involvement and/or insufficient source control. [cite: 42]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Consider empiric MRSA coverage if high local MRSA rates. [cite: 42]"
+        ],
+        "keyResources": []
+    },
+    {
+        "id": "community_acquired_pneumonia",
+        "category": "Respiratory",
+        "name": "Community- acquired pneumonia (CAP)",
+        "commonPathogens": [
+            "S pneumoniae",
+            "Mycoplasma pneumoniae",
+            "S pyogenes",
+            "S aureus",
+            "H influenzae",
+            "M catarrhalis",
+            "Respiratory viruses, including influenza virus, adenovirus, parainfluenza virus, respiratory syncytial virus, coronaviruses, human metapneumovirus"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "For fully immunized patients in regions without high prevalence of PCN-resistant pneumococcus",
+                "therapy": "Amoxicillin OR Ampicillin OR Penicillin"
+            },
+            {
+                "condition": "Allergy",
+                "therapy": "Clindamycin OR Levofloxacin"
+            },
+            {
+                "condition": "For hospitalized patients in regions with high levels PCN-resistant pneumococcus",
+                "therapy": "Ceftriaxone"
+            },
+            {
+                "condition": "If atypical pathogen (eg, Mycoplasma or Chlamydia species) suspected",
+                "therapy": "Add macrolide"
+            },
+            {
+                "condition": "If MRSA suspected",
+                "therapy": "Add Vancomycin OR Clindamycin OR Linezolid"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"5 days for uncomplicated CAP with resolution of fever, tachypnea, and supplemental oxygen requirement. [cite: 46]",
+            [cite_start
+            ]"May extend duration when complicated by empyema, necrotizing pneumonia, or pulmonary abscess. [cite: 46]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Respiratory viruses cause the majority of CAP, especially in young children; thus, antibiotic therapy may not be indicated for all patients. [cite: 46]",
+            [cite_start
+            ]"Early switch to oral route encouraged when tolerated. [cite: 46]",
+            [cite_start
+            ]"Transient S pneumoniae bacteremia in otherwise uncomplicated pneumonia does not warrant prolonged or IV antibiotic therapy. [cite: 46]",
+            [cite_start
+            ]"Consider S aureus superinfection in patients with influenza. [cite: 46]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Bradley et al 22 [cite: 46]"
+        ]
+    },
+    {
+        "id": "cellulitis_nonpurulent",
+        "category": "Skin and Soft Tissue Infections",
+        "name": "Cellulitis (nonpurulent)",
+        "commonPathogens": [
+            "S pyogenes",
+            "S aureus"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "Mild-moderate",
+                "therapy": "Cefazolin OR Oxacillin/nafcillin OR Cephalexin"
+            },
+            {
+                "condition": "Allergy",
+                "therapy": "Clindamycin OR TMP/SMX OR Doxycycline"
+            },
+            {
+                "condition": "Severe",
+                "therapy": "Vancomycin OR Linezolid OR Ceftaroline OR Daptomycin"
+            },
+            {
+                "condition": "Necrotizing fasciitis",
+                "therapy": "Surgical débridement. B-lactam PLUS Clindamycin (+/- Vancomycin)"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"5-7 days. [cite: 50]",
+            [cite_start
+            ]"Tailor duration based on resolution of signs and symptoms. [cite: 50]"
+        ],
+        "notes": [
+            [cite_start
+            ]"For bite wounds, see p 202. [cite: 50]",
+            [cite_start
+            ]"Necrotizing fasciitis may require gram-negative or anaerobic coverage in the correct clinical scenario. [cite: 50]",
+            [cite_start
+            ]"For severe infections, consider coverage of MRSA based on local prevalence. [cite: 50]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Staphylococcus aureus, p 767 [cite: 50]",
+            [cite_start
+            ]"Group A Streptococcal Infections, p 785 [cite: 50]",
+            [cite_start
+            ]"Bacteroides, Prevotella, and Other Anaerobic Gram- Negative Bacilli Infections, p 261 [cite: 50]",
+            [cite_start
+            ]"Stevens et al23 [cite: 50]"
+        ]
+    },
+    {
+        "id": "purulent_cellulitis_abscess",
+        "category": "Skin and Soft Tissue Infections",
+        "name": "Purulent cellulitis/ Abscess",
+        "commonPathogens": [
+            "S aureus"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "Standard",
+                "therapy": "Drainage"
+            },
+            {
+                "condition": "Mild-moderate",
+                "therapy": "Cefazolin/cephalexin OR TMP/SMX OR Clindamycin OR Doxycycline"
+            },
+            {
+                "condition": "Severe",
+                "therapy": "Vancomycin OR Linezolid OR Ceftaroline OR Daptomycin"
+            },
+            {
+                "condition": null,
+                "therapy": "Consider MRSA based on local prevalence"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"5-7 days. [cite: 55]",
+            [cite_start
+            ]"Tailor duration based on resolution of signs and symptoms. [cite: 55]",
+            [cite_start
+            ]"Surgical drainage alone may be adequate for small, completely drained abscesses. [cite: 55]"
+        ],
+        "notes": [
+            [cite_start
+            ]"Conversion to oral antibiotic therapy after transient S aureus bacteremia with source control is appropriate but might warrant more prolonged therapy. [cite: 55]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Staphylococcus aureus, p 767 [cite: 55]",
+            [cite_start
+            ]"Stevens et al 23 [cite: 55]"
+        ]
+    },
+    {
+        "id": "lymphadenitis",
+        "category": "Skin and Soft Tissue Infections",
+        "name": "Lymphadenitis",
+        "commonPathogens": [
+            "S pyogenes",
+            "S aureus",
+            "Bartonella species",
+            "Nontuberculous mycobacteria (NTM)"
+        ],
+        "empiricAntibioticTherapy": [
+            {
+                "condition": "For acute/unilateral lymphadenitis",
+                "therapy": "Consider surgical drainage. Cefazolin/ Cephalexin"
+            },
+            {
+                "condition": "Allergy",
+                "therapy": "Clindamycin"
+            },
+            {
+                "condition": null,
+                "therapy": "Consider MRSA based on local prevalence"
+            }
+        ],
+        "antibioticDuration": [
+            [cite_start
+            ]"5-7 days. [cite: 60]",
+            [cite_start
+            ]"Tailor duration based on resolution of signs and symptoms. [cite: 60]"
+        ],
+        "notes": [
+            [cite_start
+            ]"For management of NTM or Bartonella infection, please see those chapters (p 920 and p 263). [cite: 60]",
+            [cite_start
+            ]"Bacterial adenitis is typically unilateral; bilateral disease is typically viral in etiology. [cite: 60]"
+        ],
+        "keyResources": [
+            [cite_start
+            ]"Bartonella henselae (Cat-Scratch Disease), p 263 [cite: 60]",
+            [cite_start
+            ]"Staphylococcus aureus, p 767 [cite: 60]",
+            [cite_start
+            ]"Group A Streptococcal Infections, p 785 [cite: 60]",
+            [cite_start
+            ]"Nontuberculous Mycobacteria, p 920 [cite: 60]"
+        ]
+    }
+]
