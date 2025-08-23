@@ -18,6 +18,57 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }));
 
+// Mock DOMParser for XML processing in tests
+global.DOMParser = class MockDOMParser {
+  parseFromString(xmlString, contentType) {
+    // Comprehensive mock XML document for testing
+    const mockDoc = {
+      getElementsByTagName: jest.fn().mockImplementation((tagName) => {
+        if (tagName === 'Id') {
+          // Return mock ID nodes for PubMed testing
+          const idMatches = xmlString.match(/<Id>(\d+)<\/Id>/g) || [];
+          return idMatches.map(match => ({
+            textContent: match.replace(/<\/?Id>/g, '')
+          }));
+        }
+        if (tagName === 'parsererror') {
+          return []; // No parse errors in mock
+        }
+        if (tagName === 'PubmedArticle') {
+          // Handle PubmedArticle XML structure
+          const mockArticle = {
+            querySelector: jest.fn().mockImplementation(selector => {
+              if (selector === 'MedlineCitation') return {
+                querySelector: jest.fn().mockImplementation(subSelector => {
+                  switch (subSelector) {
+                    case 'PMID':
+                      return { textContent: '12345678' };
+                    case 'ArticleTitle':
+                      return { textContent: 'Test Article Title' };
+                    case 'Abstract AbstractText':
+                      return { textContent: 'Test abstract content' };
+                    case 'Journal Title':
+                      return { textContent: 'Test Journal' };
+                    default:
+                      return null;
+                  }
+                }),
+                querySelectorAll: jest.fn().mockReturnValue([])
+              };
+              return null;
+            })
+          };
+          return xmlString.includes('<PubmedArticle>') ? [mockArticle] : [];
+        }
+        return [];
+      }),
+      querySelector: jest.fn(),
+      querySelectorAll: jest.fn().mockReturnValue([])
+    };
+    return mockDoc;
+  }
+};
+
 // Mock window.matchMedia for responsive components
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -39,14 +90,33 @@ Object.defineProperty(window, 'scrollTo', {
   value: jest.fn(),
 });
 
-// Mock localStorage
+// Mock localStorage with proper implementation
+const mockStore = {};
 const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
+  getItem: jest.fn().mockImplementation((key) => {
+    return mockStore[key] !== undefined ? mockStore[key] : null;
+  }),
+  setItem: jest.fn().mockImplementation((key, value) => {
+    mockStore[key] = value;
+  }),
+  removeItem: jest.fn().mockImplementation((key) => {
+    delete mockStore[key];
+  }),
+  clear: jest.fn().mockImplementation(() => {
+    Object.keys(mockStore).forEach(key => {
+      delete mockStore[key];
+    });
+  }),
+  // Expose mockStore for testing
+  __mockStore: mockStore
 };
 global.localStorage = localStorageMock;
+
+// Mock window.localStorage for useLocalStorage hook compatibility
+Object.defineProperty(window, 'localStorage', {
+  writable: true,
+  value: localStorageMock,
+});
 
 // Mock sessionStorage
 const sessionStorageMock = {
@@ -57,61 +127,6 @@ const sessionStorageMock = {
 };
 global.sessionStorage = sessionStorageMock;
 
-// Mock DOMParser for XML parsing in services
-global.DOMParser = jest.fn().mockImplementation(() => ({
-  parseFromString: jest.fn().mockImplementation((xmlString, mimeType) => {
-    // Create a minimal mock XML document
-    const mockDoc = {
-      getElementsByTagName: jest.fn().mockReturnValue([]),
-      querySelector: jest.fn().mockReturnValue(null),
-      querySelectorAll: jest.fn().mockReturnValue([])
-    };
-
-    // Handle specific XML patterns for PubMed service
-    if (xmlString.includes('<Id>')) {
-      const ids = xmlString.match(/<Id>(\d+)<\/Id>/g) || [];
-      const mockNodes = ids.map(id => ({
-        textContent: id.replace(/<\/?Id>/g, '')
-      }));
-      mockDoc.getElementsByTagName.mockImplementation(tagName => {
-        if (tagName === 'Id') return mockNodes;
-        return [];
-      });
-    }
-
-    if (xmlString.includes('<PubmedArticle>')) {
-      const mockArticle = {
-        querySelector: jest.fn().mockImplementation(selector => {
-          if (selector === 'MedlineCitation') return {
-            querySelector: jest.fn().mockImplementation(subSelector => {
-              switch (subSelector) {
-                case 'PMID':
-                  return { textContent: '12345678' };
-                case 'ArticleTitle':
-                  return { textContent: 'Test Article Title' };
-                case 'Abstract AbstractText':
-                  return { textContent: 'Test abstract content' };
-                case 'Journal Title':
-                  return { textContent: 'Test Journal' };
-                default:
-                  return null;
-              }
-            }),
-            querySelectorAll: jest.fn().mockReturnValue([])
-          };
-          return null;
-        })
-      };
-      
-      mockDoc.getElementsByTagName.mockImplementation(tagName => {
-        if (tagName === 'PubmedArticle') return [mockArticle];
-        return [];
-      });
-    }
-
-    return mockDoc;
-  })
-}));
 
 // Mock Chart.js for analytics components
 jest.mock('chart.js', () => ({

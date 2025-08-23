@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { unstable_batchedUpdates } from 'react-dom';
 import { 
   BookOpen, 
   Search, 

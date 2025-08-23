@@ -33,6 +33,8 @@ const PathogenNetworkVisualization = ({
   const [shapeFilter, setShapeFilter] = useState('all');
   const [selectedNodeDetails, setSelectedNodeDetails] = useState(null);
   const [showInfoPanel, setShowInfoPanel] = useState(false);
+  const [tooltipData, setTooltipData] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   // Handle window resize
   useEffect(() => {
@@ -397,6 +399,33 @@ const PathogenNetworkVisualization = ({
     }
   };
 
+  // Handle node hover for tooltips
+  const handleNodeMouseEnter = (node, event) => {
+    setHoveredNode(node);
+    setTooltipData({
+      pathogen: node.id,
+      gramStatus: node.gramStatus,
+      severity: node.severity,
+      resistance: node.resistance
+    });
+    
+    // Get SVG coordinates for tooltip positioning
+    if (svgRef.current && event && event.clientX && event.clientY) {
+      const svgRect = svgRef.current.getBoundingClientRect();
+      if (svgRect && typeof svgRect.left === 'number' && typeof svgRect.top === 'number') {
+        setTooltipPosition({
+          x: event.clientX - svgRect.left,
+          y: event.clientY - svgRect.top
+        });
+      }
+    }
+  };
+
+  const handleNodeMouseLeave = () => {
+    setHoveredNode(null);
+    setTooltipData(null);
+  };
+
   // Get detailed antibiotic information for selected pathogen
   const getDetailedAntibioticInfo = (pathogenId) => {
     const antibiotics = pathogenAntibioticMap[pathogenId]?.antibiotics || [];
@@ -435,8 +464,9 @@ const PathogenNetworkVisualization = ({
             </div>
             
             <div className="flex items-center gap-2">
-              <label className="text-gray-600">Gram:</label>
+              <label htmlFor="gram-filter" className="text-gray-600">Gram:</label>
               <select
+                id="gram-filter"
                 value={gramFilter}
                 onChange={(e) => setGramFilter(e.target.value)}
                 className="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -448,8 +478,9 @@ const PathogenNetworkVisualization = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="text-gray-600">Severity:</label>
+              <label htmlFor="severity-filter" className="text-gray-600">Severity:</label>
               <select
+                id="severity-filter"
                 value={severityFilter}
                 onChange={(e) => setSeverityFilter(e.target.value)}
                 className="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -462,8 +493,9 @@ const PathogenNetworkVisualization = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="text-gray-600">Shape:</label>
+              <label htmlFor="shape-filter" className="text-gray-600">Shape:</label>
               <select
+                id="shape-filter"
                 value={shapeFilter}
                 onChange={(e) => setShapeFilter(e.target.value)}
                 className="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -475,8 +507,9 @@ const PathogenNetworkVisualization = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="text-gray-600">Resistance:</label>
+              <label htmlFor="resistance-filter" className="text-gray-600">Resistance:</label>
               <select
+                id="resistance-filter"
                 value={resistanceFilter}
                 onChange={(e) => setResistanceFilter(e.target.value)}
                 className="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -489,8 +522,9 @@ const PathogenNetworkVisualization = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="text-gray-600">Connections:</label>
+              <label htmlFor="connection-filter" className="text-gray-600">Connections:</label>
               <select
+                id="connection-filter"
                 value={connectionFilter}
                 onChange={(e) => setConnectionFilter(e.target.value)}
                 className="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -517,7 +551,7 @@ const PathogenNetworkVisualization = ({
 
             <button
               onClick={clearAllFilters}
-              className="flex items-center gap-1 px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              className="flex items-center gap-1 px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors cursor-pointer"
             >
               Clear Filters
             </button>
@@ -528,7 +562,7 @@ const PathogenNetworkVisualization = ({
                 setIsLayoutStable(false);
                 layoutIterations.current = 0;
               }}
-              className="flex items-center gap-1 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              className="flex items-center gap-1 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors cursor-pointer"
             >
               <RotateCcw size={14} />
               Reset Layout
@@ -676,8 +710,8 @@ const PathogenNetworkVisualization = ({
                         isSelected ? 'animate-pulse' : ''
                       }`}
                       onClick={() => handleNodeClick(node)}
-                      onMouseEnter={() => setHoveredNode(node)}
-                      onMouseLeave={() => setHoveredNode(null)}
+                      onMouseEnter={(e) => handleNodeMouseEnter(node, e)}
+                      onMouseLeave={handleNodeMouseLeave}
                     />
                   ) : (
                     <rect
@@ -695,8 +729,8 @@ const PathogenNetworkVisualization = ({
                         isSelected ? 'animate-pulse' : ''
                       }`}
                       onClick={() => handleNodeClick(node)}
-                      onMouseEnter={() => setHoveredNode(node)}
-                      onMouseLeave={() => setHoveredNode(null)}
+                      onMouseEnter={(e) => handleNodeMouseEnter(node, e)}
+                      onMouseLeave={handleNodeMouseLeave}
                     />
                   )}
                   
@@ -804,7 +838,7 @@ const PathogenNetworkVisualization = ({
             <h3 className="text-lg font-semibold text-gray-900">Pathogen Details</h3>
             <button
               onClick={() => setShowInfoPanel(false)}
-              className="text-gray-500 hover:text-gray-700 transition-colors"
+              className="text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

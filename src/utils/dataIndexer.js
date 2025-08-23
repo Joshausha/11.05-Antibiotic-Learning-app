@@ -12,7 +12,14 @@ import { processConditionsData } from './dataParser.js';
  * @returns {Object} - Complete index structure
  */
 export const buildIndexes = (conditions) => {
-  const processedData = processConditionsData(conditions);
+  const processedData = processConditionsData(conditions) || {
+    conditions: [],
+    pathogens: [],
+    antibiotics: [],
+    totalPathogens: 0,
+    totalAntibiotics: 0,
+    relationships: []
+  };
   
   const indexes = {
     // Primary data
@@ -416,9 +423,9 @@ export const calculatePathogenSimilarity = (pathogen1, pathogen2, indexes) => {
     );
   }
   
-  // Shared antibiotics analysis (0.25 weight)
-  const antibiotics1 = new Set(indexes.pathogenAntibioticMatrix.get(pathogen1.name) || []);
-  const antibiotics2 = new Set(indexes.pathogenAntibioticMatrix.get(pathogen2.name) || []);
+  // Shared antibiotics analysis (0.25 weight) - with null safety
+  const antibiotics1 = new Set(indexes.pathogenAntibioticMatrix?.get(pathogen1.name) || []);
+  const antibiotics2 = new Set(indexes.pathogenAntibioticMatrix?.get(pathogen2.name) || []);
   const sharedAntibiotics = [...antibiotics1].filter(a => antibiotics2.has(a));
   const totalUniqueAntibiotics = new Set([...antibiotics1, ...antibiotics2]).size;
   
@@ -427,13 +434,13 @@ export const calculatePathogenSimilarity = (pathogen1, pathogen2, indexes) => {
     similarity.details.sharedAntibioticNames = sharedAntibiotics;
   }
   
-  // Treatment complexity similarity (0.1 weight)
+  // Treatment complexity similarity (0.1 weight) - with null safety
   const complexity1 = pathogen1.conditions.reduce((sum, condId) => {
-    const complexity = indexes.conditionComplexity.get(condId);
+    const complexity = indexes.conditionComplexity?.get(condId);
     return sum + (complexity?.total || 0);
   }, 0);
   const complexity2 = pathogen2.conditions.reduce((sum, condId) => {
-    const complexity = indexes.conditionComplexity.get(condId);
+    const complexity = indexes.conditionComplexity?.get(condId);
     return sum + (complexity?.total || 0);
   }, 0);
   

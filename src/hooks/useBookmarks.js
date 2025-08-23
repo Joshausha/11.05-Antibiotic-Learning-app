@@ -14,7 +14,7 @@ const useBookmarks = () => {
   // Add a condition to bookmarks
   const addBookmark = useCallback((condition) => {
     setBookmarkedConditions(prev => {
-      // Check if already bookmarked
+      // Check if already bookmarked using current state
       const isAlreadyBookmarked = prev.some(item => item.name === condition.name);
       if (isAlreadyBookmarked) {
         return prev;
@@ -40,19 +40,37 @@ const useBookmarks = () => {
 
   // Toggle bookmark status
   const toggleBookmark = useCallback((condition) => {
-    const isBookmarked = bookmarkedConditions.some(item => item.name === condition.name);
+    let newStatus;
+    setBookmarkedConditions(prev => {
+      const isBookmarked = prev.some(item => item.name === condition.name);
+      newStatus = !isBookmarked;
+      
+      if (isBookmarked) {
+        // Remove bookmark
+        return prev.filter(item => item.name !== condition.name);
+      } else {
+        // Add bookmark - check if already exists to prevent duplicates
+        const alreadyExists = prev.some(item => item.name === condition.name);
+        if (alreadyExists) {
+          return prev;
+        }
+        
+        const bookmarkData = {
+          ...condition,
+          bookmarkedAt: new Date().toISOString(),
+          bookmarkId: `${condition.name}_${Date.now()}`
+        };
+        
+        return [...prev, bookmarkData];
+      }
+    });
     
-    if (isBookmarked) {
-      removeBookmark(condition.name);
-    } else {
-      addBookmark(condition);
-    }
-    
-    return !isBookmarked; // Return new bookmark status
-  }, [bookmarkedConditions, addBookmark, removeBookmark]);
+    return newStatus; // Return new bookmark status
+  }, [setBookmarkedConditions]);
 
   // Check if a condition is bookmarked
   const isBookmarked = useCallback((conditionName) => {
+    if (!conditionName) return false;
     return bookmarkedConditions.some(item => item.name === conditionName);
   }, [bookmarkedConditions]);
 
@@ -63,15 +81,19 @@ const useBookmarks = () => {
 
   // Get bookmarks by category
   const getBookmarksByCategory = useCallback((category) => {
+    if (!category) return [];
     return bookmarkedConditions.filter(item => 
-      item.category.toLowerCase() === category.toLowerCase()
+      item.category && item.category.toLowerCase() === category.toLowerCase()
     );
   }, [bookmarkedConditions]);
 
   // Get bookmark statistics
   const bookmarkStats = {
     totalBookmarks: bookmarkedConditions.length,
-    categories: [...new Set(bookmarkedConditions.map(item => item.category))],
+    categories: [...new Set(bookmarkedConditions
+      .map(item => item.category)
+      .filter(category => category !== undefined && category !== null)
+    )],
     recentBookmarks: bookmarkedConditions
       .sort((a, b) => new Date(b.bookmarkedAt) - new Date(a.bookmarkedAt))
       .slice(0, 5),

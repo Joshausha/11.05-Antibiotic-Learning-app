@@ -100,7 +100,8 @@ describe('AppContext', () => {
       const context = result.current;
 
       // Check core state properties
-      expect(context).toHaveProperty('activeTab', 'home');
+      // TODO(human) - Update remaining test expectations to use 'learn' instead of 'home'
+      expect(context).toHaveProperty('activeTab', 'learn');
       expect(context).toHaveProperty('selectedCondition', null);
       expect(context).toHaveProperty('showMobileMenu', false);
       
@@ -140,7 +141,7 @@ describe('AppContext', () => {
 
       const context = result.current;
 
-      expect(context.activeTab).toBe('home');
+      expect(context.activeTab).toBe('learn');
       expect(context.selectedCondition).toBe(null);
       expect(context.showMobileMenu).toBe(false);
       expect(context.isMobile).toBe(false);
@@ -196,7 +197,7 @@ describe('AppContext', () => {
         </AppProvider>
       );
 
-      expect(screen.getByTestId('active-tab')).toHaveTextContent('home');
+      expect(screen.getByTestId('active-tab')).toHaveTextContent('learn');
       
       // Click to change tab
       const changeButton = screen.getByTestId('change-tab');
@@ -566,7 +567,7 @@ describe('AppContext', () => {
         </AppProvider>
       );
 
-      expect(screen.getByTestId('status-announcement')).toHaveTextContent('Current tab: home');
+      expect(screen.getByTestId('status-announcement')).toHaveTextContent('Current tab: learn');
       
       fireEvent.click(screen.getByTestId('change-tab'));
       

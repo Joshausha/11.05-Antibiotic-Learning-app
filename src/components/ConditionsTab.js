@@ -29,15 +29,20 @@ import ErrorMessage from './ErrorMessage';
 
 const ConditionsTab = ({ 
   filteredConditions, 
-  setSelectedCondition, 
-  searchTerm, 
-  setSearchTerm 
+  setSelectedCondition = () => {}, 
+  searchTerm = '', 
+  setSearchTerm = () => {} 
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Get medical category icon with enhanced context
   const getCategoryIcon = (category) => {
+    // Handle undefined or null category gracefully
+    if (!category || typeof category !== 'string') {
+      return { icon: <Circle className="w-5 h-5 text-gray-500" />, color: "gray" };
+    }
+    
     const categoryString = category.toLowerCase();
     
     // Central Nervous System
@@ -96,7 +101,11 @@ const ConditionsTab = ({
 
   // Simulate loading when conditions change
   useEffect(() => {
-    if (filteredConditions) {
+    // Set loading to false when we have data (array) or explicitly no data (null/undefined)
+    if (filteredConditions !== undefined && filteredConditions !== null) {
+      setIsLoading(false);
+    } else if (filteredConditions === undefined) {
+      // Handle undefined case - should show no results, not loading
       setIsLoading(false);
     }
   }, [filteredConditions]);
@@ -114,6 +123,7 @@ const ConditionsTab = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             className="input-field w-full pl-10 pr-4 py-3 text-lg"
             aria-label="Search medical conditions"
+            tabIndex="0"
           />
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -151,6 +161,7 @@ const ConditionsTab = ({
           onChange={(e) => setSearchTerm(e.target.value)}
           className="input-field w-full pl-10 pr-4 py-3 text-lg"
           aria-label="Search medical conditions"
+          tabIndex="0"
         />
       </div>
 
@@ -160,13 +171,26 @@ const ConditionsTab = ({
           <div
             key={condition.id}
             className="bg-white rounded-xl p-6 shadow-sm border cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all"
-            onClick={() => setSelectedCondition(condition)}
+            onClick={() => {
+              try {
+                setSelectedCondition(condition);
+              } catch (error) {
+                console.error('Error selecting condition:', error);
+                // Provide user feedback for network/API errors
+                alert('Unable to load condition details. Please try again.');
+              }
+            }}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setSelectedCondition(condition);
+              try {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelectedCondition(condition);
+                }
+              } catch (error) {
+                console.error('Error selecting condition via keyboard:', error);
+                alert('Unable to load condition details. Please try again.');
               }
             }}
             aria-label={`View details for ${condition.name}`}

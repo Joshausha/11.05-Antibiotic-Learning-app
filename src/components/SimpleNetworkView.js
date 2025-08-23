@@ -8,10 +8,10 @@ import React, { useState, useMemo } from 'react';
 import { Network, ZoomIn, ZoomOut, RotateCcw, Info } from 'lucide-react';
 
 const SimpleNetworkView = ({ 
-  pathogens, 
-  selectedPathogen, 
-  onSelectPathogen,
-  relationships 
+  pathogens = [], 
+  selectedPathogen = null, 
+  onSelectPathogen = () => {},
+  relationships = null
 }) => {
   const [zoom, setZoom] = useState(1);
   const [showLabels, setShowLabels] = useState(true);
@@ -260,6 +260,7 @@ const SimpleNetworkView = ({
                     strokeWidth={isSelected ? 3 : 2}
                     opacity={isHovered ? 0.9 : 0.8}
                     style={{ cursor: 'pointer' }}
+                    data-testid={`network-pathogen-${pathogen.id}`}
                     onClick={() => handleNodeClick(pathogen)}
                     onMouseEnter={() => setHoveredNode(pathogen)}
                     onMouseLeave={() => setHoveredNode(null)}

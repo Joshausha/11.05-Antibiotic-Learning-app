@@ -33,10 +33,10 @@ import DurationIndicator from './DurationIndicator';
 import { enhancedPathogenAntibioticMap } from '../data/durationMappings';
 
 const AntibioticList = ({ 
-  pathogen, 
-  antibiotics, 
-  onSelectAntibiotic,
-  selectedAntibiotic 
+  pathogen = null, 
+  antibiotics = [], 
+  onSelectAntibiotic = () => {},
+  selectedAntibiotic = null
 }) => {
   // Get enhanced antibiotic data with duration information
   const enhancedAntibiotics = useMemo(() => {
@@ -198,7 +198,7 @@ const AntibioticList = ({
   const orderedGroups = effectivenessOrder.filter(key => groupedAntibiotics[key]);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border">
+    <div className="bg-white rounded-lg shadow-sm border" data-testid="antibiotic-list">
       {/* Header */}
       <div className="p-4 border-b bg-gray-50">
         <div className="flex items-center gap-3 mb-2">
@@ -278,6 +278,7 @@ const AntibioticList = ({
                 {groupAntibiotics.map((antibiotic, index) => (
                   <div
                     key={`${antibiotic.antibioticId}-${index}`}
+                    data-testid={`antibiotic-${index}`}
                     onClick={() => onSelectAntibiotic && onSelectAntibiotic(antibiotic)}
                     className={`p-3 rounded-lg cursor-pointer transition-colors ${
                       selectedAntibiotic?.antibioticId === antibiotic.antibioticId

@@ -3,7 +3,7 @@
  * Script to convert RBO_JSON data to application format and generate new medicalConditions.js
  */
 
-import { transformRboDataset, getDatasetStats } from './dataTransformation.js';
+import { transformRboDataset, getDatasetStats } from './dataTransformation';
 
 // RBO_JSON data (imported from the file)
 const rboJsonData = [
@@ -69,17 +69,34 @@ const rboJsonData = [
 
 /**
  * Load and transform RBO data
+ * @param {Function} transformFn - Optional transform function for testing
+ * @param {Function} statsFn - Optional stats function for testing  
  */
-export const loadAndTransformRboData = async () => {
+export const loadAndTransformRboData = async (transformFn = transformRboDataset, statsFn = getDatasetStats) => {
   try {
-    // In a real implementation, we would read from the RBO_JSON file
-    // For now, we'll use the data directly
+    // Check if we have data
+    if (!rboJsonData || !Array.isArray(rboJsonData)) {
+      console.warn('RBO data is not available or not an array');
+      return [];
+    }
     
-    // Transform the data
-    const transformedData = transformRboDataset(rboJsonData);
+    // Use Promise.resolve to ensure Jest handles the function call correctly
+    const transformedData = await Promise.resolve(transformFn(rboJsonData));
+    
+    // Validate transformed data
+    if (!Array.isArray(transformedData)) {
+      console.error('Transform failed - result is not an array');
+      return [];
+    }
     
     // Get statistics
-    const stats = getDatasetStats(transformedData);
+    let stats;
+    try {
+      stats = statsFn(transformedData);
+    } catch (statsError) {
+      console.warn('Stats calculation failed:', statsError);
+      stats = {};
+    }
     
     return transformedData;
   } catch (error) {

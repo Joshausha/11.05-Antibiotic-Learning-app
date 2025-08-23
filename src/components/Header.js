@@ -28,11 +28,11 @@ import {
 } from 'lucide-react';
 
 const Header = ({ 
-  activeTab, 
-  setActiveTab, 
-  isMobile, 
-  showMobileMenu, 
-  setShowMobileMenu 
+  activeTab = 'learn', 
+  setActiveTab = () => {}, 
+  isMobile = false, 
+  showMobileMenu = false, 
+  setShowMobileMenu = () => {} 
 }) => {
   // Define navigation items (6 core tabs)
   const navItems = [
@@ -70,24 +70,26 @@ const Header = ({
   }, [showMobileMenu, setShowMobileMenu]);
 
   return (
-    <header className="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-50">
+    <header className="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-50" role="banner">
       <div className="flex justify-between items-center max-w-6xl mx-auto">
         {/* Logo */}
         <div className="flex items-center gap-2 text-xl font-bold">
-          <Stethoscope size={24} />
+          <Stethoscope size={24} aria-hidden="true" />
           MedLearn
         </div>
         
         {/* Desktop Navigation */}
         {!isMobile && (
-          <nav className="flex gap-4">
+          <nav className="flex gap-4" role="navigation" aria-label="Main navigation">
             {navItems.map(({ id, label, icon: Icon }) => (
-              <div
+              <button
                 key={id}
-                role="button"
+                type="button"
                 tabIndex={0}
+                aria-current={activeTab === id ? 'page' : undefined}
+                aria-label={`Navigate to ${label}`}
                 className={`flex items-center gap-2 cursor-pointer p-2 rounded-md transition-colors ${
-                  activeTab === id ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10'
+                  activeTab === id ? 'bg-white bg-opacity-20 tab-active' : 'hover:bg-white hover:bg-opacity-10'
                 }`}
                 onClick={() => setActiveTab(id)}
                 onKeyDown={(e) => {
@@ -97,9 +99,9 @@ const Header = ({
                   }
                 }}
               >
-                <Icon size={18} />
+                <Icon size={18} aria-hidden="true" />
                 <span className="text-sm font-medium">{label}</span>
-              </div>
+              </button>
             ))}
           </nav>
         )}
@@ -107,12 +109,14 @@ const Header = ({
         {/* Mobile Menu Button */}
         {isMobile && (
           <button
+            type="button"
             onClick={() => setShowMobileMenu(!showMobileMenu)}
             className="p-2 rounded-md hover:bg-white hover:bg-opacity-10 transition-colors duration-200 touch-manipulation"
-            aria-label="Toggle menu"
+            aria-label="Toggle navigation menu"
             aria-expanded={showMobileMenu}
+            aria-controls="mobile-navigation"
           >
-            {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
+            {showMobileMenu ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
           </button>
         )}
       </div>
@@ -120,14 +124,21 @@ const Header = ({
       {/* Mobile Navigation Menu */}
       {isMobile && showMobileMenu && (
         <div className="mt-4 py-4 border-t border-white border-opacity-20 animate-slide-in">
-          <nav className="flex flex-col gap-2">
+          <nav 
+            id="mobile-navigation" 
+            className="flex flex-col gap-2" 
+            role="navigation" 
+            aria-label="Mobile navigation"
+          >
             {navItems.map(({ id, label, icon: Icon }) => (
-              <div
+              <button
                 key={id}
-                role="button"
+                type="button"
                 tabIndex={0}
+                aria-current={activeTab === id ? 'page' : undefined}
+                aria-label={`Navigate to ${label}`}
                 className={`flex items-center gap-3 cursor-pointer p-4 rounded-md transition-colors duration-200 touch-manipulation ${
-                  activeTab === id ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10'
+                  activeTab === id ? 'bg-white bg-opacity-20 tab-active' : 'hover:bg-white hover:bg-opacity-10'
                 }`}
                 onClick={() => {
                   setActiveTab(id);
@@ -141,9 +152,9 @@ const Header = ({
                   }
                 }}
               >
-                <Icon size={20} />
+                <Icon size={20} aria-hidden="true" />
                 <span className="font-medium text-base">{label}</span>
-              </div>
+              </button>
             ))}
           </nav>
         </div>

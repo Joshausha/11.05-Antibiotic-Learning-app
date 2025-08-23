@@ -16,38 +16,9 @@ import {
 // Mock fetch for API testing
 global.fetch = jest.fn();
 
-// Mock DOMParser properly for Jest environment
-Object.defineProperty(window, 'DOMParser', {
-  writable: true,
-  value: jest.fn().mockImplementation(() => ({
-    parseFromString: jest.fn((xmlString) => {
-      // Simple mock that returns a basic DOM-like object
-      if (xmlString.includes('<Count>2</Count>')) {
-        return {
-          getElementsByTagName: jest.fn((tagName) => {
-            if (tagName === 'Id') {
-              return [
-                { textContent: '12345678' },
-                { textContent: '87654321' }
-              ];
-            }
-            return [];
-          }),
-          querySelectorAll: jest.fn(() => [])
-        };
-      }
-      // Empty results
-      return {
-        getElementsByTagName: jest.fn(() => []),
-        querySelectorAll: jest.fn(() => [])
-      };
-    })
-  }))
-});
-
 describe('PubMed Service - Medical Education Core', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    // Clear only specific mocks, preserve global DOMParser mock from setupTests.js
     fetch.mockClear();
     clearCache();
   });
@@ -382,7 +353,7 @@ describe('PubMed Service - Medical Education Core', () => {
       const searchUrl = searchCall[0];
 
       expect(searchUrl).toContain('penicillin');
-      expect(searchUrl).toContain('strep throat');
+      expect(searchUrl).toContain('strep+throat'); // URL encoded space becomes +
       expect(searchUrl).toContain('guidelines');
     });
   });

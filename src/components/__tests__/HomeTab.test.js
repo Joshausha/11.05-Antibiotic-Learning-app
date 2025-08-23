@@ -31,9 +31,11 @@ describe('HomeTab Component', () => {
   test('renders call-to-action button', () => {
     render(<HomeTab setActiveTab={mockSetActiveTab} />);
     
-    const quizButton = screen.getByText(/Take a Quiz/i);
+    const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
     const referenceButton = screen.getByText(/browse reference/i);
-    expect(quizButton).toBeInTheDocument();
+    
+    // Should find both the main CTA button and feature card button
+    expect(quizButtons).toHaveLength(2);
     expect(referenceButton).toBeInTheDocument();
   });
 
@@ -53,8 +55,8 @@ describe('HomeTab Component', () => {
     expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
     expect(screen.getByText(/master infectious diseases/i)).toBeInTheDocument();
     
-    // Check for feature descriptions
-    expect(screen.getByText(/evidence-based treatment protocols/i)).toBeInTheDocument();
+    // Check for feature descriptions - use getAllByText for multiple elements
+    expect(screen.getAllByText(/evidence-based treatment protocols/i)).toHaveLength(2);
     expect(screen.getByText(/test your knowledge with case-based questions/i)).toBeInTheDocument();
   });
 
@@ -92,7 +94,9 @@ describe('HomeTab Component', () => {
     test('all interactive elements are keyboard accessible', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
       
-      const quizButton = screen.getByText(/Take a Quiz/i);
+      // Get all quiz buttons and target the main CTA button (first one)
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      const quizButton = quizButtons[0]; // Main CTA button
       
       // Button should be focusable
       quizButton.focus();
@@ -105,7 +109,7 @@ describe('HomeTab Component', () => {
       mockSetActiveTab.mockClear();
       
       // Should activate with Space key
-      fireEvent.keyDown(startButton, { key: ' ' });
+      fireEvent.keyDown(quizButton, { key: ' ' });
       expect(mockSetActiveTab).toHaveBeenCalledWith('quiz');
     });
     
@@ -140,14 +144,15 @@ describe('HomeTab Component', () => {
       expect(mainContent).toBeInTheDocument();
       
       // Check for proper button roles
-      const startButton = screen.getByRole('button', { name: /take a quiz/i });
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      const startButton = quizButtons[0]; // Main CTA button
       expect(startButton).toBeInTheDocument();
     });
     
     test('handles focus management properly', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
       
-      const startButton = screen.getByText(/Take a Quiz/i);
+      const startButton = screen.getAllByRole('button', { name: /take a quiz/i })[0];
       
       // Focus should be visible
       startButton.focus();
@@ -170,7 +175,7 @@ describe('HomeTab Component', () => {
       
       // Content should still be accessible
       expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
-      expect(screen.getByText(/Take a Quiz/i)).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /take a quiz/i })).toHaveLength(2);
       
       // Restore original window size
       Object.defineProperty(window, 'innerWidth', {
@@ -211,7 +216,8 @@ describe('HomeTab Component', () => {
       
       render(<HomeTab setActiveTab={mockSetActiveTabWithError} />);
       
-      const startButton = screen.getByText(/Take a Quiz/i);
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      const startButton = quizButtons[0]; // Main CTA button
       
       // Should handle errors gracefully
       expect(() => fireEvent.click(startButton)).not.toThrow();
@@ -231,7 +237,7 @@ describe('HomeTab Component', () => {
       
       // Check logical reading order
       const mainHeading = screen.getByRole('heading', { level: 1 });
-      const startButton = screen.getByRole('button');
+      const startButton = buttons[0]; // Get first button instead of getByRole('button')
       
       expect(mainHeading).toBeInTheDocument();
       expect(startButton).toBeInTheDocument();
@@ -245,7 +251,7 @@ describe('HomeTab Component', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
       
       // Mock progress data should show progress elements
-      expect(screen.getByText(/learning progress/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/learning progress/i)[0]).toBeInTheDocument();
       expect(screen.getByText(/average score/i)).toBeInTheDocument();
       expect(screen.getByText(/weekly goal/i)).toBeInTheDocument();
     });
@@ -276,7 +282,8 @@ describe('HomeTab Component', () => {
       const { rerender } = render(<HomeTab setActiveTab={mockSetActiveTab} />);
       
       // Component should render without errors even with zero progress
-      expect(screen.getByText(/Take a Quiz/i)).toBeInTheDocument();
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      expect(quizButtons).toHaveLength(2); // Main CTA and feature card button
     });
   });
   
@@ -284,20 +291,21 @@ describe('HomeTab Component', () => {
     test('feature cards are properly structured for accessibility', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
       
-      const featureHeadings = screen.getAllByRole('heading', { level: 2 });
-      expect(featureHeadings).toHaveLength(3);
+      // Check for the three main feature cards using more specific selectors
+      expect(screen.getByRole('heading', { name: /clinical guidelines/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /targeted learning/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /interactive quizzes/i })).toBeInTheDocument();
       
-      // Each feature should have an icon, heading, and description
-      expect(screen.getByText(/clinical guidelines/i)).toBeInTheDocument();
-      expect(screen.getByText(/targeted learning/i)).toBeInTheDocument();
-      expect(screen.getByText(/interactive quizzes/i)).toBeInTheDocument();
+      // Verify we have the expected feature cards regions
+      const clinicalGuidelinesRegion = screen.getByRole('region', { name: /clinical guidelines/i });
+      expect(clinicalGuidelinesRegion).toBeInTheDocument();
     });
     
     test('feature descriptions are informative and complete', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
       
       // Check for comprehensive descriptions
-      expect(screen.getByText(/evidence-based treatment protocols/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/evidence-based treatment protocols/i)[0]).toBeInTheDocument();
       expect(screen.getByText(/focus on high-yield infectious disease/i)).toBeInTheDocument();
       expect(screen.getByText(/test your knowledge with case-based questions/i)).toBeInTheDocument();
     });
@@ -305,9 +313,14 @@ describe('HomeTab Component', () => {
     test('icons are properly associated with feature cards', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
       
-      // Check that icons are present (they would be in the DOM via Lucide React)
-      const featureCards = screen.getAllByText(/clinical guidelines|targeted learning|interactive quizzes/i);
-      expect(featureCards).toHaveLength(3);
+      // Check that feature cards have proper structure with headings
+      const clinicalGuidelinesHeading = screen.getByRole('heading', { name: /clinical guidelines/i });
+      const targetedLearningHeading = screen.getByRole('heading', { name: /targeted learning/i });
+      const interactiveQuizzesHeading = screen.getByRole('heading', { name: /interactive quizzes/i });
+      
+      expect(clinicalGuidelinesHeading).toBeInTheDocument();
+      expect(targetedLearningHeading).toBeInTheDocument();
+      expect(interactiveQuizzesHeading).toBeInTheDocument();
     });
   });
   
@@ -322,7 +335,8 @@ describe('HomeTab Component', () => {
       
       render(<HomeTab setActiveTab={mockSetActiveTabWithError} />);
       
-      const startButton = screen.getByText(/Take a Quiz/i);
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      const startButton = quizButtons[0]; // Main CTA button
       
       // Should not crash the component
       expect(() => fireEvent.click(startButton)).not.toThrow();
@@ -336,7 +350,8 @@ describe('HomeTab Component', () => {
     test('take quiz button leads to appropriate next step', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
       
-      const startButton = screen.getByRole('button', { name: /take a quiz/i });
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      const startButton = quizButtons[0]; // Main CTA button
       fireEvent.click(startButton);
       
       expect(mockSetActiveTab).toHaveBeenCalledWith('quiz');
@@ -346,7 +361,7 @@ describe('HomeTab Component', () => {
     test('supports multiple navigation methods', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
       
-      const startButton = screen.getByText(/Take a Quiz/i);
+      const startButton = screen.getAllByRole('button', { name: /take a quiz/i })[0];
       
       // Test mouse click
       fireEvent.click(startButton);
@@ -368,7 +383,8 @@ describe('HomeTab Component', () => {
     test('ignores non-navigation key presses', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
       
-      const startButton = screen.getByText(/Take a Quiz/i);
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      const startButton = quizButtons[0]; // Main CTA button
       
       // Test non-navigation keys
       fireEvent.keyDown(startButton, { key: 'Tab' });
@@ -392,7 +408,8 @@ describe('HomeTab Component', () => {
       
       // Content should still be accessible on mobile
       expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
-      expect(screen.getByText(/Take a Quiz/i)).toBeInTheDocument();
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      expect(quizButtons).toHaveLength(2); // Main CTA and feature card button
       
       // Restore viewport
       Object.defineProperty(window, 'innerWidth', {
@@ -405,7 +422,8 @@ describe('HomeTab Component', () => {
     test('buttons are properly sized for touch interaction', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
       
-      const startButton = screen.getByText(/Take a Quiz/i);
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      const startButton = quizButtons[0]; // Main CTA button
       const computedStyle = window.getComputedStyle(startButton);
       
       // Button should not be invisible or too small
@@ -436,7 +454,8 @@ describe('HomeTab Component', () => {
       rerender(<HomeTab setActiveTab={mockSetActiveTab} />);
       
       expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
-      expect(screen.getByText(/Take a Quiz/i)).toBeInTheDocument();
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      expect(quizButtons).toHaveLength(2); // Main CTA and feature card button
     });
     
     test('maintains state during prop updates', () => {
@@ -446,13 +465,15 @@ describe('HomeTab Component', () => {
       const { rerender } = render(<HomeTab setActiveTab={mockSetActiveTab1} />);
       
       // Component should render with first prop
-      expect(screen.getByText(/Take a Quiz/i)).toBeInTheDocument();
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      expect(quizButtons).toHaveLength(2); // Main CTA and feature card button
       
       // Update prop and verify component still works
       rerender(<HomeTab setActiveTab={mockSetActiveTab2} />);
       
-      const startButton = screen.getByText(/Take a Quiz/i);
-      fireEvent.click(startButton);
+      const updatedQuizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      const updatedStartButton = updatedQuizButtons[0]; // Main CTA button
+      fireEvent.click(updatedStartButton);
       
       expect(mockSetActiveTab2).toHaveBeenCalledWith('quiz');
       expect(mockSetActiveTab1).not.toHaveBeenCalled();
@@ -494,7 +515,8 @@ describe('HomeTab Component', () => {
       
       render(<HomeTab setActiveTab={mockSetActiveTabWithError} />);
       
-      const startButton = screen.getByText(/Take a Quiz/i);
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      const startButton = quizButtons[0]; // Main CTA button
       
       // Should handle error gracefully
       expect(() => fireEvent.click(startButton)).not.toThrow();
@@ -513,8 +535,8 @@ describe('HomeTab Component', () => {
       // Check for medical terminology and concepts
       expect(screen.getByText(/infectious diseases/i)).toBeInTheDocument();
       expect(screen.getByText(/antimicrobial therapy/i)).toBeInTheDocument();
-      expect(screen.getByText(/clinical guidelines/i)).toBeInTheDocument();
-      expect(screen.getByText(/evidence-based/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/clinical guidelines/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/evidence-based/i)[0]).toBeInTheDocument();
     });
     
     test('promotes educational best practices', () => {
@@ -531,7 +553,7 @@ describe('HomeTab Component', () => {
       
       // Check for clinical practice focus
       expect(screen.getByText(/clinical practice/i)).toBeInTheDocument();
-      expect(screen.getByText(/treatment protocols/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/treatment protocols/i)[0]).toBeInTheDocument();
       expect(screen.getByText(/medical societies/i)).toBeInTheDocument();
     });
   });
@@ -549,7 +571,9 @@ describe('HomeTab Component', () => {
     test('navigation integrates with app routing system', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
       
-      const startButton = screen.getByText(/Take a Quiz/i);
+      // Get all quiz buttons and target the main CTA button (first one)
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      const startButton = quizButtons[0]; // Main CTA button
       fireEvent.click(startButton);
       
       // Should request navigation to conditions tab

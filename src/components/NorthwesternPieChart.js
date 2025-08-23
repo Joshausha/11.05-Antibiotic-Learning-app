@@ -225,7 +225,7 @@ const NorthwesternPieChart = ({
         emergencyMode,
         performance: performance.now() - startTime
       };
-      onSegmentHover(segment.key, event, enhancedContext);
+      onSegmentHover(segment.key, segment.coverage, `${segment.description} - Coverage: ${segment.coverage}/2`);
     }
   }, [interactive, onSegmentHover, antibiotic, educationLevel, emergencyMode, externalHoveredSegment]);
 
@@ -245,7 +245,7 @@ const NorthwesternPieChart = ({
         emergencyMode,
         performance: performance.now() - startTime
       };
-      onSegmentClick(segment.key, event, enhancedContext);
+      onSegmentClick(segment.key, antibiotic);
     }
   }, [interactive, onSegmentClick, antibiotic, selectedSegments, educationLevel, emergencyMode]);
 
@@ -397,7 +397,7 @@ const NorthwesternPieChart = ({
               onClick={(e) => handleSegmentClick(segment, e)}
               onTouchStart={enableTouchInteractions ? (e) => handleTouchStart(segment, e) : undefined}
               onTouchEnd={enableTouchInteractions ? (e) => handleTouchEnd(segment, e) : undefined}
-              aria-label={`${segment.label}: ${segment.coverage}/2 coverage${isSelected ? ', selected' : ''}${hasLowCoverage ? ', not recommended' : ''}`}
+              aria-label={`${segment.label}: ${segment.coverage}/2 coverage`}
               aria-pressed={isSelected}
               role="button"
               tabIndex={interactive ? 0 : -1}

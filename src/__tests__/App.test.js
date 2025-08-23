@@ -8,11 +8,25 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import '@testing-library/jest-dom';
 import App from '../App';
 
-// Mock the custom hook
+// Agent T3: Enhanced DOM mocking patterns for complex component trees
+// Mock the custom hook with better defaults
 jest.mock('../hooks/useResponsive', () => ({
   __esModule: true,
   default: jest.fn(() => false), // Default to desktop, but allow mocking
 }));
+
+// Agent T3: Mock window and DOM APIs properly
+Object.defineProperty(window, 'innerWidth', {
+  writable: true,
+  configurable: true,
+  value: 1024,
+});
+
+Object.defineProperty(window, 'innerHeight', {
+  writable: true,
+  configurable: true,
+  value: 768,
+});
 
 // Mock localStorage for testing
 const localStorageMock = {
@@ -23,59 +37,125 @@ const localStorageMock = {
 };
 global.localStorage = localStorageMock;
 
-// Setup and cleanup for each test
+// Agent T3: Mock performance API for performance tests
+const mockPerformanceNow = jest.fn(() => Date.now());
+global.performance = {
+  ...global.performance,
+  now: mockPerformanceNow,
+};
+
+// Agent T3: Mock critical hooks that may not be available in test environment
+jest.mock('../hooks/useErrorHandler', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    fallbacks: {},
+    logError: jest.fn(),
+    handleError: jest.fn(),
+  })),
+}));
+
+// Agent T3: Enhanced setup and cleanup for each test with async handling
 beforeEach(() => {
   // Clear all mocks before each test
   jest.clearAllMocks();
   localStorageMock.getItem.mockReturnValue(null);
+  
+  // Agent T3: Reset window dimensions to default
+  window.innerWidth = 1024;
+  window.innerHeight = 768;
+  
+  // Agent T3: Reset useResponsive mock to default desktop behavior
+  const useResponsive = require('../hooks/useResponsive').default;
+  useResponsive.mockReturnValue(false);
+  
+  // Agent T3: Reset performance mock
+  mockPerformanceNow.mockClear();
 });
 
 describe('App Component Integration Tests', () => {
-  test('renders header and home tab by default', () => {
+  test('renders header and learn tab by default', async () => {
     render(<App />);
     
     // Header should be present
     expect(screen.getByText(/medlearn/i)).toBeInTheDocument();
     
-    // Home tab should be active by default
-    expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
+    // Agent T5: Accessibility pattern - check for specific navigation button
+    await waitFor(() => {
+      // Check for the Learn navigation button with specific aria-label
+      expect(screen.getByLabelText(/navigate to learn/i)).toBeInTheDocument();
+    });
+    
+    // Agent T6: Real medical data approach - check for HomeTab specific content
+    await waitFor(() => {
+      // The HomeTab displays "Medical Learning App" as its main heading with specific heading role
+      expect(screen.getByRole('heading', { name: /medical learning app/i })).toBeInTheDocument();
+    }, { timeout: 1000 });
   });
 
-  test('navigates between tabs using header navigation', () => {
+  test('navigates between tabs using header navigation', async () => {
     render(<App />);
     
-    // Start on home tab
-    expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
+    // Start on learn tab - wait for initial render
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /medical learning app/i })).toBeInTheDocument();
+    });
     
-    // Navigate to conditions tab
-    const referenceTab = screen.getByText(/Reference/i);
-    fireEvent.click(referenceTab);
-    expect(screen.getByPlaceholderText(/search conditions/i)).toBeInTheDocument();
+    // Navigate to reference tab using accessibility pattern
+    const referenceButton = screen.getByLabelText(/navigate to reference/i);
+    fireEvent.click(referenceButton);
     
-    // Skip quiz tab test for now due to data loading issues
-    // Navigate back to home
-    const learnTab = screen.getByText(/Learn/i);
-    fireEvent.click(learnTab);
-    expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
+    // Agent T3: Async pattern - wait for reference content to load
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/search conditions/i)).toBeInTheDocument();
+    });
+    
+    // Navigate back to learn tab using accessibility pattern
+    const learnButton = screen.getByLabelText(/navigate to learn/i);
+    fireEvent.click(learnButton);
+    
+    // Agent T3: Async pattern - wait for learn content to return
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /medical learning app/i })).toBeInTheDocument();
+    });
   });
 
-  test('navigates to reference tab from home tab button', () => {
+  test('navigates to reference tab from home tab button', async () => {
     render(<App />);
     
-    const browseConditionsButton = screen.getByText(/browse conditions/i);
-    fireEvent.click(browseConditionsButton);
+    // Agent T7: Component interaction pattern - wait for component to be ready
+    await waitFor(() => {
+      expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
+    });
     
-    expect(screen.getByPlaceholderText(/search conditions/i)).toBeInTheDocument();
+    // Agent T7: Find the browse reference button (from HomeTab JSX it's "Browse Reference")
+    const browseReferenceButton = screen.getByText(/browse reference/i);
+    fireEvent.click(browseReferenceButton);
+    
+    // Agent T3: Async pattern - wait for navigation to complete
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/search conditions/i)).toBeInTheDocument();
+    });
   });
 
-  test('navigates to quiz tab from home tab button', () => {
+  test('navigates to quiz tab from home tab button', async () => {
     render(<App />);
     
-    // Navigate to quiz tab using the first "Take a Quiz" button from HomeTab
-    const takeQuizButtons = screen.getAllByText(/take a quiz/i);
-    fireEvent.click(takeQuizButtons[0]);
+    // Agent T7: Component interaction pattern - wait for component to be ready
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /medical learning app/i })).toBeInTheDocument();
+    });
     
-    expect(screen.getByText(/knowledge assessment/i)).toBeInTheDocument();
+    // Agent T5: Accessibility pattern - use aria-label to find the specific quiz button
+    const takeQuizButton = screen.getByLabelText(/take a quiz to test your medical knowledge/i);
+    fireEvent.click(takeQuizButton);
+    
+    // Agent T3: Async pattern - wait for quiz content to load
+    await waitFor(() => {
+      // Look for quiz-specific content - could be knowledge assessment or test your understanding
+      const quizContent = screen.queryByText(/knowledge assessment/i) || 
+                         screen.queryByText(/test your understanding/i);
+      expect(quizContent).toBeInTheDocument();
+    });
   });
 
   test('search functionality filters conditions', () => {
@@ -120,46 +200,52 @@ describe('App Component Integration Tests', () => {
   test('quiz flow works end to end', async () => {
     render(<App />);
     
-    // Navigate to quiz tab
-    fireEvent.click(screen.getByText(/Quiz/i));
+    // Navigate to quiz tab using accessibility pattern
+    const quizButton = screen.getByLabelText(/navigate to quiz/i);
+    fireEvent.click(quizButton);
     
-    // Verify we're on the quiz tab and can see the start button
-    expect(screen.getByText(/knowledge assessment/i)).toBeInTheDocument();
-    expect(screen.getByText(/start.*quiz/i)).toBeInTheDocument();
+    // Agent T3: Wait for quiz content to load
+    await waitFor(() => {
+      const quizContent = screen.queryByText(/knowledge assessment/i) || 
+                         screen.queryByText(/test your understanding/i);
+      expect(quizContent).toBeInTheDocument();
+    });
     
-    // Start quiz - use different matching since it's a button
-    const startButton = screen.getByText(/Take a Quiz/i);
+    // Find the quiz start button by its text content
+    const startButton = screen.getByText(/start adaptive quiz/i);
     fireEvent.click(startButton);
     
-    // Wait for quiz mode to activate (shorter timeout since we removed delay)
+    // Wait for quiz mode to activate
     await waitFor(() => {
-      // Look for quiz question elements more specifically
+      // Look for quiz question elements or verify we're not on the start screen
       const questionIndicator = screen.queryByText(/question 1 of \d+/i);
       if (questionIndicator) {
         expect(questionIndicator).toBeInTheDocument();
       } else {
-        // Fallback: just verify we're not on the start screen anymore
-        expect(screen.queryByText(/start.*quiz/i)).not.toBeInTheDocument();
+        // Fallback: just verify quiz has started by checking we're not on the start screen
+        expect(screen.queryByText(/knowledge assessment/i)).not.toBeInTheDocument();
       }
-    }, { timeout: 500 });
+    }, { timeout: 1000 });
   });
 
   test('maintains state across tab switches', async () => {
     render(<App />);
     
-    // Go to conditions and search
-    fireEvent.click(screen.getByText(/Reference/i));
+    // Go to reference and search
+    const referenceButton = screen.getByLabelText(/navigate to reference/i);
+    fireEvent.click(referenceButton);
     
     await waitFor(() => {
       const searchInput = screen.getByPlaceholderText(/search conditions/i);
       fireEvent.change(searchInput, { target: { value: 'test' } });
     });
     
-    // Switch to home tab
-    fireEvent.click(screen.getByText(/Learn/i));
+    // Switch to learn tab
+    const learnButton = screen.getByLabelText(/navigate to learn/i);
+    fireEvent.click(learnButton);
     
-    // Switch back to conditions
-    fireEvent.click(screen.getByText(/Reference/i));
+    // Switch back to reference
+    fireEvent.click(referenceButton);
     
     // Search term should be preserved
     await waitFor(() => {
@@ -167,14 +253,17 @@ describe('App Component Integration Tests', () => {
     });
   });
 
-  test('renders without medical conditions data', () => {
+  test('renders without medical conditions data', async () => {
     // This tests graceful handling of empty data
     render(<App />);
     
-    fireEvent.click(screen.getByText(/Reference/i));
+    const referenceButton = screen.getByLabelText(/navigate to reference/i);
+    fireEvent.click(referenceButton);
     
     // Should handle empty state gracefully
-    expect(screen.getByPlaceholderText(/search conditions/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/search conditions/i)).toBeInTheDocument();
+    });
   });
 
   test('handles keyboard navigation', () => {
@@ -188,46 +277,62 @@ describe('App Component Integration Tests', () => {
     expect(focusedElement).toBeInTheDocument();
   });
 
-  test('responsive design integration', () => {
-    // Mock mobile viewport properly
+  test('responsive design integration', async () => {
+    // Agent T3: Enhanced DOM mocking - Mock mobile viewport properly
     const useResponsive = require('../hooks/useResponsive').default;
     useResponsive.mockReturnValue(true);
+    window.innerWidth = 480; // Mobile width
     
     render(<App />);
     
-    // Should show mobile menu button
-    const menuButton = screen.getByLabelText(/toggle menu/i);
-    expect(menuButton).toBeInTheDocument();
+    // Agent T3: Wait for responsive behavior to take effect
+    await waitFor(() => {
+      // Should show mobile menu button
+      const menuButton = screen.getByLabelText(/toggle navigation menu/i);
+      expect(menuButton).toBeInTheDocument();
+    });
   });
 
-  test('navigation reflects active tab state', () => {
+  test('navigation reflects active tab state', async () => {
     render(<App />);
     
-    // Check home tab is active initially
-    const homeNavItem = screen.getByText(/Learn/i);
-    expect(homeNavItem).toHaveClass('bg-white', 'bg-opacity-20');
+    // Agent T5: Wait for initial render and check learn tab is active
+    await waitFor(() => {
+      const learnNavButton = screen.getByLabelText(/navigate to learn/i);
+      expect(learnNavButton).toHaveAttribute('aria-current', 'page');
+    });
     
-    // Navigate to conditions
-    const referenceTab = screen.getByText(/Reference/i);
-    fireEvent.click(referenceTab);
+    // Navigate to reference tab
+    const referenceButton = screen.getByLabelText(/navigate to reference/i);
+    fireEvent.click(referenceButton);
     
-    // Check conditions tab is now active
-    const referenceNavItem = screen.getByText(/Reference/i);
-    expect(referenceNavItem).toHaveClass('bg-white', 'bg-opacity-20');
+    // Agent T3: Wait for state change and check reference tab is now active
+    await waitFor(() => {
+      const referenceNavButton = screen.getByLabelText(/navigate to reference/i);
+      expect(referenceNavButton).toHaveAttribute('aria-current', 'page');
+    });
   });
 
-  test('application loads all required data', () => {
+  test('application loads all required data', async () => {
     render(<App />);
     
-    // Navigate to conditions to check medical conditions data loaded
-    const referenceTab = screen.getByText(/Reference/i);
-    fireEvent.click(referenceTab);
-    expect(screen.getByPlaceholderText(/search conditions/i)).toBeInTheDocument();
+    // Navigate to reference to check medical conditions data loaded
+    const referenceButton = screen.getByLabelText(/navigate to reference/i);
+    fireEvent.click(referenceButton);
+    
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/search conditions/i)).toBeInTheDocument();
+    });
     
     // Navigate to quiz to check quiz questions data loaded
-    const quizTab = screen.getByText(/Quiz/i);
-    fireEvent.click(quizTab);
-    expect(screen.getByText(/test your understanding/i)).toBeInTheDocument();
+    const quizButton = screen.getByLabelText(/navigate to quiz/i);
+    fireEvent.click(quizButton);
+    
+    await waitFor(() => {
+      const quizContent = screen.queryByText(/knowledge assessment/i) || 
+                         screen.queryByText(/test your understanding/i);
+      expect(quizContent).toBeInTheDocument();
+    });
   });
 
   // Enhanced Phase 2 Integration Tests for Complete User Workflows
@@ -236,7 +341,7 @@ describe('App Component Integration Tests', () => {
     render(<App />);
     
     // Navigate to conditions
-    fireEvent.click(screen.getByText(/Reference/i));
+    fireEvent.click(screen.getByLabelText(/navigate to reference/i));
     
     // Search for a condition
     await waitFor(() => {
@@ -271,13 +376,13 @@ describe('App Component Integration Tests', () => {
     render(<App />);
     
     // Navigate to quiz
-    fireEvent.click(screen.getByText(/Quiz/i));
+    fireEvent.click(screen.getByLabelText(/navigate to quiz/i));
     
     // Verify we can see the quiz start screen
     expect(screen.getByText(/knowledge assessment/i)).toBeInTheDocument();
     
     // Start quiz
-    const startButton = screen.getByText(/Take a Quiz/i);
+    const startButton = screen.getByText(/start adaptive quiz/i);
     fireEvent.click(startButton);
     
     // Wait for quiz to start (just verify it's no longer on start screen)
@@ -294,7 +399,7 @@ describe('App Component Integration Tests', () => {
     render(<App />);
     
     // Set up state in conditions tab
-    const referenceTab = screen.getByText(/Reference/i);
+    const referenceTab = screen.getByLabelText(/navigate to reference/i);
     fireEvent.click(referenceTab);
     
     await waitFor(() => {
@@ -303,7 +408,7 @@ describe('App Component Integration Tests', () => {
     });
     
     // Go to quiz and start it
-    const quizTab = screen.getByText(/Quiz/i);
+    const quizTab = screen.getByLabelText(/navigate to quiz/i);
     fireEvent.click(quizTab);
     
     // Just verify we can access the quiz tab
@@ -318,7 +423,8 @@ describe('App Component Integration Tests', () => {
     });
     
     // Return to quiz
-    fireEvent.click(quizTab);
+    const quizTabButton = screen.getByLabelText(/navigate to quiz/i);
+    fireEvent.click(quizTabButton);
     
     // Quiz state should be preserved (should show quiz tab again)
     await waitFor(() => {
@@ -330,19 +436,21 @@ describe('App Component Integration Tests', () => {
     render(<App />);
     
     // Test keyboard navigation through tabs
-    const learnTab = screen.getByText(/Learn/i);
-    const referenceTab = screen.getByText(/Reference/i);
-    const quizTab = screen.getByText(/Quiz/i);
+    const learnTab = screen.getByLabelText(/navigate to learn/i);
+    const referenceTab = screen.getByLabelText(/navigate to reference/i);
+    const quizTab = screen.getByLabelText(/navigate to quiz/i);
     
-    // Navigate to conditions with keyboard
-    referenceTab.focus();
-    fireEvent.keyDown(referenceTab, { key: 'Enter' });
+    // Navigate to conditions with keyboard using aria-label
+    const referenceButton = screen.getByLabelText(/navigate to reference/i);
+    referenceButton.focus();
+    fireEvent.keyDown(referenceButton, { key: 'Enter' });
     
     expect(screen.getByPlaceholderText(/search conditions/i)).toBeInTheDocument();
     
-    // Navigate to quiz with keyboard
-    quizTab.focus();
-    fireEvent.keyDown(quizTab, { key: 'Enter' });
+    // Navigate to quiz with keyboard using aria-label
+    const quizButton = screen.getByLabelText(/navigate to quiz/i);
+    quizButton.focus();
+    fireEvent.keyDown(quizButton, { key: 'Enter' });
     
     expect(screen.getByText(/test your understanding/i)).toBeInTheDocument();
   });
@@ -354,11 +462,11 @@ describe('App Component Integration Tests', () => {
     render(<App />);
     
     // Navigate through tabs normally
-    const referenceTab = screen.getByText(/Reference/i);
+    const referenceTab = screen.getByLabelText(/navigate to reference/i);
     fireEvent.click(referenceTab);
     expect(screen.getByPlaceholderText(/search conditions/i)).toBeInTheDocument();
     
-    const quizTab = screen.getByText(/Quiz/i);
+    const quizTab = screen.getByLabelText(/navigate to quiz/i);
     fireEvent.click(quizTab);
     expect(screen.getByText(/test your understanding/i)).toBeInTheDocument();
     
@@ -373,14 +481,14 @@ describe('App Component Integration Tests', () => {
     render(<App />);
     
     // Should show mobile menu button
-    const menuButton = screen.getByLabelText(/toggle menu/i);
+    const menuButton = screen.getByLabelText(/toggle navigation menu/i);
     expect(menuButton).toBeInTheDocument();
     
     // Open mobile menu
     fireEvent.click(menuButton);
     
     // Navigate to conditions via mobile menu
-    const referenceTab = screen.getByText(/Reference/i);
+    const referenceTab = screen.getByLabelText(/navigate to reference/i);
     fireEvent.click(referenceTab);
     
     // Should navigate and close menu
@@ -394,16 +502,16 @@ describe('App Component Integration Tests', () => {
     render(<App />);
     
     // Navigate to conditions and search
-    const referenceTab = screen.getByText(/Reference/i);
+    const referenceTab = screen.getByLabelText(/navigate to reference/i);
     fireEvent.click(referenceTab);
     const searchInput = screen.getByPlaceholderText(/search conditions/i);
     fireEvent.change(searchInput, { target: { value: 'pneumonia' } });
     
     // Start quiz to generate some state
-    const quizTab = screen.getByText(/Quiz/i);
+    const quizTab = screen.getByLabelText(/navigate to quiz/i);
     fireEvent.click(quizTab);
     // Look for the dynamic quiz button text
-    const quizButton = screen.getByText(/Take a Quiz/i);
+    const quizButton = screen.getByText(/start adaptive quiz/i);
     fireEvent.click(quizButton);
     
     // Verify localStorage is being used (if implemented) - make it optional
@@ -412,15 +520,19 @@ describe('App Component Integration Tests', () => {
     localStorageSpy.mockRestore();
   });
   
-  test('performance integration: rapid navigation stress test', () => {
+  test('performance integration: rapid navigation stress test', async () => {
     const startTime = performance.now();
     
     render(<App />);
     
-    // Get buttons once to avoid repeated queries
-    const referenceButton = screen.getByText(/Reference/i);
-    const quizButton = screen.getByText(/Quiz/i);
-    const learnButton = screen.getByText(/Learn/i);
+    // Agent T5: Get buttons using accessibility patterns to avoid ambiguity
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /medical learning app/i })).toBeInTheDocument();
+    });
+    
+    const referenceButton = screen.getByLabelText(/navigate to reference/i);
+    const quizButton = screen.getByLabelText(/navigate to quiz/i);
+    const learnButton = screen.getByLabelText(/navigate to learn/i);
     
     // Reduce iterations to prevent timeout and focus on actual navigation
     for (let i = 0; i < 3; i++) {
@@ -433,6 +545,6 @@ describe('App Component Integration Tests', () => {
     
     // Should remain responsive - increased threshold for stability
     expect(endTime - startTime).toBeLessThan(2000);
-    expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /medical learning app/i })).toBeInTheDocument();
   });
 });

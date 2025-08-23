@@ -16,11 +16,11 @@ const useLocalStorage = (key, initialValue) => {
     key = 'fallback-key';
   }
 
-  // State to store our value
+  // State to store our value - Initialize with a proper function
   const [storedValue, setStoredValue] = useState(() => {
     try {
       // Check if localStorage is available
-      if (!window.localStorage) {
+      if (typeof window === 'undefined' || !window.localStorage) {
         return initialValue;
       }
       // Get from local storage by key

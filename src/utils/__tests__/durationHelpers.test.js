@@ -23,7 +23,7 @@ jest.mock('lucide-react', () => ({
 }));
 
 // Mock RBOMappingSystem
-jest.mock('../data/RBOMappingSystem.js', () => ({
+jest.mock('../../data/RBOMappingSystem.js', () => ({
   rboConditionsMap: [
     {
       id: 'pneumonia_cap',
@@ -189,15 +189,16 @@ describe('Duration Helpers', () => {
     });
 
     describe('Category Classification', () => {
-      test('should classify short duration (≤7 days)', () => {
+      test('should classify short duration (≤14 days)', () => {
         expect(parseDurationString('3 days').category).toBe('short');
         expect(parseDurationString('7 days').category).toBe('short');
         expect(parseDurationString('1 week').category).toBe('short');
+        expect(parseDurationString('14 days').category).toBe('short');
+        expect(parseDurationString('2 weeks').category).toBe('short');
       });
 
-      test('should classify medium duration (8-21 days)', () => {
-        expect(parseDurationString('10 days').category).toBe('medium');
-        expect(parseDurationString('14 days').category).toBe('medium');
+      test('should classify medium duration (15-21 days)', () => {
+        expect(parseDurationString('15 days').category).toBe('medium');
         expect(parseDurationString('21 days').category).toBe('medium');
       });
 
@@ -420,7 +421,7 @@ describe('Duration Helpers', () => {
       const mediumParsed = parseDurationString('14 days');
       const mediumTooltip = formatDurationDisplay(mediumParsed, 'tooltip');
       
-      expect(mediumTooltip).toBe('Standard treatment: 14 days');
+      expect(mediumTooltip).toBe('Short-term treatment: 14 days');
     });
 
     test('should handle complex durations in different contexts', () => {
@@ -453,7 +454,7 @@ describe('Duration Helpers', () => {
     const mockConditions = [
       { duration: '5 days' },      // short
       { duration: '7 days' },      // short
-      { duration: '14 days' },     // medium
+      { duration: '14 days' },     // short (≤14 days per updated classification)
       { duration: '21 days' },     // medium
       { duration: '4 weeks' },     // long (28 days)
       { duration: '8 weeks' },     // extended (56 days)
@@ -465,8 +466,8 @@ describe('Duration Helpers', () => {
       const stats = getDurationStats(mockConditions);
       
       expect(stats.total).toBe(8);
-      expect(stats.categories.short).toBe(2);
-      expect(stats.categories.medium).toBe(2);
+      expect(stats.categories.short).toBe(3);
+      expect(stats.categories.medium).toBe(1);
       expect(stats.categories.long).toBe(1);
       expect(stats.categories.extended).toBe(1);
       expect(stats.categories.complex).toBe(1);
@@ -593,11 +594,11 @@ describe('Duration Helpers', () => {
     });
 
     test('should support evidence-based duration categories', () => {
-      // Based on clinical evidence and guidelines
+      // Based on current antimicrobial stewardship guidelines
       expect(parseDurationString('3 days').category).toBe('short');   // UTI uncomplicated
       expect(parseDurationString('7 days').category).toBe('short');   // CAP outpatient
-      expect(parseDurationString('14 days').category).toBe('medium'); // Bacteremia uncomplicated
-      expect(parseDurationString('6 weeks').category).toBe('extended'); // Endocarditis
+      expect(parseDurationString('14 days').category).toBe('short');  // Bacteremia uncomplicated (≤14 days)
+      expect(parseDurationString('6 weeks').category).toBe('long');   // Endocarditis (42 days)
     });
   });
 });

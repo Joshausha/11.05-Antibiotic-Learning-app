@@ -162,8 +162,12 @@ export class AnimationController {
       // Apply animation class
       element.classList.add(animationClass);
       
-      // Set up cleanup
+      // Set up cleanup with protection against multiple calls
+      let hasResolved = false;
       const animationHandler = () => {
+        if (hasResolved) return; // Prevent multiple calls
+        hasResolved = true;
+        
         if (cleanup) {
           element.classList.remove(animationClass);
         }
@@ -238,33 +242,62 @@ export class AnimationController {
   
   // Create ripple effect on click
   createRipple(element, event) {
-    const ripple = document.createElement('div');
-    const rect = element.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height);
-    const x = event.clientX - rect.left - size / 2;
-    const y = event.clientY - rect.top - size / 2;
-    
-    ripple.style.cssText = `
-      position: absolute;
-      width: ${size}px;
-      height: ${size}px;
-      left: ${x}px;
-      top: ${y}px;
-      background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%);
-      border-radius: 50%;
-      pointer-events: none;
-      animation: ripple 0.6s ease-out;
-      z-index: 1000;
-    `;
-    
-    element.style.position = 'relative';
-    element.appendChild(ripple);
-    
-    setTimeout(() => {
-      if (ripple.parentNode) {
-        ripple.parentNode.removeChild(ripple);
+    try {
+      // Validate inputs and provide fallbacks
+      if (!element || !event) {
+        console.warn('Missing element or event for ripple creation');
+        return;
       }
-    }, 600);
+
+      // Provide fallback values for missing event properties
+      const clientX = event.clientX || 0;
+      const clientY = event.clientY || 0;
+
+      const ripple = document.createElement('div');
+      
+      // Handle elements without getBoundingClientRect method
+      let rect;
+      if (typeof element.getBoundingClientRect === 'function') {
+        rect = element.getBoundingClientRect();
+      } else {
+        // Fallback for elements without getBoundingClientRect
+        rect = { left: 0, top: 0, width: 100, height: 100 };
+        console.warn('Element missing getBoundingClientRect method, using fallback values');
+      }
+      
+      const size = Math.max(rect.width, rect.height);
+      const x = clientX - rect.left - size / 2;
+      const y = clientY - rect.top - size / 2;
+    
+      ripple.style.cssText = `
+        position: absolute;
+        width: ${size}px;
+        height: ${size}px;
+        left: ${x}px;
+        top: ${y}px;
+        background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+        animation: ripple 0.6s ease-out;
+        z-index: 1000;
+      `;
+      
+      element.style.position = 'relative';
+      element.appendChild(ripple);
+      
+      setTimeout(() => {
+        try {
+          if (ripple.parentNode) {
+            ripple.parentNode.removeChild(ripple);
+          }
+        } catch (error) {
+          console.warn('Error removing ripple element:', error);
+        }
+      }, 600);
+    } catch (error) {
+      console.error('Error creating ripple effect:', error);
+      // Graceful fallback - no ripple effect but no crash
+    }
   }
   
   // Cleanup all animations
@@ -294,18 +327,30 @@ export class ScrollAnimationController {
   }
   
   handleIntersection(entries) {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && !this.animatedElements.has(entry.target)) {
-        const animationClass = entry.target.dataset.scrollAnimation || 'fade-in';
-        entry.target.classList.add(animationClass);
-        this.animatedElements.add(entry.target);
-        
-        // Optional: stop observing after animation
-        if (entry.target.dataset.animateOnce !== 'false') {
-          this.observer.unobserve(entry.target);
-        }
+    try {
+      if (!entries || !Array.isArray(entries)) {
+        return; // Gracefully handle invalid entries
       }
-    });
+      
+      entries.forEach(entry => {
+        try {
+          if (entry && entry.isIntersecting && !this.animatedElements.has(entry.target)) {
+            const animationClass = entry.target.dataset.scrollAnimation || 'fade-in';
+            entry.target.classList.add(animationClass);
+            this.animatedElements.add(entry.target);
+            
+            // Optional: stop observing after animation
+            if (entry.target.dataset.animateOnce !== 'false') {
+              this.observer.unobserve(entry.target);
+            }
+          }
+        } catch (error) {
+          console.warn('Error handling intersection entry:', error);
+        }
+      });
+    } catch (error) {
+      console.error('Error in handleIntersection:', error);
+    }
   }
   
   observe(element, animationClass = 'fade-in') {
@@ -319,7 +364,13 @@ export class ScrollAnimationController {
   }
   
   disconnect() {
-    this.observer.disconnect();
+    try {
+      if (this.observer && typeof this.observer.disconnect === 'function') {
+        this.observer.disconnect();
+      }
+    } catch (error) {
+      console.warn('Error disconnecting scroll animation observer:', error);
+    }
     this.animatedElements.clear();
   }
 }

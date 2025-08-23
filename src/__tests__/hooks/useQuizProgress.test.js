@@ -6,55 +6,49 @@
 
 import { renderHook, act } from '@testing-library/react';
 import useQuizProgress from '../../hooks/useQuizProgress';
-import { setupTestEnvironment } from '../utils/testUtils';
+// Remove setupTestEnvironment import as it replaces localStorage mock
 
 import React from 'react';
 
-// Mock localStorage directly
-const mockStore = {};
-const localStorageMock = {
-  getItem: jest.fn().mockImplementation((key) => {
-    return mockStore[key] !== undefined ? mockStore[key] : null;
-  }),
-  setItem: jest.fn().mockImplementation((key, value) => {
-    mockStore[key] = value;
-  }),
-  removeItem: jest.fn().mockImplementation((key) => {
-    delete mockStore[key];
-  }),
-  clear: jest.fn().mockImplementation(() => {
-    Object.keys(mockStore).forEach(key => {
-      delete mockStore[key];
-    });
-  })
-};
-
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
-});
+// Use global localStorage mock from setupTests.js
+const localStorageMock = window.localStorage;
 
 // Mock window.addEventListener for the storage event listener
 global.addEventListener = jest.fn();
 global.removeEventListener = jest.fn();
 
 describe('useQuizProgress Hook', () => {
-  let testEnv;
-
   beforeEach(() => {
-    testEnv = setupTestEnvironment();
-    // Clear the mock store
+    // DON'T call setupTestEnvironment() as it replaces our localStorage mock
+    // Clear the mock store using the exposed __mockStore
+    const mockStore = localStorageMock.__mockStore;
     Object.keys(mockStore).forEach(key => {
       delete mockStore[key];
     });
-    // Reset call history
+    // Reset call history but preserve implementations
     localStorageMock.getItem.mockClear();
     localStorageMock.setItem.mockClear();
     localStorageMock.removeItem.mockClear();
     localStorageMock.clear.mockClear();
+    
+    // Restore the implementations after clearing
+    localStorageMock.getItem.mockImplementation((key) => {
+      return mockStore[key] !== undefined ? mockStore[key] : null;
+    });
+    localStorageMock.setItem.mockImplementation((key, value) => {
+      mockStore[key] = value;
+    });
+    localStorageMock.removeItem.mockImplementation((key) => {
+      delete mockStore[key];
+    });
+    localStorageMock.clear.mockImplementation(() => {
+      Object.keys(mockStore).forEach(key => {
+        delete mockStore[key];
+      });
+    });
   });
 
   afterEach(() => {
-    testEnv.cleanup();
     jest.clearAllMocks();
   });
 
@@ -347,9 +341,7 @@ describe('useQuizProgress Hook', () => {
     let quizResult;
 
     beforeEach(() => {
-      const { result } = renderHook(() => useQuizProgress());
-
-      // Create multiple completed quizzes
+      // Create multiple completed quizzes FIRST
       const quizHistory = [
         {
           quizId: 'quiz-1',
@@ -395,9 +387,11 @@ describe('useQuizProgress Hook', () => {
         }
       ];
 
-      // Mock localStorage to return this history
+      // Mock localStorage to return this history BEFORE creating hook
       localStorageMock.setItem('quizHistory', JSON.stringify(quizHistory));
 
+      // NOW create the hook instance
+      const { result } = renderHook(() => useQuizProgress());
       quizResult = result;
     });
 
@@ -408,7 +402,9 @@ describe('useQuizProgress Hook', () => {
         { quizId: 'quiz-2', scorePercentage: 60, answers: [] },
         { quizId: 'quiz-3', scorePercentage: 100, answers: [] }
       ];
-      localStorageMock.setItem('quizHistory', JSON.stringify(quizHistory));
+      
+      // Set data using window.localStorage directly
+      window.localStorage.setItem('quizHistory', JSON.stringify(quizHistory));
       
       const { result } = renderHook(() => useQuizProgress());
       expect(result.current.stats.totalQuizzes).toBe(3);
@@ -478,16 +474,16 @@ describe('useQuizProgress Hook', () => {
   describe('Improvement Trend Calculation', () => {
     it('identifies improving trend', () => {
       const improvingHistory = [
-        { scorePercentage: 50 },
-        { scorePercentage: 55 },
-        { scorePercentage: 60 },
-        { scorePercentage: 65 },
-        { scorePercentage: 70 },
-        { scorePercentage: 80 },
-        { scorePercentage: 85 },
-        { scorePercentage: 90 },
-        { scorePercentage: 95 },
-        { scorePercentage: 100 }
+        { scorePercentage: 50, answers: [] },
+        { scorePercentage: 55, answers: [] },
+        { scorePercentage: 60, answers: [] },
+        { scorePercentage: 65, answers: [] },
+        { scorePercentage: 70, answers: [] },
+        { scorePercentage: 80, answers: [] },
+        { scorePercentage: 85, answers: [] },
+        { scorePercentage: 90, answers: [] },
+        { scorePercentage: 95, answers: [] },
+        { scorePercentage: 100, answers: [] }
       ];
 
       localStorageMock.setItem('quizHistory', JSON.stringify(improvingHistory));
@@ -498,16 +494,16 @@ describe('useQuizProgress Hook', () => {
 
     it('identifies declining trend', () => {
       const decliningHistory = [
-        { scorePercentage: 100 },
-        { scorePercentage: 95 },
-        { scorePercentage: 90 },
-        { scorePercentage: 85 },
-        { scorePercentage: 80 },
-        { scorePercentage: 70 },
-        { scorePercentage: 65 },
-        { scorePercentage: 60 },
-        { scorePercentage: 55 },
-        { scorePercentage: 50 }
+        { scorePercentage: 100, answers: [] },
+        { scorePercentage: 95, answers: [] },
+        { scorePercentage: 90, answers: [] },
+        { scorePercentage: 85, answers: [] },
+        { scorePercentage: 80, answers: [] },
+        { scorePercentage: 70, answers: [] },
+        { scorePercentage: 65, answers: [] },
+        { scorePercentage: 60, answers: [] },
+        { scorePercentage: 55, answers: [] },
+        { scorePercentage: 50, answers: [] }
       ];
 
       localStorageMock.setItem('quizHistory', JSON.stringify(decliningHistory));
@@ -517,7 +513,7 @@ describe('useQuizProgress Hook', () => {
     });
 
     it('identifies stable trend', () => {
-      const stableHistory = Array.from({ length: 10 }, () => ({ scorePercentage: 75 }));
+      const stableHistory = Array.from({ length: 10 }, () => ({ scorePercentage: 75, answers: [] }));
 
       localStorageMock.setItem('quizHistory', JSON.stringify(stableHistory));
       const { result } = renderHook(() => useQuizProgress());
@@ -526,7 +522,7 @@ describe('useQuizProgress Hook', () => {
     });
 
     it('returns insufficient_data for small history', () => {
-      const smallHistory = [{ scorePercentage: 80 }];
+      const smallHistory = [{ scorePercentage: 80, answers: [] }];
 
       localStorageMock.setItem('quizHistory', JSON.stringify(smallHistory));
       const { result } = renderHook(() => useQuizProgress());
@@ -598,11 +594,11 @@ describe('useQuizProgress Hook', () => {
   describe('Streak Calculation', () => {
     it('calculates correct streak for consecutive good scores', () => {
       const streakHistory = [
-        { scorePercentage: 60 }, // Not part of streak
-        { scorePercentage: 85 }, // Start of streak
-        { scorePercentage: 90 },
-        { scorePercentage: 95 },
-        { scorePercentage: 80 } // End of streak (last quiz)
+        { scorePercentage: 60, answers: [] }, // Not part of streak
+        { scorePercentage: 85, answers: [] }, // Start of streak
+        { scorePercentage: 90, answers: [] },
+        { scorePercentage: 95, answers: [] },
+        { scorePercentage: 80, answers: [] } // End of streak (last quiz)
       ];
 
       localStorageMock.setItem('quizHistory', JSON.stringify(streakHistory));
@@ -613,9 +609,9 @@ describe('useQuizProgress Hook', () => {
 
     it('returns 0 streak for poor recent performance', () => {
       const noStreakHistory = [
-        { scorePercentage: 90 },
-        { scorePercentage: 95 },
-        { scorePercentage: 70 } // Last quiz < 80%
+        { scorePercentage: 90, answers: [] },
+        { scorePercentage: 95, answers: [] },
+        { scorePercentage: 70, answers: [] } // Last quiz < 80%
       ];
 
       localStorageMock.setItem('quizHistory', JSON.stringify(noStreakHistory));

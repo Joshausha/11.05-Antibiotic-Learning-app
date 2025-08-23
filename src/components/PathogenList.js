@@ -27,17 +27,17 @@ import {
 } from 'lucide-react';
 
 const PathogenList = ({ 
-  pathogens, 
-  onSelectPathogen, 
-  selectedPathogen,
-  searchTerm,
-  onSearch,
-  gramFilter,
-  onGramFilter,
-  severityFilter,
-  onSeverityFilter,
-  durationFilter,
-  onDurationFilter
+  pathogens = [], 
+  onSelectPathogen = () => {}, 
+  selectedPathogen = null,
+  searchTerm = '',
+  onSearch = () => {},
+  gramFilter = 'all',
+  onGramFilter = () => {},
+  severityFilter = 'all',
+  onSeverityFilter = () => {},
+  durationFilter = 'all',
+  onDurationFilter = () => {}
 }) => {
   // Handle search input change
   const handleSearchChange = (event) => {
@@ -230,10 +230,11 @@ const PathogenList = ({
             {pathogens.map((pathogen) => (
               <div
                 key={pathogen.id}
+                data-testid={`pathogen-${pathogen.id}`}
                 onClick={() => onSelectPathogen(pathogen)}
                 className={`p-3 rounded-lg cursor-pointer transition-colors ${
                   selectedPathogen?.id === pathogen.id
-                    ? 'bg-blue-50 border-2 border-blue-200'
+                    ? 'bg-blue-50 border-2 border-blue-200 selected'
                     : 'hover:bg-gray-50 border-2 border-transparent'
                 }`}
               >

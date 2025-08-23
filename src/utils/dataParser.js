@@ -147,6 +147,7 @@ export const parsePathogen = (pathogenText) => {
     details: details,
     gramStatus: gramStatus,
     type: pathogenType,
+    pathogenType: pathogenType,
     spectrumCategory: spectrumCategory, // New field for visualization grouping
     isValid: true
   };
@@ -687,8 +688,28 @@ export const getAntibioticsBySpectrum = (pathogenCategory, minScore = 5) => {
 };
 
 export const getSpectrumOverlap = (antibiotic1, antibiotic2) => {
-  const data1 = antibioticSpectrumData[antibiotic1];
-  const data2 = antibioticSpectrumData[antibiotic2];
+  // Handle case-insensitive lookups
+  const findAntibioticData = (name) => {
+    // Handle null/undefined input
+    if (!name || typeof name !== 'string') return null;
+    
+    // Try exact match first
+    if (antibioticSpectrumData[name]) return antibioticSpectrumData[name];
+    
+    // Try capitalized version
+    const capitalized = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    if (antibioticSpectrumData[capitalized]) return antibioticSpectrumData[capitalized];
+    
+    // Try all lowercase
+    const lowercase = name.toLowerCase();
+    const match = Object.keys(antibioticSpectrumData).find(key => 
+      key.toLowerCase() === lowercase
+    );
+    return match ? antibioticSpectrumData[match] : null;
+  };
+  
+  const data1 = findAntibioticData(antibiotic1);
+  const data2 = findAntibioticData(antibiotic2);
   
   if (!data1 || !data2) return 0;
   
@@ -696,9 +717,17 @@ export const getSpectrumOverlap = (antibiotic1, antibiotic2) => {
   let totalOverlap = 0;
   
   categories.forEach(category => {
-    const min = Math.min(data1.spectrum[category], data2.spectrum[category]);
-    const max = Math.max(data1.spectrum[category], data2.spectrum[category]);
-    totalOverlap += max > 0 ? min / max : 0;
+    const val1 = data1.spectrum[category];
+    const val2 = data2.spectrum[category];
+    
+    // For identical antibiotics, each category should have perfect overlap
+    if (antibiotic1 === antibiotic2) {
+      totalOverlap += 1; // Perfect overlap for each category
+    } else {
+      const min = Math.min(val1, val2);
+      const max = Math.max(val1, val2);
+      totalOverlap += max > 0 ? min / max : 0;
+    }
   });
   
   return totalOverlap / categories.length;
@@ -780,6 +809,11 @@ export const neo4jSchema = {
 
 // Transform medical conditions data to Neo4j format
 export const transformToNeo4jFormat = (medicalConditions) => {
+  // Handle null/undefined input
+  if (!medicalConditions || !Array.isArray(medicalConditions)) {
+    return { nodes: [], relationships: [] };
+  }
+  
   const nodes = [];
   const relationships = [];
   
@@ -833,8 +867,8 @@ export const transformToNeo4jFormat = (medicalConditions) => {
           // Create CAUSES relationship
           relationships.push({
             type: 'CAUSES',
-            from: { type: 'PATHOGEN', id: pathogenId },
-            to: { type: 'CONDITION', id: condition.id },
+            from: pathogenId,
+            to: condition.id,
             properties: {
               frequency: 'common', // Would be derived from clinical data
               severity: condition.severity || 'moderate'
@@ -884,8 +918,8 @@ export const transformToNeo4jFormat = (medicalConditions) => {
               // Create BELONGS_TO relationship
               relationships.push({
                 type: 'BELONGS_TO',
-                from: { type: 'ANTIBIOTIC', id: antibioticId },
-                to: { type: 'DRUG_CLASS', id: drugClassId },
+                from: antibioticId,
+                to: drugClassId,
                 properties: {}
               });
             }
@@ -900,8 +934,8 @@ export const transformToNeo4jFormat = (medicalConditions) => {
                   
                   relationships.push({
                     type: 'TREATS',
-                    from: { type: 'ANTIBIOTIC', id: antibioticId },
-                    to: { type: 'PATHOGEN', id: pathogenId },
+                    from: antibioticId,
+                    to: pathogenId,
                     properties: {
                       effectiveness: effectiveness,
                       clinical_evidence: context,
@@ -979,8 +1013,8 @@ const identifyAntibioticSynergies = (antibioticIds) => {
     if (antibioticIds.includes(drug1) && antibioticIds.includes(drug2)) {
       synergies.push({
         type: 'SYNERGISTIC_WITH',
-        from: { type: 'ANTIBIOTIC', id: drug1 },
-        to: { type: 'ANTIBIOTIC', id: drug2 },
+        from: drug1,
+        to: drug2,
         properties: {
           synergy_score: synergy.score,
           mechanism: synergy.mechanism
@@ -994,19 +1028,28 @@ const identifyAntibioticSynergies = (antibioticIds) => {
 
 // Generate Cypher queries for Neo4j
 export const generateCypherQueries = (neo4jData) => {
-  const { nodes, relationships } = neo4jData;
+  // Handle null/undefined input
+  if (!neo4jData || typeof neo4jData !== 'object') {
+    return {
+      nodes: [],
+      relationships: []
+    };
+  }
   
-  const queries = [];
+  const { nodes = [], relationships = [] } = neo4jData;
+  
+  const nodeQueries = [];
+  const relationshipQueries = [];
   
   // Node creation queries
-  const nodeQueries = nodes.reduce((acc, node) => {
+  const nodesByType = nodes.reduce((acc, node) => {
     const nodeType = node.type;
     if (!acc[nodeType]) acc[nodeType] = [];
     acc[nodeType].push(node);
     return acc;
   }, {});
   
-  Object.entries(nodeQueries).forEach(([type, nodeList]) => {
+  Object.entries(nodesByType).forEach(([type, nodeList]) => {
     const batchSize = 100;
     for (let i = 0; i < nodeList.length; i += batchSize) {
       const batch = nodeList.slice(i, i + batchSize);
@@ -1016,7 +1059,7 @@ export const generateCypherQueries = (neo4jData) => {
         SET n = node.properties
         SET n.id = node.id
       `;
-      queries.push({
+      nodeQueries.push({
         query,
         parameters: { nodes: batch }
       });
@@ -1042,14 +1085,17 @@ export const generateCypherQueries = (neo4jData) => {
         CREATE (from)-[r:${type}]->(to)
         SET r = rel.properties
       `;
-      queries.push({
+      relationshipQueries.push({
         query,
         parameters: { relationships: batch }
       });
     }
   });
   
-  return queries;
+  return {
+    nodes: nodeQueries.map(q => q.query),
+    relationships: relationshipQueries.map(q => q.query)
+  };
 };
 
 // Advanced graph analysis queries
@@ -1442,9 +1488,22 @@ export const VISUALIZATION_DOCUMENTATION = {
  * @returns {Object} - Processed data with pathogens and antibiotics
  */
 export const processConditionsData = (conditions) => {
+  // Handle null/undefined input
+  if (!conditions || !Array.isArray(conditions)) {
+    return {
+      pathogens: [],
+      antibiotics: [],
+      totalPathogens: 0,
+      totalAntibiotics: 0,
+      conditions: [],
+      relationships: []
+    };
+  }
+  
   const pathogens = new Map();
   const antibiotics = new Map();
   const conditionMap = new Map();
+  const relationships = [];
   
   conditions.forEach(condition => {
     conditionMap.set(condition.id, condition);
@@ -1465,6 +1524,16 @@ export const processConditionsData = (conditions) => {
           const pathogenData = pathogens.get(pathogen.name);
           pathogenData.conditions.add(condition.id);
           pathogenData.count++;
+          
+          // Create relationship
+          relationships.push({
+            type: 'PATHOGEN_CAUSES',
+            from: pathogen.name,
+            to: condition.name,
+            properties: {
+              frequency: 'common'
+            }
+          });
         }
       });
     }
@@ -1488,6 +1557,16 @@ export const processConditionsData = (conditions) => {
             antibioticData.conditions.add(condition.id);
             antibioticData.therapyContexts.add(`${condition.name}: ${therapyText}`);
             antibioticData.count++;
+            
+            // Create relationship
+            relationships.push({
+              type: 'ANTIBIOTIC_TREATS',
+              from: antibiotic.name,
+              to: condition.name,
+              properties: {
+                context: therapyText
+              }
+            });
           }
         });
       });
@@ -1512,6 +1591,7 @@ export const processConditionsData = (conditions) => {
     antibiotics: antibioticArray,
     totalPathogens: pathogenArray.length,
     totalAntibiotics: antibioticArray.length,
-    conditions: Array.from(conditionMap.values())
+    conditions: Array.from(conditionMap.values()),
+    relationships: relationships
   };
 };

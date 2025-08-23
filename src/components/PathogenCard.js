@@ -30,7 +30,7 @@ import {
 import { DurationSummary } from './DurationIndicator';
 import { getPathogenDurationInfo } from '../data/durationMappings';
 
-const PathogenCard = ({ pathogen, onClose }) => {
+const PathogenCard = ({ pathogen = null, onClose = () => {} }) => {
   // Get duration information for this pathogen
   const pathogenDurationInfo = useMemo(() => {
     if (!pathogen) return null;
@@ -170,7 +170,7 @@ const PathogenCard = ({ pathogen, onClose }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border">
+    <div className="bg-white rounded-lg shadow-sm border" data-testid="pathogen-card">
       {/* Header */}
       <div className="p-4 border-b bg-gray-50">
         <div className="flex items-start justify-between">

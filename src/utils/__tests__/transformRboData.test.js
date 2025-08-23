@@ -3,41 +3,13 @@
  * Tests for transforming RBO clinical data and generating medical conditions files
  */
 
+// No mocking needed - using dependency injection
+
 import {
   loadAndTransformRboData,
   generateMedicalConditionsFile,
   rboJsonData
-} from '../transformRboData.js';
-
-// Mock the dataTransformation dependency
-jest.mock('../dataTransformation.js', () => ({
-  transformRboDataset: jest.fn((data) => 
-    data.map(item => ({
-      id: item.id,
-      name: item.name,
-      category: item.category,
-      description: item.description,
-      pathogens: item.commonPathogens || [],
-      empiricTherapy: item.empiricAntibioticTherapy || [],
-      duration: item.antibioticDuration || [],
-      notes: item.notes || [],
-      // Add transformed fields
-      complexity: 'medium',
-      riskLevel: 'standard',
-      transformed: true
-    }))
-  ),
-  getDatasetStats: jest.fn((data) => ({
-    totalConditions: data.length,
-    averagePathogens: 5.2,
-    averageTherapyOptions: 3.1,
-    complexityDistribution: {
-      low: 0,
-      medium: data.length,
-      high: 0
-    }
-  }))
-}));
+} from '../transformRboData';
 
 describe('RBO Data Transformation', () => {
   describe('RBO JSON Data Structure', () => {
@@ -187,7 +159,37 @@ describe('RBO Data Transformation', () => {
 
   describe('Data Transformation Process', () => {
     test('should successfully load and transform RBO data', async () => {
-      const transformedData = await loadAndTransformRboData();
+      // Create mock functions for dependency injection
+      const mockTransformFn = jest.fn((data) => {
+        if (!Array.isArray(data)) return [];
+        return data.map(item => ({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          description: item.description,
+          pathogens: item.commonPathogens || [],
+          empiricTherapy: item.empiricAntibioticTherapy || [],
+          duration: item.antibioticDuration || [],
+          notes: item.notes || [],
+          // Add transformed fields
+          complexity: 'medium',
+          riskLevel: 'standard',
+          transformed: true
+        }));
+      });
+
+      const mockStatsFn = jest.fn(() => ({
+        totalConditions: 1,
+        averagePathogens: 5.2,
+        averageTherapyOptions: 3.1,
+        complexityDistribution: {
+          low: 0,
+          medium: 1,
+          high: 0
+        }
+      }));
+
+      const transformedData = await loadAndTransformRboData(mockTransformFn, mockStatsFn);
       
       expect(Array.isArray(transformedData)).toBe(true);
       expect(transformedData.length).toBeGreaterThan(0);
@@ -200,7 +202,28 @@ describe('RBO Data Transformation', () => {
     });
 
     test('should preserve original data structure while adding transformations', async () => {
-      const transformedData = await loadAndTransformRboData();
+      // Create mock function that preserves original data structure
+      const mockTransformFn = jest.fn((data) => {
+        if (!Array.isArray(data)) return [];
+        return data.map(item => ({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          description: item.description,
+          pathogens: item.commonPathogens || [],
+          empiricTherapy: item.empiricAntibioticTherapy || [],
+          duration: item.antibioticDuration || [],
+          notes: item.notes || [],
+          // Add transformed fields
+          complexity: 'medium',
+          riskLevel: 'standard',
+          transformed: true
+        }));
+      });
+
+      const mockStatsFn = jest.fn(() => ({ totalConditions: 1 }));
+
+      const transformedData = await loadAndTransformRboData(mockTransformFn, mockStatsFn);
       const firstItem = transformedData[0];
       
       // Should preserve original fields
@@ -215,22 +238,24 @@ describe('RBO Data Transformation', () => {
     });
 
     test('should handle transformation errors gracefully', async () => {
-      // Mock transformation to throw error
-      const { transformRboDataset } = require('../dataTransformation.js');
-      transformRboDataset.mockImplementationOnce(() => {
+      // Create mock function that throws error
+      const mockTransformFn = jest.fn(() => {
         throw new Error('Transformation failed');
       });
       
-      const result = await loadAndTransformRboData();
+      const mockStatsFn = jest.fn(() => ({ totalConditions: 0 }));
+      
+      const result = await loadAndTransformRboData(mockTransformFn, mockStatsFn);
       expect(result).toEqual([]);
     });
 
     test('should call dataset statistics calculation', async () => {
-      const { getDatasetStats } = require('../dataTransformation.js');
+      const mockTransformFn = jest.fn((data) => data.map(item => ({ ...item, transformed: true })));
+      const mockStatsFn = jest.fn(() => ({ totalConditions: 1 }));
       
-      await loadAndTransformRboData();
+      await loadAndTransformRboData(mockTransformFn, mockStatsFn);
       
-      expect(getDatasetStats).toHaveBeenCalled();
+      expect(mockStatsFn).toHaveBeenCalled();
     });
   });
 
@@ -459,7 +484,24 @@ describe('RBO Data Transformation', () => {
     });
 
     test('should be compatible with existing medical conditions structure', async () => {
-      const transformedData = await loadAndTransformRboData();
+      const mockTransformFn = jest.fn((data) => {
+        if (!Array.isArray(data)) return [];
+        return data.map(item => ({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          description: item.description,
+          pathogens: item.commonPathogens || [],
+          empiricTherapy: item.empiricAntibioticTherapy || [],
+          duration: item.antibioticDuration || [],
+          notes: item.notes || [],
+          transformed: true
+        }));
+      });
+
+      const mockStatsFn = jest.fn(() => ({ totalConditions: 1 }));
+
+      const transformedData = await loadAndTransformRboData(mockTransformFn, mockStatsFn);
       
       // Should have fields compatible with existing app structure
       const firstItem = transformedData[0];

@@ -8,7 +8,7 @@
  * @param {Array} empiricAntibioticTherapy - Array of therapy objects from RBO_JSON
  * @returns {Object} - Simplified therapy object for application use
  */
-export const transformEmpirицTherapy = (empiricAntibioticTherapy) => {
+export const transformEmpiricTherapy = (empiricAntibioticTherapy) => {
   if (!Array.isArray(empiricAntibioticTherapy)) {
     return {};
   }
@@ -126,10 +126,11 @@ export const transformCondition = (rboCondition) => {
     name: rboCondition.name,
     description: rboCondition.description || '',
     commonPathogens: transformPathogens(rboCondition.commonPathogens || []),
-    empiricTherapy: transformEmpirицTherapy(rboCondition.empiricAntibioticTherapy || []),
+    empiricTherapy: transformEmpiricTherapy(rboCondition.empiricAntibioticTherapy || []),
     duration: transformDuration(rboCondition.antibioticDuration || []),
     keyPoints: keyPoints,
     clinicalPearls: clinicalPearls,
+    transformed: true,
     // Keep original data for reference if needed
     _originalData: {
       antibioticDuration: rboCondition.antibioticDuration,
@@ -144,13 +145,28 @@ export const transformCondition = (rboCondition) => {
  * @returns {Array} - Array of transformed conditions for application use
  */
 export const transformRboDataset = (rboData) => {
+  console.log('transformRboDataset input:', typeof rboData, Array.isArray(rboData), rboData ? rboData.length : 'null');
+  
   if (!Array.isArray(rboData)) {
     console.error('RBO data must be an array');
     return [];
   }
 
-  return rboData.map(condition => transformCondition(condition))
-                .filter(condition => condition !== null);
+  try {
+    const mapped = rboData.map(condition => {
+      console.log('Transforming condition:', condition ? condition.id : 'null condition');
+      return transformCondition(condition);
+    });
+    console.log('Mapped result:', mapped.length, 'items');
+    
+    const filtered = mapped.filter(condition => condition !== null);
+    console.log('Filtered result:', filtered.length, 'items');
+    
+    return filtered;
+  } catch (error) {
+    console.error('Error in transformRboDataset:', error);
+    return [];
+  }
 };
 
 /**

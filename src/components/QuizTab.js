@@ -19,7 +19,7 @@ import ErrorMessage from './ErrorMessage';
 import NorthwesternQuizComponent from './NorthwesternQuizComponent';
 import spacedRepetitionManager from '../utils/spacedRepetitionManager';
 
-const QuizTab = ({ quizQuestions, setActiveTab }) => {
+const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
   // Quiz state management
   const [quizMode, setQuizMode] = useState(false);
   const [currentQuizQuestion, setCurrentQuizQuestion] = useState(0);
@@ -32,7 +32,7 @@ const QuizTab = ({ quizQuestions, setActiveTab }) => {
   // Difficulty selection state
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
   const [showDifficultySelection, setShowDifficultySelection] = useState(false);
-  const [filteredQuestions, setFilteredQuestions] = useState(quizQuestions);
+  const [filteredQuestions, setFilteredQuestions] = useState(quizQuestions || []);
   
   // Spaced repetition state
   const [useSpacedRepetition, setUseSpacedRepetition] = useState(true);
@@ -42,19 +42,21 @@ const QuizTab = ({ quizQuestions, setActiveTab }) => {
 
   // Filter questions by difficulty or Northwestern focus
   const filterQuestionsByDifficulty = (difficulty) => {
+    const safeQuestions = quizQuestions || [];
     if (difficulty === 'all') {
-      return quizQuestions;
+      return safeQuestions;
     }
     if (difficulty === 'northwestern') {
-      return quizQuestions.filter(q => q.northwesternFocus === true);
+      return safeQuestions.filter(q => q.northwesternFocus === true);
     }
-    return quizQuestions.filter(q => q.difficulty === difficulty);
+    return safeQuestions.filter(q => q.difficulty === difficulty);
   };
 
   // Get difficulty statistics including Northwestern questions
   const difficultyStats = useMemo(() => {
     const stats = { all: 0, beginner: 0, intermediate: 0, advanced: 0, northwestern: 0 };
-    quizQuestions.forEach(q => {
+    const safeQuestions = quizQuestions || [];
+    safeQuestions.forEach(q => {
       stats.all++;
       const difficulty = q.difficulty || 'intermediate';
       stats[difficulty] = (stats[difficulty] || 0) + 1;
@@ -312,6 +314,9 @@ const QuizTab = ({ quizQuestions, setActiveTab }) => {
                 <h3 className="font-semibold text-green-800">Adaptive Learning (FSRS)</h3>
               </div>
               <button
+                role="switch"
+                aria-checked={useSpacedRepetition}
+                aria-label="Toggle adaptive learning with FSRS algorithm"
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
                   useSpacedRepetition ? 'bg-green-600' : 'bg-gray-200'
                 }`}

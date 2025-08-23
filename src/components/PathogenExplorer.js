@@ -23,28 +23,31 @@ const PathogenExplorer = ({
   onSelectCondition,
   userBehavior = {}
 }) => {
+  // Defensive programming: Handle case where pathogenData prop is not provided
+  const safePathogenData = pathogenData || {};
+  
   const {
-    pathogens,
-    selectedPathogen,
-    selectedPathogenConditions,
-    selectedPathogenAntibiotics,
-    pathogenStats,
-    filteredStats,
-    searchQuery,
-    gramFilter,
-    typeFilter,
-    sortBy,
-    searchPathogens,
-    filterByGramStatus,
-    filterByType,
-    setSortOrder,
-    selectPathogen,
-    clearSelection,
-    clearFilters,
-    findSimilarPathogens,
-    isLoading,
-    indexes
-  } = pathogenData;
+    pathogens = [],
+    selectedPathogen = null,
+    selectedPathogenConditions = [],
+    selectedPathogenAntibiotics = [],
+    pathogenStats = null,
+    filteredStats = null,
+    searchQuery = '',
+    gramFilter = 'all',
+    typeFilter = 'all',
+    sortBy = 'name',
+    searchPathogens = () => {},
+    filterByGramStatus = () => {},
+    filterByType = () => {},
+    setSortOrder = () => {},
+    selectPathogen = () => {},
+    clearSelection = () => {},
+    clearFilters = () => {},
+    findSimilarPathogens = () => [],
+    isLoading = false,
+    indexes = null
+  } = safePathogenData;
 
   // New state for enhanced exploration
   const [viewMode, setViewMode] = useState('grid'); // 'grid', 'network', 'explorer'
@@ -52,8 +55,8 @@ const PathogenExplorer = ({
   const [showRecommendations, setShowRecommendations] = useState(true);
   const [explorationHistory, setExplorationHistory] = useState([]);
 
-  // Enhanced pathogen recommendations
-  const recommendations = usePathogenRecommendations(indexes, selectedPathogen, userBehavior);
+  // Agent 25's Defensive Programming: Enhanced pathogen recommendations with null safety
+  const recommendations = usePathogenRecommendations(indexes, selectedPathogen, userBehavior || {});
 
   // Build network data for visualization
   const networkData = useMemo(() => {
@@ -67,7 +70,8 @@ const PathogenExplorer = ({
 
     const conditions = getConditionsForPathogen(indexes, selectedPathogen.name);
     const antibiotics = getAntibioticsForPathogen(indexes, selectedPathogen.name);
-    const similarPathogens = findSimilarPathogens(selectedPathogen).slice(0, 8);
+    // Agent 25's Defensive Programming: Safe similar pathogen processing with null safety
+    const similarPathogens = (findSimilarPathogens(selectedPathogen) || []).slice(0, 8);
 
     return {
       pathogen: selectedPathogen,
@@ -96,8 +100,8 @@ const PathogenExplorer = ({
       }
     ]);
 
-    // Record interaction for recommendations
-    if (recommendations.recordInteraction) {
+    // Agent 25's Defensive Programming: Safe recommendation interaction recording
+    if (recommendations && typeof recommendations.recordInteraction === 'function') {
       recommendations.recordInteraction(pathogen, 'select');
     }
   };
@@ -156,7 +160,7 @@ const PathogenExplorer = ({
             {[
               { id: 'grid', icon: Grid, label: 'Grid View' },
               { id: 'network', icon: Network, label: 'Network View' },
-              { id: 'explorer', icon: Eye, label: 'Connection Explorer' }
+              { id: 'explorer', icon: Eye, label: 'Explorer View' }
             ].map(({ id, icon: Icon, label }) => (
               <button
                 key={id}
@@ -167,6 +171,7 @@ const PathogenExplorer = ({
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
                 title={label}
+                aria-label={label}
               >
                 <Icon size={16} />
                 <span className="hidden sm:inline">{label.split(' ')[0]}</span>
@@ -211,7 +216,7 @@ const PathogenExplorer = ({
             Reset
           </button>
           
-          {recommendations.recommendations.length > 0 && (
+          {recommendations?.length > 0 && (
             <button
               onClick={() => setShowRecommendations(!showRecommendations)}
               className={`flex items-center gap-1 px-3 py-1 text-sm border rounded-lg transition-colors ${
@@ -221,7 +226,7 @@ const PathogenExplorer = ({
               }`}
             >
               <Zap size={14} />
-              Recommendations ({recommendations.recommendations.length})
+              Recommendations ({recommendations?.length || 0})
             </button>
           )}
         </div>
@@ -242,6 +247,7 @@ const PathogenExplorer = ({
               <input
                 type="text"
                 placeholder="Search pathogens..."
+                aria-label="Search pathogens"
                 value={searchQuery}
                 onChange={(e) => searchPathogens(e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -258,6 +264,7 @@ const PathogenExplorer = ({
                   value={gramFilter}
                   onChange={(e) => filterByGramStatus(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Gram status"
                 >
                   <option value="all">All</option>
                   <option value="positive">Gram Positive</option>
@@ -348,6 +355,21 @@ const PathogenExplorer = ({
               ))}
             </div>
           </div>
+
+          {/* Pathogen Details in Grid View */}
+          {selectedPathogen && (
+            <div className="bg-white rounded-xl shadow-sm border p-6">
+              <Suspense fallback={<div className="h-64 bg-gray-100 rounded-lg animate-pulse" />}>
+                <PathogenDetailPanel
+                  pathogen={selectedPathogen}
+                  similarPathogens={findSimilarPathogens ? findSimilarPathogens(selectedPathogen) : []}
+                  treatmentOptions={selectedPathogenAntibiotics || []}
+                  clinicalConditions={selectedPathogenConditions || []}
+                  onSelectCondition={onSelectCondition}
+                />
+              </Suspense>
+            </div>
+          )}
         </div>
       )}
 
@@ -360,7 +382,7 @@ const PathogenExplorer = ({
                 <Network className="h-12 w-12 text-gray-400" />
               </div>}>
                 <PathogenNetworkVisualization
-                  network={indexes ? buildPathogenNetwork(indexes.pathogenIndex, indexes.conditionIndex) : null}
+                  network={indexes ? buildPathogenNetwork(indexes) : null}
                   selectedPathogen={selectedPathogen}
                   onSelectPathogen={handlePathogenSelect}
                   onShowPathDetails={(pathogen) => {/* Network pathogen details shown */}}
@@ -419,7 +441,7 @@ const PathogenExplorer = ({
       )}
 
       {/* Recommendations Panel */}
-      {showRecommendations && recommendations.recommendations.length > 0 && (
+      {showRecommendations && recommendations?.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -435,7 +457,7 @@ const PathogenExplorer = ({
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recommendations.recommendations.slice(0, 6).map((rec, index) => {
+            {recommendations?.slice(0, 6)?.map((rec, index) => {
               const pathogen = indexes?.pathogens.find(p => p.name === rec.pathogen);
               if (!pathogen) return null;
 

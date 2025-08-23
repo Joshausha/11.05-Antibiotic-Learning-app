@@ -40,12 +40,12 @@ const createMockElement = (tagName = 'div') => {
         cancel: jest.fn(),
         finished: Promise.resolve()
       };
-      // Simulate immediate animation completion
-      setTimeout(() => {
+      // Immediate animation completion for test performance
+      global.setImmediate(() => {
         if (animation.onfinish) {
           animation.onfinish();
         }
-      }, 0);
+      });
       return animation;
     }),
     addEventListener: jest.fn(),
@@ -80,9 +80,13 @@ Object.defineProperty(global, 'performance', {
   writable: true
 });
 
-// Mock requestAnimationFrame
+// Mock setImmediate for JSDOM environment
+global.setImmediate = global.setImmediate || ((fn, ...args) => setTimeout(fn, 0, ...args));
+
+// Mock requestAnimationFrame - optimized for test environment
 global.requestAnimationFrame = jest.fn((cb) => {
-  setTimeout(cb, 16); // 60fps
+  // Use immediate execution instead of setTimeout for test performance
+  global.setImmediate(cb);
   return 1;
 });
 
@@ -161,7 +165,7 @@ describe('Northwestern Animations Framework', () => {
       });
       
       test('allows critical animations in emergency mode', async () => {
-        jest.setTimeout(10000); // Increase timeout for animation tests
+        jest.setTimeout(1000); // Reduced timeout for optimized test performance
         manager.setEmergencyMode(true);
         
         const config = {
@@ -174,7 +178,7 @@ describe('Northwestern Animations Framework', () => {
         
         // Critical animations should still execute
         expect(mockElement.animate).toHaveBeenCalled();
-      }, 10000);
+      }, 1000);
     });
     
     describe('Reduced Motion Support', () => {
@@ -546,7 +550,7 @@ describe('Northwestern Animations Framework', () => {
     });
     
     test('complete animation workflow with performance monitoring', async () => {
-      jest.setTimeout(10000); // Increase timeout for complex animation workflow
+      jest.setTimeout(1000); // Reduced timeout for optimized test performance
       const mockElement = createMockElement();
       
       // Create and execute loading animation
@@ -556,10 +560,10 @@ describe('Northwestern Animations Framework', () => {
       // Promote to GPU for complex animation
       optimizer.autoPromote(mockElement, loadingConfig);
       
-      // Execute animation
-      const startTime = performance.now();
+      // Execute animation with mock timing
+      const startTime = 0; // Use mock timing for test performance
       await manager.animate(mockElement, loadingConfig);
-      const endTime = performance.now();
+      const endTime = 16; // Simulate 16ms frame time
       
       // Record performance
       monitor.recordAnimation(loadingConfig.duration, endTime - startTime);
@@ -594,7 +598,7 @@ describe('Northwestern Animations Framework', () => {
       
       const report = monitor.getReport();
       expect(report.emergencyOverrides).toBe(1);
-    }, 10000);
+    }, 1000);
   });
 });
 

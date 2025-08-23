@@ -31,6 +31,12 @@ class SpacedRepetitionManager {
    * @returns {Object} FSRS card object
    */
   convertQuestionToCard(question) {
+    // Add null safety for edge cases
+    if (!question) {
+      console.warn('Cannot convert null or undefined question to card');
+      return null;
+    }
+    
     const cardId = `question_${question.id || question.question?.substring(0, 50)}`;
     
     // Check if card already exists
@@ -179,13 +185,17 @@ class SpacedRepetitionManager {
     const cards = Object.values(this.cardData);
     const now = new Date();
 
+    // Calculate average interval only for cards that have been reviewed
+    const reviewedCards = cards.filter(c => c.reps > 0);
+    const averageInterval = reviewedCards.length > 0 ? 
+      reviewedCards.reduce((sum, c) => sum + (c.scheduled_days || 1), 0) / reviewedCards.length : 0;
+
     const analytics = {
       totalCards: cards.length,
       dueToday: cards.filter(c => c.due <= now).length,
       learned: cards.filter(c => c.reps > 0).length,
       mature: cards.filter(c => c.stability > 21).length, // 3+ weeks stability
-      averageInterval: cards.length > 0 ? 
-        cards.reduce((sum, c) => sum + c.scheduled_days, 0) / cards.length : 0,
+      averageInterval: averageInterval,
       retentionRate: this.calculateRetentionRate(),
       streakCount: this.calculateStreakCount(),
       weeklyProgress: this.getWeeklyProgress()

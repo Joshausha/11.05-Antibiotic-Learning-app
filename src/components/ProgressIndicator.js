@@ -37,7 +37,14 @@ export const ProgressBar = ({
           </span>
         )}
       </div>
-      <div className="progress-bar">
+      <div 
+        className="progress-bar"
+        role="progressbar"
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-label={`Progress: ${percentage}%`}
+      >
         <div 
           className={`progress-fill ${colorClasses[color]}`}
           style={{ width: `${percentage}%` }}
@@ -132,7 +139,14 @@ export const CircularProgress = ({
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div 
+      className={`relative ${className}`}
+      role="progressbar"
+      aria-valuenow={progress}
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-label={`Progress: ${percentage}%`}
+    >
       <svg width={width} height={height} className="transform -rotate-90">
         <circle
           cx={width / 2}

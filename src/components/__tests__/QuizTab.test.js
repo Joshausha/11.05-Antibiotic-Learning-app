@@ -8,7 +8,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import QuizTab from '../QuizTab';
-import { renderWithContext } from '../../__tests__/utils/testUtils';
+import { renderWithContext } from '../../utils/testUtils';
 
 // Mock spaced repetition manager
 jest.mock('../../utils/spacedRepetitionManager', () => ({
@@ -268,8 +268,10 @@ describe('QuizTab Component', () => {
       });
 
       // Check that the correct answer is highlighted green
-      const correctAnswer = screen.getByText(/Amoxicillin/i).closest('button');
-      expect(correctAnswer).toHaveClass('bg-green-50', 'border-green-500');
+      // Use getAllByText to find all instances, then find the one that's a button
+      const amoxicillinElements = screen.getAllByText(/Amoxicillin/i);
+      const correctAnswerButton = amoxicillinElements.find(el => el.closest('button'));
+      expect(correctAnswerButton.closest('button')).toHaveClass('bg-green-50', 'border-green-500');
       expect(screen.getByText('✓')).toBeInTheDocument();
     });
 

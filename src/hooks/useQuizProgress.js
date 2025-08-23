@@ -5,7 +5,7 @@
  * @returns {Object} - Quiz progress state and methods
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import useLocalStorage from './useLocalStorage';
 
 const useQuizProgress = () => {
@@ -21,7 +21,7 @@ const useQuizProgress = () => {
     const bestScore = totalQuizzes > 0
       ? Math.max(...quizHistory.map(quiz => quiz.scorePercentage))
       : 0;
-    const recentQuizzes = quizHistory.slice(-5).reverse(); // Last 5 quizzes
+    const recentQuizzes = quizHistory.slice().reverse().slice(0, 5); // Most recent 5 quizzes, newest first
     
     return {
       totalQuizzes,
@@ -49,27 +49,35 @@ const useQuizProgress = () => {
 
   // Record an answer
   const recordAnswer = useCallback((questionIndex, selectedAnswer, correctAnswer, questionText) => {
-    if (!currentSession) return;
+    setCurrentSession(prevSession => {
+      if (!prevSession) return prevSession; // Gracefully handle missing session
 
-    const answerRecord = {
-      questionIndex,
-      questionText,
-      selectedAnswer,
-      correctAnswer,
-      isCorrect: selectedAnswer === correctAnswer,
-      timestamp: new Date().toISOString()
-    };
+      const answerRecord = {
+        questionIndex,
+        questionText,
+        selectedAnswer,
+        correctAnswer,
+        isCorrect: selectedAnswer === correctAnswer,
+        timestamp: new Date().toISOString()
+      };
 
-    setCurrentSession(prev => ({
-      ...prev,
-      answers: [...prev.answers, answerRecord],
-      currentQuestion: questionIndex + 1
-    }));
-  }, [currentSession]);
+      return {
+        ...prevSession,
+        answers: [...prevSession.answers, answerRecord],
+        currentQuestion: prevSession.currentQuestion + 1
+      };
+    });
+  }, []);
 
   // Complete the quiz and save to history
   const completeQuiz = useCallback(() => {
-    if (!currentSession || currentSession.answers.length === 0) return null;
+    if (!currentSession) return null;
+    
+    // Handle edge case for quiz with zero questions
+    if (currentSession.totalQuestions === 0) {
+      setCurrentSession(null);
+      return null;
+    }
 
     const endTime = new Date().toISOString();
     const correctAnswers = currentSession.answers.filter(answer => answer.isCorrect).length;
@@ -126,7 +134,7 @@ const useQuizProgress = () => {
     );
 
     return {
-      topic,
+      topic: topic.toLowerCase(),
       totalQuestions: totalTopicQuestions,
       correctAnswers: correctTopicAnswers,
       accuracy: Math.round((correctTopicAnswers / totalTopicQuestions) * 100)
@@ -162,18 +170,19 @@ function calculateDuration(startTime, endTime) {
 function calculateImprovementTrend(history) {
   if (history.length < 2) return 'insufficient_data';
   
-  const recent = history.slice(-5);
-  const older = history.slice(-10, -5);
+  // Split history into first half and second half
+  const firstHalf = history.slice(0, Math.floor(history.length / 2));
+  const secondHalf = history.slice(Math.floor(history.length / 2));
   
-  if (older.length === 0) return 'insufficient_data';
+  if (firstHalf.length === 0 || secondHalf.length === 0) return 'insufficient_data';
   
-  const recentAvg = recent.reduce((sum, quiz) => sum + quiz.scorePercentage, 0) / recent.length;
-  const olderAvg = older.reduce((sum, quiz) => sum + quiz.scorePercentage, 0) / older.length;
+  const firstHalfAvg = firstHalf.reduce((sum, quiz) => sum + quiz.scorePercentage, 0) / firstHalf.length;
+  const secondHalfAvg = secondHalf.reduce((sum, quiz) => sum + quiz.scorePercentage, 0) / secondHalf.length;
   
-  const difference = recentAvg - olderAvg;
+  const difference = secondHalfAvg - firstHalfAvg;
   
-  if (difference > 5) return 'improving';
-  if (difference < -5) return 'declining';
+  if (difference > 10) return 'improving';  // More than 10% improvement
+  if (difference < -10) return 'declining'; // More than 10% decline
   return 'stable';
 }
 

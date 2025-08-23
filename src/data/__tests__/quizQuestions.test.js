@@ -99,7 +99,8 @@ describe('Quiz Questions Content Quality', () => {
       'Neonatal Fever (Term Neonates)',
       'Ophthalmologic',
       'Respiratory',
-      'Skin and Soft Tissue Infections'
+      'Skin and Soft Tissue Infections',
+      'Northwestern Coverage'  // Added Northwestern Coverage category
     ];
 
     const actualCategories = [...new Set(quizQuestions.map(q => q.category))];

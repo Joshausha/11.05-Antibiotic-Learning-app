@@ -41,7 +41,9 @@ describe('Header Component', () => {
   test('renders mobile menu button when on mobile', () => {
     render(<Header {...defaultProps} isMobile={true} />);
     
-    const menuButton = screen.getByLabelText(/toggle menu/i);
+    // Defensive query - try multiple patterns for ARIA label
+    const menuButton = screen.getByLabelText(/toggle navigation menu/i) || 
+                      screen.getByLabelText(/toggle menu/i);
     expect(menuButton).toBeInTheDocument();
   });
 
@@ -73,7 +75,8 @@ describe('Header Component', () => {
   test('mobile menu button toggles menu visibility', () => {
     render(<Header {...defaultProps} isMobile={true} />);
     
-    const menuButton = screen.getByLabelText(/toggle menu/i);
+    // Defensive query matching actual aria-label
+    const menuButton = screen.getByLabelText(/toggle navigation menu/i);
     fireEvent.click(menuButton);
     
     expect(mockSetShowMobileMenu).toHaveBeenCalledWith(true);
@@ -107,8 +110,9 @@ describe('Header Component', () => {
   test('navigation items have proper ARIA labels', () => {
     render(<Header {...defaultProps} isMobile={true} />);
     
-    const menuButton = screen.getByLabelText(/toggle menu/i);
-    expect(menuButton).toHaveAttribute('aria-label');
+    // Test menu button ARIA label specifically
+    const menuButton = screen.getByLabelText(/toggle navigation menu/i);
+    expect(menuButton).toHaveAttribute('aria-label', 'Toggle navigation menu');
   });
 
   // Additional comprehensive test cases for Phase 2 enhancement
@@ -248,13 +252,13 @@ describe('Header Component', () => {
     test('mobile menu button has proper ARIA states', () => {
       const { rerender } = render(<Header {...defaultProps} isMobile={true} showMobileMenu={false} />);
       
-      const menuButton = screen.getByLabelText(/toggle menu/i);
+      const menuButton = screen.getByLabelText(/toggle navigation menu/i);
       expect(menuButton).toHaveAttribute('aria-expanded', 'false');
       
       // Re-render with menu open
       rerender(<Header {...defaultProps} isMobile={true} showMobileMenu={true} />);
       
-      const openMenuButton = screen.getByLabelText(/toggle menu/i);
+      const openMenuButton = screen.getByLabelText(/toggle navigation menu/i);
       expect(openMenuButton).toHaveAttribute('aria-expanded', 'true');
     });
 
@@ -364,7 +368,7 @@ describe('Header Component', () => {
     test('mobile menu button has touch-friendly size', () => {
       render(<Header {...defaultProps} isMobile={true} />);
       
-      const menuButton = screen.getByLabelText(/toggle menu/i);
+      const menuButton = screen.getByLabelText(/toggle navigation menu/i);
       expect(menuButton).toHaveClass('p-2'); // Adequate touch target
       expect(menuButton).toHaveClass('touch-manipulation');
     });
@@ -450,13 +454,16 @@ describe('Header Component', () => {
       
       // Desktop mode should show navigation
       expect(screen.getByText('Learn')).toBeInTheDocument();
-      expect(screen.queryByLabelText(/toggle menu/i)).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/toggle navigation menu/i)).not.toBeInTheDocument();
       
       // Switch to mobile
       rerender(<Header {...defaultProps} isMobile={true} />);
       
-      // Mobile mode should show menu button
-      expect(screen.getByLabelText(/toggle menu/i)).toBeInTheDocument();
+      // Mobile mode should show menu button, desktop nav should be hidden
+      expect(screen.getByLabelText(/toggle navigation menu/i)).toBeInTheDocument();
+      
+      // Navigation items are hidden in mobile desktop mode (not in mobile menu)
+      // but mobile menu is closed by default, so Learn text should not be visible
       expect(screen.queryByText('Learn')).not.toBeInTheDocument();
     });
 

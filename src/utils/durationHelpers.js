@@ -169,13 +169,24 @@ const extractCondition = (duration) => {
 
 /**
  * Extract number of days from duration string
+ * For ranges, returns the minimum (start) value for conservative medical estimates
  * @param {string} duration - Duration string
  * @returns {number|null} Number of days or null if not found
  */
 const extractDaysFromString = (duration) => {
+  // Handle day ranges first (e.g., "10-14 days") - return minimum for conservative estimate
+  const dayRangeMatch = duration.match(/(\d+)[-–](\d+)\s*days?/);
+  if (dayRangeMatch) return parseInt(dayRangeMatch[1]); // Return minimum
+  
+  // Handle single day values
   const dayMatch = duration.match(/(\d+)\s*days?/);
   if (dayMatch) return parseInt(dayMatch[1]);
   
+  // Handle week ranges (e.g., "2-3 weeks") - return minimum for conservative estimate
+  const weekRangeMatch = duration.match(/(\d+)[-–](\d+)\s*weeks?/);
+  if (weekRangeMatch) return parseInt(weekRangeMatch[1]) * 7; // Return minimum
+  
+  // Handle single week values
   const weekMatch = duration.match(/(\d+)\s*weeks?/);
   if (weekMatch) return parseInt(weekMatch[1]) * 7;
   
@@ -184,16 +195,17 @@ const extractDaysFromString = (duration) => {
 
 /**
  * Determine duration category based on number of days
+ * Aligned with antimicrobial stewardship best practices
  * @param {number} days - Number of days
  * @returns {string} Category: short, medium, long, or extended
  */
 const determineCategory = (days) => {
   if (!days || days === null) return 'unknown';
   
-  if (days <= 7) return 'short';
-  if (days <= 21) return 'medium';
-  if (days <= 42) return 'long';
-  return 'extended';
+  if (days <= 14) return 'short';     // ≤2 weeks - most uncomplicated infections
+  if (days <= 21) return 'medium';    // 15-21 days - some complex infections
+  if (days <= 42) return 'long';      // 22-42 days - serious infections
+  return 'extended';                  // >42 days - chronic/complex cases
 };
 
 /**
@@ -322,12 +334,66 @@ export const mapPathogenToConditions = (pathogenName) => {
 
   const pathogenLower = pathogenName.toLowerCase();
   
+  // Handle common medical abbreviations
+  const expandedPathogens = expandPathogenAbbreviations(pathogenLower);
+  
   return rboConditionsMap.filter(condition => 
-    condition.mappedPathogens.some(mappedPathogen =>
-      mappedPathogen.toLowerCase().includes(pathogenLower) ||
-      pathogenLower.includes(mappedPathogen.toLowerCase())
-    )
+    condition.mappedPathogens.some(mappedPathogen => {
+      const mappedLower = mappedPathogen.toLowerCase();
+      
+      // Check exact match, partial match, or abbreviation match
+      return expandedPathogens.some(expanded => 
+        mappedLower.includes(expanded) || 
+        expanded.includes(mappedLower) ||
+        matchesAbbreviation(expanded, mappedLower)
+      );
+    })
   );
+};
+
+/**
+ * Expand common pathogen abbreviations to full names
+ * @param {string} pathogen - Pathogen name (lowercase)
+ * @returns {Array} Array of possible expanded names
+ */
+const expandPathogenAbbreviations = (pathogen) => {
+  const abbreviationMap = {
+    'e. coli': ['escherichia coli', 'e. coli'],
+    's. aureus': ['staphylococcus aureus', 's. aureus'],
+    's. pneumoniae': ['streptococcus pneumoniae', 's. pneumoniae'],
+    'k. pneumoniae': ['klebsiella pneumoniae', 'k. pneumoniae'],
+    'p. aeruginosa': ['pseudomonas aeruginosa', 'p. aeruginosa'],
+    'h. influenzae': ['haemophilus influenzae', 'h. influenzae'],
+    'mrsa': ['methicillin-resistant staphylococcus aureus', 'staphylococcus aureus'],
+    'mssa': ['methicillin-sensitive staphylococcus aureus', 'staphylococcus aureus']
+  };
+  
+  return abbreviationMap[pathogen] || [pathogen];
+};
+
+/**
+ * Check if an abbreviated name matches a full pathogen name
+ * @param {string} abbreviated - Abbreviated name
+ * @param {string} fullName - Full pathogen name
+ * @returns {boolean} True if they match
+ */
+const matchesAbbreviation = (abbreviated, fullName) => {
+  // Handle genus-species abbreviations (e.g., "e. coli" matches "escherichia coli")
+  const abbrevParts = abbreviated.split(' ');
+  const fullParts = fullName.split(' ');
+  
+  if (abbrevParts.length === 2 && fullParts.length >= 2) {
+    const [abbrevGenus, abbrevSpecies] = abbrevParts;
+    const [fullGenus, fullSpecies] = fullParts;
+    
+    // Check if abbreviated genus matches first letter + period, and species matches
+    if (abbrevGenus.length === 2 && abbrevGenus.endsWith('.')) {
+      const abbrevLetter = abbrevGenus.charAt(0);
+      return fullGenus.startsWith(abbrevLetter) && abbrevSpecies === fullSpecies;
+    }
+  }
+  
+  return false;
 };
 
 /**
@@ -419,10 +485,11 @@ export const getDurationStats = (conditions) => {
   conditions.forEach(condition => {
     const parsed = parseDurationString(condition.duration);
     
-    if (parsed.isComplex) {
-      stats.categories.complex++;
-    } else if (parsed.category === 'unknown') {
+    // Prioritize explicit category over isComplex flag
+    if (parsed.category === 'unknown') {
       stats.categories.unknown++;
+    } else if (parsed.category === 'complex' || parsed.isComplex) {
+      stats.categories.complex++;
     } else {
       stats.categories[parsed.category]++;
       

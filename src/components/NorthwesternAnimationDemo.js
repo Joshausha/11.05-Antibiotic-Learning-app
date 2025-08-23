@@ -23,6 +23,7 @@
  */
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import PropTypes from 'prop-types';
 import AnimatedNorthwesternPieChart, { ANIMATION_PHASES } from './AnimatedNorthwesternPieChart.js';
 import NorthwesternInteractionSystem from './NorthwesternInteractionSystem.js';
@@ -352,17 +353,21 @@ const NorthwesternAnimationDemo = ({
   // Handle emergency mode with metrics
   const handleEmergencyToggle = useCallback(() => {
     const newEmergencyMode = !emergencyMode;
-    setEmergencyMode(newEmergencyMode);
     
+    // Use flushSync for emergency mode - ensures immediate state update for clinical urgency
+    flushSync(() => {
+      setEmergencyMode(newEmergencyMode);
+      setAnimationLog(prev => [...prev.slice(-19), {
+        timestamp: new Date(),
+        event: 'emergency_mode_toggle',
+        enabled: newEmergencyMode
+      }]);
+    });
+    
+    // Performance monitoring happens after state update
     if (newEmergencyMode && performanceMonitorRef.current) {
       performanceMonitorRef.current.recordEmergencyOverride();
     }
-    
-    setAnimationLog(prev => [...prev.slice(-19), {
-      timestamp: new Date(),
-      event: 'emergency_mode_toggle',
-      enabled: newEmergencyMode
-    }]);
   }, [emergencyMode]);
   
   // Clinical insight handler

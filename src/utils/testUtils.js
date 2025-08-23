@@ -7,7 +7,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { AppProvider } from '../../contexts/AppContext';
+import { AppProvider } from '../contexts/AppContext';
 
 /**
  * Mock Data for Testing

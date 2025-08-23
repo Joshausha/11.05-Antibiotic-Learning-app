@@ -7,6 +7,7 @@ import usePathogenData from '../hooks/usePathogenData';
 import useAntibioticData from '../hooks/useAntibioticData';
 import useErrorHandler from '../hooks/useErrorHandler';
 import medicalConditions from '../data/medicalConditions';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 /**
  * AppContext - Centralized application state management
@@ -24,8 +25,9 @@ export const AppProvider = ({ children }) => {
   const [selectedCondition, setSelectedCondition] = useState(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-  // Initialize error handler
-  const { fallbacks } = useErrorHandler();
+  // Initialize error handler - Agent T4: Defensive programming with null safety
+  const errorHandler = useErrorHandler() || {};
+  const { fallbacks = {} } = errorHandler;
 
   // Initialize all hooks directly (React hook rules require direct calls)
   const isMobile = useResponsive();
@@ -63,9 +65,11 @@ export const AppProvider = ({ children }) => {
   };
 
   return (
-    <AppContext.Provider value={contextValue}>
-      {children}
-    </AppContext.Provider>
+    <ErrorBoundary>
+      <AppContext.Provider value={contextValue}>
+        {children}
+      </AppContext.Provider>
+    </ErrorBoundary>
   );
 };
 
@@ -73,6 +77,7 @@ export const AppProvider = ({ children }) => {
  * useAppContext Hook
  * Custom hook to access the application context
  * Provides easy access to app state and functions
+ * Enhanced with Agent T4 defensive programming patterns
  */
 export const useAppContext = () => {
   const context = useContext(AppContext);
@@ -81,7 +86,38 @@ export const useAppContext = () => {
     throw new Error('useAppContext must be used within an AppProvider');
   }
   
-  return context;
+  // Agent T4: Defensive programming - ensure required properties exist
+  const {
+    activeTab = 'learn',
+    setActiveTab,
+    selectedCondition = null,
+    setSelectedCondition,
+    showMobileMenu = false,
+    setShowMobileMenu,
+    isMobile = false,
+    quizProgress = {},
+    bookmarks = {},
+    pathogenData = { pathogens: [], infections: [] },
+    antibioticData = { antibiotics: [], interactions: [] },
+    searchData = { filteredItems: [], searchTerm: '', setSearchTerm: () => {} },
+    medicalConditions = []
+  } = context;
+  
+  return {
+    activeTab,
+    setActiveTab,
+    selectedCondition,
+    setSelectedCondition,
+    showMobileMenu,
+    setShowMobileMenu,
+    isMobile,
+    quizProgress,
+    bookmarks,
+    pathogenData,
+    antibioticData,
+    searchData,
+    medicalConditions
+  };
 };
 
 export default AppContext;

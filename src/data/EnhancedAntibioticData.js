@@ -86,10 +86,13 @@ export const getAntibioticById = (id) => {
 };
 
 export const getAntibioticByName = (name) => {
+  if (!name || typeof name !== 'string') {
+    return undefined;
+  }
   return enhancedAntibiotics.find(antibiotic => 
     antibiotic.name.toLowerCase() === name.toLowerCase()
   );
-};
+};;
 
 export const getAntibioticsByClass = (drugClass) => {
   return enhancedAntibiotics.filter(antibiotic => antibiotic.class === drugClass);
@@ -100,7 +103,13 @@ export const getAntibioticsByCategory = (category) => {
 };
 
 export const searchAntibiotics = (searchTerm) => {
-  if (!searchTerm) return enhancedAntibiotics;
+  // Handle null, undefined, and non-string inputs
+  if (searchTerm === null || searchTerm === undefined || typeof searchTerm !== 'string') {
+    return [];
+  }
+  
+  // Return all for empty string (enhanced behavior)
+  if (searchTerm === '') return enhancedAntibiotics;
   
   const term = searchTerm.toLowerCase();
   return enhancedAntibiotics.filter(antibiotic =>
@@ -111,7 +120,7 @@ export const searchAntibiotics = (searchTerm) => {
       use.toLowerCase().includes(term)
     ))
   );
-};
+};;
 
 export const getAllDrugClasses = () => {
   const classes = enhancedAntibiotics.map(antibiotic => antibiotic.class);
@@ -130,24 +139,35 @@ export const getAntibioticsWithNorthwesternCoverage = (category, minCoverage = 1
   );
 };
 
-export const getNorthwesternSpectrumForAntibiotic = (id) => {
-  const antibiotic = getAntibioticById(id);
+export const getNorthwesternSpectrumForAntibiotic = (identifier) => {
+  let antibiotic;
+  if (typeof identifier === 'number') {
+    antibiotic = getAntibioticById(identifier);
+  } else if (typeof identifier === 'string') {
+    antibiotic = getAntibioticByName(identifier);
+  }
   return antibiotic ? antibiotic.northwesternSpectrum : null;
-};
+};;
 
-export const getAntibioticsByGeneration = () => {
-  const generations = {};
+export const getAntibioticsByGeneration = (targetGeneration) => {
+  if (!targetGeneration) {
+    // Return all generations as object if no parameter provided
+    const generations = {};
+    enhancedAntibiotics.forEach(antibiotic => {
+      const generation = antibiotic.generation;
+      if (!generations[generation]) {
+        generations[generation] = [];
+      }
+      generations[generation].push(antibiotic);
+    });
+    return generations;
+  }
   
-  enhancedAntibiotics.forEach(antibiotic => {
-    const generation = antibiotic.generation;
-    if (!generations[generation]) {
-      generations[generation] = [];
-    }
-    generations[generation].push(antibiotic);
-  });
-  
-  return generations;
-};
+  // Return array of antibiotics for specific generation
+  return enhancedAntibiotics.filter(antibiotic => 
+    antibiotic.generation && antibiotic.generation.includes(targetGeneration)
+  );
+};;
 
 export const getCellWallActiveAntibiotics = () => {
   return enhancedAntibiotics.filter(antibiotic => antibiotic.cellWallActive);
@@ -191,6 +211,7 @@ export const validateAntibioticData = () => {
     }
   });
   
+  // Maintain backward compatibility with SimpleAntibioticData API
   return errors.length === 0 ? null : errors;
 };
 

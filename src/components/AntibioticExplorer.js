@@ -13,31 +13,33 @@ import NorthwesternPieChart from './NorthwesternPieChart';
 import { getAntibioticById } from '../data/EnhancedAntibioticData';
 
 const AntibioticExplorer = ({ 
-  antibioticData, 
-  onSelectCondition 
+  antibioticData = null,
+  onSelectCondition = () => {} 
 }) => {
+  // Defensive programming: Safely extract antibiotic data with comprehensive fallbacks
+  const safeAntibioticData = antibioticData || {};
   const {
-    antibiotics,
-    selectedAntibiotic,
-    selectedAntibioticConditions,
-    drugClassStats,
-    availableDrugClasses,
-    antibioticStats,
-    filteredStats,
-    searchQuery,
-    drugClassFilter,
-    sortBy,
-    searchAntibiotics,
-    filterByDrugClass,
-    setSortOrder,
-    selectAntibiotic,
-    clearSelection,
-    clearFilters,
-    findAlternativeAntibiotics,
-    findCombinationTherapies,
-    getResistanceInfo,
-    isLoading
-  } = antibioticData;
+    antibiotics = [],
+    selectedAntibiotic = null,
+    selectedAntibioticConditions = [],
+    drugClassStats = [],
+    availableDrugClasses = [],
+    antibioticStats = null,
+    filteredStats = null,
+    searchQuery = '',
+    drugClassFilter = 'all',
+    sortBy = 'name',
+    searchAntibiotics = () => {},
+    filterByDrugClass = () => {},
+    setSortOrder = () => {},
+    selectAntibiotic = () => {},
+    clearSelection = () => {},
+    clearFilters = () => {},
+    findAlternativeAntibiotics = () => [],
+    findCombinationTherapies = () => [],
+    getResistanceInfo = () => null,
+    isLoading = false
+  } = safeAntibioticData;
 
   // Northwestern visualization state
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'northwestern'
@@ -261,12 +263,12 @@ const AntibioticExplorer = ({
             </button>
           </div>
 
-          {/* Drug Class Statistics */}
-          {drugClassStats.length > 0 && (
+          {/* Drug Class Statistics - Fixed defensive programming */}
+          {Array.isArray(drugClassStats) && drugClassStats.length > 0 && (
             <div className="mt-6">
               <h3 className="text-sm font-medium text-gray-700 mb-3">Drug Classes</h3>
               <div className="space-y-2 max-h-40 overflow-y-auto">
-                {drugClassStats.slice(0, 8).map((stat, index) => (
+                {(drugClassStats || []).slice(0, 8).map((stat, index) => (
                   <div
                     key={index}
                     onClick={() => filterByDrugClass(stat.drugClass)}
@@ -309,6 +311,7 @@ const AntibioticExplorer = ({
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }`}
+                  data-testid="antibiotic-card"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -525,7 +528,7 @@ const AntibioticExplorer = ({
                 const alternatives = findAlternativeAntibiotics(selectedAntibiotic);
                 return (
                   <div className="space-y-2">
-                    {alternatives.slice(0, 6).map((alternative, index) => (
+                    {(alternatives || []).slice(0, 6).map((alternative, index) => (
                       <div
                         key={index}
                         onClick={() => selectAntibiotic(alternative)}

@@ -4,7 +4,7 @@
  */
 
 import {
-  transformEmpirицTherapy,
+  transformEmpiricTherapy,
   transformDuration,
   transformNotes,
   transformCondition,
@@ -13,14 +13,14 @@ import {
   getDatasetStats
 } from '../dataTransformation';
 
-describe('Data Transformation - transformEmpirицTherapy', () => {
+describe('Data Transformation - transformEmpiricTherapy', () => {
   test('should transform therapy array to object format', () => {
     const therapyArray = [
       { condition: 'MSSA', therapy: 'Cefazolin OR Oxacillin' },
       { condition: 'MRSA', therapy: 'Vancomycin OR Linezolid' }
     ];
 
-    const result = transformEmpirицTherapy(therapyArray);
+    const result = transformEmpiricTherapy(therapyArray);
 
     expect(typeof result).toBe('object');
     expect(result.MSSA).toBe('Cefazolin OR Oxacillin');
@@ -28,10 +28,10 @@ describe('Data Transformation - transformEmpirицTherapy', () => {
   });
 
   test('should handle empty or invalid input', () => {
-    expect(transformEmpirицTherapy([])).toEqual({});
-    expect(transformEmpirицTherapy(null)).toEqual({});
-    expect(transformEmpirицTherapy(undefined)).toEqual({});
-    expect(transformEmpirицTherapy('not an array')).toEqual({});
+    expect(transformEmpiricTherapy([])).toEqual({});
+    expect(transformEmpiricTherapy(null)).toEqual({});
+    expect(transformEmpiricTherapy(undefined)).toEqual({});
+    expect(transformEmpiricTherapy('not an array')).toEqual({});
   });
 
   test('should use default condition name when missing', () => {
@@ -39,7 +39,7 @@ describe('Data Transformation - transformEmpirицTherapy', () => {
       { therapy: 'Some antibiotic' }
     ];
 
-    const result = transformEmpirицTherapy(therapyArray);
+    const result = transformEmpiricTherapy(therapyArray);
 
     expect(result['Standard Treatment']).toBe('Some antibiotic');
   });
@@ -50,7 +50,7 @@ describe('Data Transformation - transformEmpirицTherapy', () => {
       { condition: 'Invalid' }
     ];
 
-    const result = transformEmpirицTherapy(therapyArray);
+    const result = transformEmpiricTherapy(therapyArray);
 
     expect(result.Test).toBe('Valid therapy');
     expect(result.Invalid).toBeUndefined();

@@ -8,7 +8,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ConditionsTab from '../ConditionsTab';
-import { renderWithContext } from '../../__tests__/utils/testUtils';
+import { renderWithContext } from '../../utils/testUtils';
 
 // Mock skeleton loader
 jest.mock('../SkeletonLoader', () => ({
@@ -123,9 +123,10 @@ describe('ConditionsTab Component', () => {
     test('shows common pathogens preview for each condition', () => {
       render(<ConditionsTab {...defaultProps} />);
       
-      expect(screen.getByText(/Streptococcus pneumoniae/)).toBeInTheDocument();
-      expect(screen.getByText(/Escherichia coli/)).toBeInTheDocument();
-      expect(screen.getByText(/Staphylococcus aureus/)).toBeInTheDocument();
+      // Use getAllByText since pathogens may appear in multiple conditions (medically realistic)
+      expect(screen.getAllByText(/Streptococcus pneumoniae/)).toHaveLength(2); // Appears in pneumonia AND meningitis (realistic)
+      expect(screen.getAllByText(/Escherichia coli/)).toHaveLength(1);
+      expect(screen.getAllByText(/Staphylococcus aureus/)).toHaveLength(2); // Appears in cellulitis AND endocarditis (realistic)
     });
 
     test('displays appropriate category icons', () => {
@@ -288,11 +289,11 @@ describe('ConditionsTab Component', () => {
     test('applies correct color schemes for different categories', () => {
       render(<ConditionsTab {...defaultProps} />);
       
-      // Check for category color classes
-      expect(screen.getByText('Respiratory').parentElement).toHaveClass('bg-blue-100', 'text-blue-700');
-      expect(screen.getByText('Genitourinary').parentElement).toHaveClass('bg-yellow-100', 'text-yellow-700');
-      expect(screen.getByText('Skin and Soft Tissue').parentElement).toHaveClass('bg-green-100', 'text-green-700');
-      expect(screen.getByText('Central Nervous System').parentElement).toHaveClass('bg-purple-100', 'text-purple-700');
+      // Check for category color classes - the text element itself has the color classes
+      expect(screen.getByText('Respiratory')).toHaveClass('bg-blue-100', 'text-blue-700');
+      expect(screen.getByText('Genitourinary')).toHaveClass('bg-yellow-100', 'text-yellow-700');
+      expect(screen.getByText('Skin and Soft Tissue')).toHaveClass('bg-green-100', 'text-green-700');
+      expect(screen.getByText('Central Nervous System')).toHaveClass('bg-purple-100', 'text-purple-700');
     });
 
     test('handles unknown categories with default icon', () => {
@@ -308,7 +309,8 @@ describe('ConditionsTab Component', () => {
       
       render(<ConditionsTab {...unknownCategoryCondition} />);
       
-      expect(screen.getByText('Unknown Category').parentElement).toHaveClass('bg-gray-100', 'text-gray-700');
+      // Check for default gray color classes on the text element itself
+      expect(screen.getByText('Unknown Category')).toHaveClass('bg-gray-100', 'text-gray-700');
     });
   });
 
@@ -506,15 +508,48 @@ describe('ConditionsTab Component', () => {
       });
     });
 
-    test('maintains focus management during interactions', () => {
+    test('maintains focus management during interactions', async () => {
       render(<ConditionsTab {...defaultProps} />);
       
       const searchInput = screen.getByRole('textbox');
       const firstCard = screen.getAllByRole('button')[0];
       
+      // Focus the search input
+      searchInput.focus();
+      await waitFor(() => {
+        expect(document.activeElement).toBe(searchInput);
+      }, { timeout: 1000 });
+      
+      // Focus the first card
+      firstCard.focus();
+      await waitFor(() => {
+        expect(document.activeElement).toBe(firstCard);
+      }, { timeout: 1000 });
+      
       // Both should be focusable
-      expect(searchInput).toHaveAttribute('tabIndex');
+      expect(searchInput).toHaveAttribute('tabIndex', '0');
       expect(firstCard).toHaveAttribute('tabIndex', '0');
+    });
+
+    test('filter controls have proper labels', () => {
+      render(<ConditionsTab {...defaultProps} />);
+      
+      // Search input should have proper accessibility attributes
+      const searchInput = screen.getByRole('textbox');
+      expect(searchInput).toHaveAttribute('aria-label', 'Search medical conditions');
+      expect(searchInput).toHaveAttribute('tabIndex', '0');
+      
+      // Search input should have proper form association
+      expect(searchInput).toHaveAttribute('type', 'text');
+      expect(searchInput).toHaveAttribute('placeholder', 'Search conditions, pathogens, or treatments...');
+      
+      // Search icon should be present for visual context
+      const searchContainer = searchInput.parentElement;
+      expect(searchContainer).toHaveClass('relative');
+      
+      // For medical education accessibility, ensure search input is easily discoverable
+      expect(searchInput).toBeInTheDocument();
+      expect(searchInput).toBeVisible();
     });
   });
 
@@ -617,16 +652,17 @@ describe('ConditionsTab Component', () => {
     test('displays medically accurate pathogen names', () => {
       render(<ConditionsTab {...defaultProps} />);
       
-      expect(screen.getByText(/Streptococcus pneumoniae/)).toBeInTheDocument();
-      expect(screen.getByText(/Escherichia coli/)).toBeInTheDocument();
-      expect(screen.getByText(/Staphylococcus aureus/)).toBeInTheDocument();
-      expect(screen.getByText(/Neisseria meningitidis/)).toBeInTheDocument();
+      // Use getAllByText since pathogens may appear in multiple conditions (medically realistic overlaps)
+      expect(screen.getAllByText(/Streptococcus pneumoniae/)).toHaveLength(2); // Pneumonia + Meningitis
+      expect(screen.getAllByText(/Escherichia coli/)).toHaveLength(1); // UTI only
+      expect(screen.getAllByText(/Staphylococcus aureus/)).toHaveLength(2); // Cellulitis + Endocarditis  
+      expect(screen.getAllByText(/Neisseria meningitidis/)).toHaveLength(1); // Meningitis only
     });
 
     test('uses proper medical terminology in interface', () => {
       render(<ConditionsTab {...defaultProps} />);
       
-      expect(screen.getByText('Common Pathogens:')).toBeInTheDocument();
+      expect(screen.getAllByText('Common Pathogens:')).toHaveLength(5); // Should have 5 condition cards (realistic data)
       expect(screen.getByPlaceholderText(/pathogens.*treatments/)).toBeInTheDocument();
     });
   });

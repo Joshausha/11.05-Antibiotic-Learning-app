@@ -497,7 +497,7 @@ describe('Data Parser - Integration Tests', () => {
     expect(processed.conditions.length).toBe(conditions.length);
     
     // Should have nodes for condition, pathogen, and antibiotic
-    const conditionNodes = neo4j.nodes.filter(n => n.type === 'Condition');
+    const conditionNodes = neo4j.nodes.filter(n => n.type === 'CONDITION');
     expect(conditionNodes.length).toBeGreaterThanOrEqual(1);
   });
 
