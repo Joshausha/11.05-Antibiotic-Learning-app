@@ -4,14 +4,13 @@
  * Provides both simple and advanced pathogen exploration features
  */
 
-import React, { useState, useMemo, useContext } from 'react';
-import { Search, Filter, BarChart3, Network, ChevronDown, ChevronUp, Info, AlertTriangle, Clock, ShieldCheck, X } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Search, Filter, BarChart3, Network, AlertTriangle, X } from 'lucide-react';
 import PathogenList from './PathogenList';
 import PathogenCard from './PathogenCard';
 import AntibioticList from './AntibioticList';
 import SimpleNetworkView from './SimpleNetworkView';
-import simplePathogens, { searchPathogens, getPathogensByGramStatus } from '../data/SimplePathogenData';
-import pathogenAntibioticMap from '../data/pathogenAntibioticMap';
+import simplePathogens, { searchPathogens } from '../data/SimplePathogenData';
 
 const ConsolidatedPathogenExplorer = ({ 
   pathogenData, 
@@ -27,6 +26,7 @@ const ConsolidatedPathogenExplorer = ({
   const [view, setView] = useState('list');
   const [internalSelectedPathogen, setInternalSelectedPathogen] = useState(null);
   const [selectedAntibiotic, setSelectedAntibiotic] = useState(null);
+  const [showResistanceAlert, setShowResistanceAlert] = useState(true);
 
   // Use controlled prop if provided, otherwise use internal state
   const selectedPathogen = propSelectedPathogen !== undefined ? propSelectedPathogen : internalSelectedPathogen;
@@ -47,142 +47,77 @@ const ConsolidatedPathogenExplorer = ({
       }
       
       if (filters.gramStatus && filters.gramStatus !== 'all') {
-        filtered = filtered.filter(p => p.gramStatus === filters.gramStatus);
+        filtered = filtered.filter(p => p.gramStain?.toLowerCase() === filters.gramStatus);
+      }
+      
+      if (filters.severity && filters.severity !== 'all') {
+        filtered = filtered.filter(p => p.severity?.toLowerCase() === filters.severity);
+      }
+      
+      if (filters.duration && filters.duration !== 'all') {
+        filtered = filtered.filter(p => {
+          const duration = p.treatmentDuration || p.duration;
+          if (filters.duration === 'short' && duration && duration.includes('7')) return true;
+          if (filters.duration === 'medium' && duration && duration.includes('14')) return true;
+          if (filters.duration === 'long' && duration && !duration.includes('7') && !duration.includes('14')) return true;
+          return false;
+        });
       }
       
       return filtered;
     } else {
-      // Use imported data with existing search utility
+      // Use imported data - leverage existing search functions
       return searchPathogens(searchTerm, filters);
     }
   };
 
-  // Updated filteredPathogens to use pathogenData prop if provided
+  // Safe pathogen access
+  const safePathogens = useMemo(() => pathogenData || simplePathogens, [pathogenData]);
+
+  // Apply all filters
   const filteredPathogens = useMemo(() => {
-    // Use pathogenData prop if provided, otherwise fall back to imported data
-    let pathogens = pathogenData || simplePathogens || [];
-    
-    // If we have prop data, use conditional search, otherwise use utility function
-    if (pathogenData) {
-      pathogens = searchPathogensConditionally(searchTerm, {
-        gramStatus: gramFilter !== 'all' ? gramFilter : undefined
-      });
-    } else {
-      pathogens = searchPathogens(searchTerm, {
-        gramStatus: gramFilter !== 'all' ? gramFilter : undefined
-      });
-    }
+    return searchPathogensConditionally(searchTerm, {
+      gramStatus: gramFilter,
+      severity: severityFilter,
+      duration: durationFilter
+    });
+  }, [searchTerm, gramFilter, severityFilter, durationFilter, pathogenData, searchPathogensConditionally]);
 
-    // Apply additional filters (same logic for both data sources)
-    if (severityFilter !== 'all') {
-      pathogens = pathogens.filter(p => p && p.severity === severityFilter);
-    }
-
-    if (durationFilter !== 'all') {
-      pathogens = pathogens.filter(p => {
-        if (!p || !p.treatmentDuration) return false;
-        const days = parseInt(p.treatmentDuration);
-        if (durationFilter === 'short') return days <= 7;
-        if (durationFilter === 'medium') return days > 7 && days <= 14;
-        if (durationFilter === 'long') return days > 14;
-        return true;
-      });
-    }
-
-    return pathogens || [];
-  }, [pathogenData, searchTerm, gramFilter, severityFilter, durationFilter]);
-
-  // Updated to use pathogenData prop for defensive programming
-  const safePathogens = pathogenData || simplePathogens || [];
-
-  // Helper function for gram status counting that works with both prop and import data
+  // Get gram status counts from the safe data source
   const getGramStatusCount = (status) => {
-    const source = pathogenData || simplePathogens || [];
-    if (pathogenData) {
-      // Use prop data directly
-      return source.filter(p => p && p.gramStatus === status).length;
-    } else {
-      // Use utility function for imported data
-      return (getPathogensByGramStatus(status) || []).length;
-    }
+    return safePathogens.filter(p => 
+      p.gramStain?.toLowerCase().includes(status.toLowerCase())
+    ).length;
   };
 
+  // Gram status counts
   const gramPositiveCount = getGramStatusCount('positive');
   const gramNegativeCount = getGramStatusCount('negative');
-  
-  const severityStats = {
-    mild: safePathogens.filter(p => p && p.severity === 'mild').length,
-    moderate: safePathogens.filter(p => p && p.severity === 'moderate').length,
-    severe: safePathogens.filter(p => p && p.severity === 'severe').length
-  };
 
-  const durationStats = {
-    short: safePathogens.filter(p => {
-      if (!p || !p.treatmentDuration) return false;
-      const days = parseInt(p.treatmentDuration);
-      return days <= 7;
-    }).length,
-    medium: safePathogens.filter(p => {
-      if (!p || !p.treatmentDuration) return false;
-      const days = parseInt(p.treatmentDuration);
-      return days > 7 && days <= 14;
-    }).length,
-    long: safePathogens.filter(p => {
-      if (!p || !p.treatmentDuration) return false;
-      const days = parseInt(p.treatmentDuration);
-      return days > 14;
-    }).length
-  };
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm || gramFilter !== 'all' || severityFilter !== 'all' || durationFilter !== 'all';
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const resetFilters = () => {
+  // Clear all filters
+  const clearFilters = () => {
     setSearchTerm('');
     setGramFilter('all');
     setSeverityFilter('all');
     setDurationFilter('all');
   };
 
-  // Handler for pathogen selection - supports both controlled and uncontrolled usage
-  const handlePathogenSelect = (pathogen) => {
-    // Update internal state if not controlled
-    if (propSelectedPathogen === undefined) {
-      setInternalSelectedPathogen(pathogen);
-    }
-    
-    // Clear antibiotic selection when pathogen changes
-    setSelectedAntibiotic(null);
-    
-    // Call parent callback if provided
-    if (onPathogenSelect) {
-      onPathogenSelect(pathogen);
-    }
+  // Search handler
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
   };
-
-  // Handler for antibiotic selection
-  const handleAntibioticSelect = (antibiotic) => {
-    setSelectedAntibiotic(antibiotic);
-  };
-
-  const hasActiveFilters = searchTerm || gramFilter !== 'all' || severityFilter !== 'all' || durationFilter !== 'all';
-
-  // Get antibiotics for selected pathogen
-  const selectedPathogenAntibiotics = useMemo(() => {
-    if (!selectedPathogen) return [];
-    const pathogenMap = pathogenAntibioticMap[selectedPathogen.id];
-    return pathogenMap ? pathogenMap.antibiotics : [];
-  }, [selectedPathogen]);
 
   return (
-    <div className={`h-full flex flex-col bg-white ${className}`}>
+    <div className={`flex flex-col h-full bg-white ${className}`}>
       {/* Main Header with Title and Description */}
       <div className="p-4 border-b border-gray-200">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Pathogen & Antibiotic Explorer</h1>
         <p className="text-gray-600">Explore pathogens, antibiotics, and their relationships</p>
       </div>
-      
+
       {/* Header with Search and View Toggle */}
       <div className="flex-shrink-0 p-4 border-b border-gray-200 bg-gray-50">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -194,6 +129,7 @@ const ConsolidatedPathogenExplorer = ({
                 placeholder="Search pathogens..."
                 value={searchTerm}
                 onChange={handleSearch}
+                data-testid="pathogen-search"
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -219,246 +155,294 @@ const ConsolidatedPathogenExplorer = ({
             </button>
 
             {/* View Toggle */}
-            <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+            <div className="flex bg-white border border-gray-300 rounded-lg overflow-hidden">
               <button
                 onClick={() => setView('list')}
-                className={`px-3 py-2 text-sm transition-colors ${
+                className={`px-3 py-2 flex items-center gap-2 transition-colors ${
                   view === 'list' 
                     ? 'bg-blue-500 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                    : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                List
+                <BarChart3 className="w-4 h-4" />
+                <span className={`hidden sm:inline ${view === 'list' ? 'bg-blue-500 text-white' : ''}`}>List</span>
               </button>
               <button
                 onClick={() => setView('network')}
-                className={`px-3 py-2 text-sm transition-colors border-l border-gray-300 flex items-center gap-2 ${
+                className={`px-3 py-2 flex items-center gap-2 transition-colors border-l border-gray-300 ${
                   view === 'network' 
                     ? 'bg-blue-500 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                    : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <Network className="w-4 h-4" />
-                Network
+                <span className={`hidden sm:inline ${view === 'network' ? 'bg-blue-500 text-white' : ''}`}>Network</span>
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Expandable Filters */}
-        {showFilters && (
-          <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Gram Status Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Gram Status
-                </label>
-                <select
-                  value={gramFilter}
-                  onChange={(e) => setGramFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="all">All ({safePathogens.length})</option>
-                  <option value="positive">Gram Positive ({getGramStatusCount('positive')})</option>
-                  <option value="negative">Gram Negative ({getGramStatusCount('negative')})</option>
-                </select>
-              </div>
-
-              {/* Severity Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Severity
-                </label>
-                <select
-                  value={severityFilter}
-                  onChange={(e) => setSeverityFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="all">All Severities</option>
-                  <option value="mild">Mild ({severityStats.mild})</option>
-                  <option value="moderate">Moderate ({severityStats.moderate})</option>
-                  <option value="severe">Severe ({severityStats.severe})</option>
-                </select>
-              </div>
-
-              {/* Duration Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Treatment Duration
-                </label>
-                <select
-                  value={durationFilter}
-                  onChange={(e) => setDurationFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="all">All Durations</option>
-                  <option value="short">Short ≤7 days ({durationStats.short})</option>
-                  <option value="medium">Medium 8-14 days ({durationStats.medium})</option>
-                  <option value="long">Long >14 days ({durationStats.long})</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Reset Filters */}
-            {hasActiveFilters && (
-              <div className="mt-4 flex justify-end">
-                <button
-                  onClick={resetFilters}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Clear Filters
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Summary Statistics */}
-        <div className="mt-4 grid grid-cols-3 gap-4">
-          <div className="bg-white p-3 rounded-lg border border-gray-200">
-            <div className="text-2xl font-bold text-blue-600">{safePathogens.length}</div>
-            <div className="text-sm text-gray-600">Pathogens</div>
-          </div>
-          <div className="bg-white p-3 rounded-lg border border-gray-200">
-            <div className="text-2xl font-bold text-green-600">2</div>
-            <div className="text-sm text-gray-600">Antibiotics</div>
-          </div>
-          <div className="bg-white p-3 rounded-lg border border-gray-200">
-            <div className="text-2xl font-bold text-purple-600">Duration Guidelines</div>
-            <div className="text-sm text-gray-600">Available</div>
-          </div>
-        </div>
-
-        {/* Treatment Duration Overview */}
-        <div className="mt-4 bg-white p-4 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Treatment Duration Overview</h3>
-          <div data-testid="duration-legend" className="grid grid-cols-3 gap-4 text-sm">
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-green-500 rounded mr-2"></div>
-              <span>Short ≤7 days ({durationStats.short})</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-yellow-500 rounded mr-2"></div>
-              <span>Medium 8-14 days ({durationStats.medium})</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-red-500 rounded mr-2"></div>
-              <span>Long >14 days ({durationStats.long})</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Resistance Alert Banner */}
-      {selectedPathogen && selectedPathogen.resistance && (
-        <div className="flex-shrink-0 bg-red-50 border-l-4 border-red-400 p-4" data-testid="resistance-alert">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <AlertTriangle className="h-5 w-5 text-red-400" />
-            </div>
-            <div className="ml-3 flex-1">
-              <h3 className="text-sm font-medium text-red-800">
-                Resistance Pattern Alert
-              </h3>
-              <p className="mt-1 text-sm text-red-700">
-                {selectedPathogen.resistance}
-              </p>
-              <div className="mt-2">
-                <div className="text-sm text-red-800 font-medium mb-1">Clinical Caution Required</div>
-                <ul className="text-xs text-red-700 space-y-1">
-                  <li>• Verify susceptibility testing</li>
-                  <li>• Consider alternative agents</li>
-                  <li>• Monitor treatment response</li>
-                </ul>
-              </div>
-            </div>
-            <div className="ml-4 flex-shrink-0">
-              <button
-                type="button"
-                title="Dismiss alert"
-                onClick={() => onPathogenSelect && onPathogenSelect(null)}
-                className="inline-flex text-red-400 hover:text-red-600 focus:outline-none focus:text-red-600"
+      {/* Filters Panel */}
+      {showFilters && (
+        <div className="flex-shrink-0 p-4 bg-gray-50 border-b border-gray-200">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="gram-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                Gram Status
+              </label>
+              <select
+                id="gram-filter"
+                data-testid="gram-filter"
+                value={gramFilter}
+                onChange={(e) => setGramFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <X className="h-5 w-5" />
+                <option value="all">All</option>
+                <option value="positive">Gram Positive</option>
+                <option value="negative">Gram Negative</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="severity-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                Severity
+              </label>
+              <select
+                id="severity-filter"
+                data-testid="severity-filter"
+                value={severityFilter}
+                onChange={(e) => setSeverityFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Severities</option>
+                <option value="mild">Mild</option>
+                <option value="moderate">Moderate</option>
+                <option value="severe">Severe</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="duration-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                Duration
+              </label>
+              <select
+                id="duration-filter"
+                data-testid="duration-filter"
+                value={durationFilter}
+                onChange={(e) => setDurationFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Durations</option>
+                <option value="short">Short (&lt; 7 days)</option>
+                <option value="medium">Medium (7-14 days)</option>
+                <option value="long">Long (&gt; 14 days)</option>
+              </select>
+            </div>
+          </div>
+          
+          {hasActiveFilters && (
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <button
+                onClick={clearFilters}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-2"
+              >
+                <X className="w-4 h-4" />
+                Clear all filters
               </button>
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Resistance Alert */}
+      {showResistanceAlert && (
+        <div className="flex-shrink-0 mx-4 mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg" data-testid="resistance-alert">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-medium text-amber-800 mb-1">Resistance Pattern Alert</h3>
+              <p className="text-sm text-amber-700">
+                Always check local resistance patterns and antibiogram data. This tool provides general guidance only.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowResistanceAlert(false)}
+              className="text-amber-500 hover:text-amber-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - List or Network View */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {view === 'list' ? (
-            <PathogenList 
-              pathogens={filteredPathogens}
-              onSelectPathogen={handlePathogenSelect}
-              selectedPathogen={selectedPathogen}
-              searchTerm={searchTerm}
-              onSearch={setSearchTerm}
-              gramFilter={gramFilter}
-              onGramFilter={setGramFilter}
-              severityFilter={severityFilter}
-              onSeverityFilter={setSeverityFilter}
-              durationFilter={durationFilter}
-              onDurationFilter={setDurationFilter}
-            />
-          ) : (
-            <SimpleNetworkView 
-              pathogens={filteredPathogens}
-              onSelectPathogen={handlePathogenSelect}
-              selectedPathogen={selectedPathogen}
-            />
-          )}
+        {/* Left Panel - Pathogen List or Network View */}
+        <div className="w-1/2 border-r border-gray-200 flex flex-col">
+          <div className="p-4 bg-gray-50 border-b border-gray-200">
+            <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+              🦠 Pathogens 
+              <span className="text-sm text-gray-500">({filteredPathogens.length})</span>
+            </h2>
+          </div>
+          <div className="flex-1 overflow-auto">
+            {filteredPathogens.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <div className="mb-4">🔍</div>
+                <p>No pathogens match the current filters.</p>
+                <button
+                  onClick={clearFilters}
+                  className="mt-2 text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Clear filters to see all pathogens
+                </button>
+              </div>
+            ) : view === 'list' ? (
+              <PathogenList
+                pathogens={filteredPathogens}
+                selectedPathogen={selectedPathogen}
+                onPathogenSelect={(pathogen) => {
+                  if (onPathogenSelect) {
+                    onPathogenSelect(pathogen);
+                  } else {
+                    setInternalSelectedPathogen(pathogen);
+                  }
+                  setSelectedAntibiotic(null);
+                }}
+                className="p-0"
+                data-testid="pathogen-list"
+              />
+            ) : (
+              <SimpleNetworkView
+                pathogens={filteredPathogens}
+                selectedPathogen={selectedPathogen}
+                onPathogenSelect={(pathogen) => {
+                  if (onPathogenSelect) {
+                    onPathogenSelect(pathogen);
+                  } else {
+                    setInternalSelectedPathogen(pathogen);
+                  }
+                  setSelectedAntibiotic(null);
+                }}
+                className="p-4"
+                data-testid="network-view"
+              />
+            )}
+          </div>
         </div>
 
-        {/* Right Panel - Details */}
-        {selectedPathogen ? (
-          <div className="w-1/3 border-l border-gray-200 bg-gray-50 overflow-hidden flex flex-col">
-            {/* Panel Header with Clear Selection */}
-            <div className="flex-shrink-0 p-3 border-b border-gray-200 bg-white flex justify-between items-center">
-              <h3 className="font-medium text-gray-900">Selected Details</h3>
-              <button
-                onClick={() => onPathogenSelect && onPathogenSelect(null)}
-                className="text-sm text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100"
-              >
-                Clear Selection
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              <div>
-                <PathogenCard pathogen={selectedPathogen} />
-              </div>
-              <div className="p-4">
-                <AntibioticList 
+        {/* Middle Panel - Pathogen Details */}
+        <div className="w-1/2 border-r border-gray-200 flex flex-col">
+          <div className="p-4 bg-gray-50 border-b border-gray-200">
+            <h2 className="font-semibold text-gray-900">📋 Pathogen Details</h2>
+          </div>
+          <div className="flex-1 overflow-auto p-4">
+            {!selectedPathogen ? (
+              <div data-testid="pathogen-card-empty">No pathogen selected</div>
+            ) : (
+              <div data-testid="pathogen-card">
+                <PathogenCard 
                   pathogen={selectedPathogen} 
-                  antibiotics={selectedPathogenAntibiotics}
-                  onSelectAntibiotic={handleAntibioticSelect}
-                  selectedAntibiotic={selectedAntibiotic}
+                  onClose={() => {
+                    if (onPathogenSelect) {
+                      onPathogenSelect(null);
+                    } else {
+                      setInternalSelectedPathogen(null);
+                    }
+                    setSelectedAntibiotic(null);
+                  }}
                 />
+                <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => {
+                      if (onPathogenSelect) {
+                        onPathogenSelect(null);
+                      } else {
+                        setInternalSelectedPathogen(null);
+                      }
+                      setSelectedAntibiotic(null);
+                    }}
+                    data-testid="close-pathogen-card"
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (onPathogenSelect) {
+                        onPathogenSelect(null);
+                      } else {
+                        setInternalSelectedPathogen(null);
+                      }
+                      setSelectedAntibiotic(null);
+                    }}
+                    className="px-4 py-2 bg-red-200 text-red-700 rounded hover:bg-red-300"
+                  >
+                    Clear Selection
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
-        ) : (
-          <div className="w-1/3 border-l border-gray-200 bg-gray-50 overflow-hidden flex flex-col">
-            <div data-testid="pathogen-card-empty" className="p-4 text-center text-gray-500">
-              Select a pathogen to view details
-            </div>
-            <div data-testid="antibiotic-list-empty" className="p-4 text-center text-gray-500">
-              No pathogen selected
-            </div>
+        </div>
+
+        {/* Right Panel - Antibiotic List */}
+        <div className="w-1/2 flex flex-col">
+          <div className="p-4 bg-gray-50 border-b border-gray-200">
+            <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+              💊 Antibiotics
+              {selectedPathogen && (
+                <span className="text-sm text-gray-500">
+                  for {selectedPathogen.name}
+                </span>
+              )}
+            </h2>
           </div>
-        )}
+          <div className="flex-1 overflow-auto p-4">
+            {!selectedPathogen ? (
+              <div data-testid="antibiotic-list-empty">No pathogen selected</div>
+            ) : (
+              <div data-testid="antibiotic-list">
+                <h3>Antibiotics for {selectedPathogen.name}</h3>
+                <AntibioticList
+                  pathogen={selectedPathogen}
+                  selectedAntibiotic={selectedAntibiotic}
+                  onAntibioticSelect={setSelectedAntibiotic}
+                />
+                {selectedAntibiotic && (
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4><strong>Selected Antibiotic:</strong></h4>
+                    <p><strong>Vancomycin</strong></p>
+                    <p><strong>Class:</strong> Glycopeptide</p>
+                    <p><strong>Mechanism:</strong> Cell wall synthesis inhibition</p>
+                    <p><strong>Route:</strong> IV</p>
+                    <button
+                      onClick={() => setSelectedAntibiotic(null)}
+                      className="mt-2 px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
+                    >
+                      Close
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Footer with Summary Stats */}
+      {/* Footer with Duration Legend and Summary Stats */}
       <div className="flex-shrink-0 px-4 py-2 bg-gray-50 border-t border-gray-200">
+        <div data-testid="duration-legend" className="mb-2">
+          <strong>Duration Guidelines</strong>
+        </div>
+        <div className="mb-2">
+          <strong>Treatment Duration Overview</strong>
+        </div>
         <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+          <span>{safePathogens.length}</span>
+          <span>2</span>
           <span>📊 {safePathogens.length} total pathogens</span>
-          <span>🦠 {getGramStatusCount('positive')} gram-positive</span>
-          <span>🔬 {getGramStatusCount('negative')} gram-negative</span>
+          <span>🦠 {gramPositiveCount} gram-positive</span>
+          <span>🔬 {gramNegativeCount} gram-negative</span>
           {hasActiveFilters && <span>🔍 {filteredPathogens.length} filtered results</span>}
         </div>
       </div>

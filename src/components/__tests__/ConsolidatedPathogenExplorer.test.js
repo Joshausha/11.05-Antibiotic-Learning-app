@@ -326,7 +326,8 @@ describe('ConsolidatedPathogenExplorer Component', () => {
   
   const defaultProps = {
     pathogenData: mockPathogenData,
-    onPathogenSelect: mockOnSelectCondition
+    onPathogenSelect: mockOnSelectCondition,
+    onSelectPathogen: mockOnSelectCondition
   };
 
   beforeEach(() => {

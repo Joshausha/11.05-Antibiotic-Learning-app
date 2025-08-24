@@ -1571,7 +1571,6 @@ export class NorthwesternPerformanceOptimizer {
 
 // Export individual classes for granular usage
 export {
-  VirtualizationManager,
   RenderPrioritizationEngine,
   MemoryManager,
   PerformanceMonitor

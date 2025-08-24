@@ -47,7 +47,7 @@ const AntibioticExplorer = ({
   
   // Enhanced antibiotics data with Northwestern information
   const enhancedAntibiotics = useMemo(() => {
-    return antibiotics.map(antibiotic => {
+    return (antibiotics || []).map(antibiotic => {
       // Get enhanced data that includes Northwestern spectrum
       const enhanced = getAntibioticById(antibiotic.id);
       return enhanced || antibiotic;
@@ -73,7 +73,7 @@ const AntibioticExplorer = ({
   const filteredBySegment = useMemo(() => {
     if (!selectedSegment) return enhancedAntibiotics;
     
-    return enhancedAntibiotics.filter(antibiotic => {
+    return (enhancedAntibiotics || []).filter(antibiotic => {
       return antibiotic.northwesternSpectrum && 
              antibiotic.northwesternSpectrum[selectedSegment] > 0;
     });
@@ -140,7 +140,7 @@ const AntibioticExplorer = ({
           <div className="mt-4">
             <h3 className="text-sm font-medium text-gray-700 mb-2">Most Frequently Used:</h3>
             <div className="flex flex-wrap gap-2">
-              {antibioticStats.topAntibiotics.map((antibiotic, index) => (
+              {(antibioticStats?.topAntibiotics || []).map((antibiotic, index) => (
                 <button
                   key={index}
                   onClick={() => selectAntibiotic(antibiotic)}
@@ -233,7 +233,7 @@ const AntibioticExplorer = ({
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Classes</option>
-                {availableDrugClasses.map(drugClass => (
+                {(availableDrugClasses || []).map(drugClass => (
                   <option key={drugClass} value={drugClass}>{drugClass}</option>
                 ))}
               </select>
@@ -302,7 +302,7 @@ const AntibioticExplorer = ({
           {viewMode === 'list' ? (
             /* List View */
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {antibiotics.map((antibiotic, index) => (
+              {(antibiotics || []).map((antibiotic, index) => (
                 <div
                   key={index}
                   onClick={() => selectAntibiotic(antibiotic)}
@@ -471,7 +471,7 @@ const AntibioticExplorer = ({
                   <h4 className="font-medium text-yellow-800">Resistance Considerations</h4>
                 </div>
                 <ul className="text-sm text-yellow-700 space-y-1">
-                  {resistanceInfo.map((info, index) => (
+                  {(resistanceInfo || []).map((info, index) => (
                     <li key={index}>• {info}</li>
                   ))}
                 </ul>
@@ -487,7 +487,7 @@ const AntibioticExplorer = ({
                 Clinical Applications ({selectedAntibioticConditions.length})
               </h3>
               <div className="space-y-2">
-                {selectedAntibioticConditions.map((condition, index) => (
+                {(selectedAntibioticConditions || []).map((condition, index) => (
                   <div
                     key={index}
                     onClick={() => onSelectCondition(condition)}
@@ -505,7 +505,7 @@ const AntibioticExplorer = ({
                     {condition.relevantTherapies && Object.keys(condition.relevantTherapies).length > 0 && (
                       <div className="mt-2">
                         <div className="text-xs text-gray-500 mb-1">Therapy contexts:</div>
-                        {Object.entries(condition.relevantTherapies).map(([context, therapy], idx) => (
+                        {Object.entries(condition.relevantTherapies || {}).map(([context, therapy], idx) => (
                           <div key={idx} className="text-xs bg-gray-100 rounded px-2 py-1 mb-1">
                             <span className="font-medium">{context}:</span> {therapy.length > 100 ? therapy.substring(0, 100) + '...' : therapy}
                           </div>
@@ -557,7 +557,7 @@ const AntibioticExplorer = ({
           {/* Combination Therapies */}
           {(() => {
             const combinations = findCombinationTherapies(selectedAntibiotic);
-            return combinations.length > 0 && (
+            return combinations && combinations.length > 0 && (
               <div className="mt-6">
                 <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
                   <TrendingUp size={18} className="text-orange-600" />
@@ -572,7 +572,7 @@ const AntibioticExplorer = ({
                         <span className="font-medium text-gray-900">{combo.antibiotic.name}</span>
                       </div>
                       <div className="text-xs text-gray-600">
-                        {combo.contexts.length} context{combo.contexts.length !== 1 ? 's' : ''}
+                        {(combo.contexts || []).length} context{(combo.contexts || []).length !== 1 ? 's' : ''}
                       </div>
                     </div>
                   ))}
