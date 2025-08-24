@@ -131,24 +131,40 @@ class SpacedRepetitionManager {
    * @returns {Array} Recommended questions for optimal learning
    */
   getAdaptiveQuizQuestions(allQuestions, targetCount = 10) {
+    // Defensive programming: ensure allQuestions is an array
+    if (!Array.isArray(allQuestions) || allQuestions.length === 0) {
+      console.warn('getAdaptiveQuizQuestions: No valid questions provided');
+      return [];
+    }
+
     const dueCards = this.getDueCards();
     const recommendations = [];
 
     // First priority: due reviews (spaced repetition)
     const dueQuestions = dueCards.slice(0, Math.min(targetCount * 0.7, dueCards.length));
-    recommendations.push(...dueQuestions.map(dc => ({
-      ...this.findQuestionById(allQuestions, dc.cardId),
-      reason: 'Due for review',
-      priority: 'high',
-      cardId: dc.cardId
-    })));
+    const validDueQuestions = dueQuestions
+      .map(dc => {
+        const foundQuestion = this.findQuestionById(allQuestions, dc.cardId);
+        if (foundQuestion) {
+          return {
+            ...foundQuestion,
+            reason: 'Due for review',
+            priority: 'high',
+            cardId: dc.cardId
+          };
+        }
+        return null;
+      })
+      .filter(q => q !== null); // Remove null entries
+    
+    recommendations.push(...validDueQuestions);
 
     // Second priority: new content in weak areas
     const remainingSlots = targetCount - recommendations.length;
     if (remainingSlots > 0) {
       const weakAreas = this.identifyWeakAreas();
       const newQuestions = allQuestions
-        .filter(q => !this.hasCard(q))
+        .filter(q => q && !this.hasCard(q)) // Add null safety
         .filter(q => weakAreas.includes(q.category))
         .slice(0, remainingSlots);
 
@@ -163,7 +179,7 @@ class SpacedRepetitionManager {
     const finalSlots = targetCount - recommendations.length;
     if (finalSlots > 0) {
       const newQuestions = allQuestions
-        .filter(q => !this.hasCard(q))
+        .filter(q => q && !this.hasCard(q)) // Add null safety
         .filter(q => !recommendations.find(r => r.id === q.id))
         .slice(0, finalSlots);
 
@@ -174,7 +190,11 @@ class SpacedRepetitionManager {
       })));
     }
 
-    return recommendations;
+    // Final validation: ensure all recommendations are valid
+    const validRecommendations = recommendations.filter(r => r && r.question);
+    
+    console.log(`SpacedRepetition: Returning ${validRecommendations.length} valid recommendations`);
+    return validRecommendations;
   }
 
   /**
@@ -247,16 +267,25 @@ class SpacedRepetitionManager {
   }
 
   hasCard(question) {
+    // Defensive programming: handle null/undefined questions
+    if (!question) {
+      return false;
+    }
+    
     const cardId = `question_${question.id || question.question?.substring(0, 50)}`;
     return !!this.cardData[cardId];
   }
 
   findQuestionById(questions, cardId) {
+    // Defensive programming: ensure we have valid inputs
+    if (!Array.isArray(questions) || !cardId) {
+      return null;
+    }
+    
     const questionKey = cardId.replace('question_', '');
     return questions.find(q => 
-      q.id === questionKey || 
-      q.question?.substring(0, 50) === questionKey
-    );
+      q && (q.id === questionKey || q.question?.substring(0, 50) === questionKey)
+    ) || null;
   }
 
   getCategoryFromCardId(cardId) {

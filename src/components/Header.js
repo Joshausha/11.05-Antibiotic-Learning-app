@@ -34,11 +34,12 @@ const Header = ({
   showMobileMenu = false, 
   setShowMobileMenu = () => {} 
 }) => {
-  // Define navigation items (6 core tabs)
+  // Define navigation items (7 core tabs)
   const navItems = [
     { id: 'learn', label: 'Learn', icon: Home },
     { id: 'quiz', label: 'Quiz', icon: Brain },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'visualizations', label: 'Visualizations', icon: PieChart },
     { id: 'reference', label: 'Reference', icon: Book },
     { id: 'pathogen-explorer', label: 'Pathogens', icon: Microscope },
     { id: 'antibiotic-explorer', label: 'Antibiotics', icon: Pill }

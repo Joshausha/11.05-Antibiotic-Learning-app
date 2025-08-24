@@ -487,49 +487,111 @@ const ClinicalTooltip = ({
   educationLevel = 'resident',
   emergencyMode = false,
   className = '',
-  maxWidth = 'max-w-md'
+  maxWidth = 'max-w-md',
+  onClose
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const tooltipRef = useRef(null);
+
+  // Handle close function
+  const handleClose = () => {
+    setIsVisible(false);
+    if (onClose) {
+      onClose();
+    }
+  };
+
+  // Handle keyboard events
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    if (isVisible) {
+      document.addEventListener('keydown', handleKeyPress);
+      return () => document.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [isVisible]);
+
+  // Handle click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (tooltipRef.current && !tooltipRef.current.contains(event.target)) {
+        handleClose();
+      }
+    };
+
+    if (isVisible) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isVisible]);
   
   useEffect(() => {
     if (tooltipData) {
-      setIsVisible(true);
+      // Handle both explicit visible prop and implicit visibility
+      const shouldBeVisible = tooltipData.visible !== false; // Default to true unless explicitly false
+      setIsVisible(shouldBeVisible);
       
-      // Calculate optimal position to avoid viewport overflow
-      const { x, y } = tooltipData.position;
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      const tooltipWidth = 300; // Approximate width
-      const tooltipHeight = 400; // Approximate height
-      
-      let finalX = x - tooltipWidth / 2;
-      let finalY = y - tooltipHeight - 10;
-      
-      // Adjust horizontal position
-      if (finalX < 10) finalX = 10;
-      if (finalX + tooltipWidth > windowWidth - 10) finalX = windowWidth - tooltipWidth - 10;
-      
-      // Adjust vertical position
-      if (finalY < 10) finalY = y + 20; // Show below if not enough space above
-      
-      setPosition({ x: finalX, y: finalY });
+      if (shouldBeVisible) {
+        // Calculate optimal position to avoid viewport overflow
+        const position = tooltipData.position || { x: 100, y: 100 }; // Default fallback position
+        const { x, y } = position;
+        const windowWidth = window.innerWidth || 1024; // Fallback for testing
+        const windowHeight = window.innerHeight || 768; // Fallback for testing
+        const tooltipWidth = 300; // Approximate width
+        const tooltipHeight = 400; // Approximate height
+        
+        // Ensure x and y are valid numbers
+        const safeX = typeof x === 'number' && !isNaN(x) ? x : 100;
+        const safeY = typeof y === 'number' && !isNaN(y) ? y : 100;
+        
+        let finalX = safeX - tooltipWidth / 2;
+        let finalY = safeY - tooltipHeight - 10;
+        
+        // Adjust horizontal position
+        if (finalX < 10) finalX = 10;
+        if (finalX + tooltipWidth > windowWidth - 10) finalX = windowWidth - tooltipWidth - 10;
+        
+        // Adjust vertical position
+        if (finalY < 10) finalY = safeY + 20; // Show below if not enough space above
+        
+        setPosition({ x: Math.round(finalX), y: Math.round(finalY) });
+      }
     } else {
       setIsVisible(false);
     }
   }, [tooltipData]);
 
-  if (!isVisible || !tooltipData) return null;
+  if (!isVisible || !tooltipData || tooltipData.visible === false) return null;
 
-  const { segment, context } = tooltipData;
+  // Defensive programming: handle both test and production data structures
+  const segment = tooltipData.segment || tooltipData.segmentKey;
+  const context = tooltipData.context || {};
   const clinicalData = CLINICAL_DATABASE[segment];
-  const coverage = context.coverage || 0;
+  const coverage = context.coverage !== undefined ? context.coverage : 0;
   const coverageData = COVERAGE_CLINICAL[coverage];
+
+  // Handle props that can come from tooltipData or direct props
+  const finalEmergencyMode = emergencyMode || tooltipData.emergencyMode || false;
+  const finalEducationLevel = educationLevel || tooltipData.educationLevel || 'resident';
+
+  // Early return if no clinical data available
+  if (!clinicalData) {
+    console.warn(`No clinical data found for segment: ${segment}`);
+    return null;
+  }
 
   return (
     <div
       ref={tooltipRef}
+      data-testid="clinical-tooltip"
+      role="dialog"
+      aria-labelledby="tooltip-title"
+      aria-describedby="tooltip-content"
       className={`clinical-tooltip fixed z-50 bg-white border border-gray-300 rounded-lg shadow-xl ${maxWidth} ${className}`}
       style={{
         left: position.x,
@@ -539,7 +601,7 @@ const ClinicalTooltip = ({
       }}
     >
       {/* Emergency Mode Header */}
-      {emergencyMode && (
+      {finalEmergencyMode && (
         <div className="emergency-header bg-red-500 text-white px-4 py-2 rounded-t-lg">
           <div className="flex items-center space-x-2">
             <span className="text-lg">🚨</span>
@@ -549,12 +611,24 @@ const ClinicalTooltip = ({
       )}
 
       <div className="p-4">
-        {/* Header */}
-        <div className="tooltip-header mb-3">
-          <h3 className="font-bold text-gray-900 text-base">
-            {segment.replace('_', ' ').toUpperCase()}
-          </h3>
-          <p className="text-sm text-gray-600 mt-1">{clinicalData.fullName}</p>
+        {/* Header with Close Button */}
+        <div className="tooltip-header mb-3 flex justify-between items-start">
+          <div>
+            <h3 id="tooltip-title" className="font-bold text-gray-900 text-base">
+              {segment.replace('_', ' ').toUpperCase()}
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">{clinicalData.fullName}</p>
+          </div>
+          <button
+            onClick={handleClose}
+            data-testid="close-button"
+            className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Close tooltip"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         {/* Emergency Alert */}
@@ -582,7 +656,7 @@ const ClinicalTooltip = ({
         </div>
 
         {/* Clinical Significance */}
-        <div className="clinical-significance mb-3">
+        <div id="tooltip-content" className="clinical-significance mb-3">
           <h4 className="text-sm font-medium text-gray-800 mb-2">Clinical Significance</h4>
           <p className="text-sm text-gray-700">{clinicalData.clinicalSignificance}</p>
         </div>
@@ -604,18 +678,18 @@ const ClinicalTooltip = ({
         <TreatmentRecommendations 
           segmentKey={segment}
           coverage={coverage}
-          educationLevel={educationLevel}
-          emergencyMode={emergencyMode}
+          educationLevel={finalEducationLevel}
+          emergencyMode={finalEmergencyMode}
         />
 
         {/* Clinical Pearls */}
         <ClinicalPearls 
           segmentKey={segment}
-          educationLevel={educationLevel}
+          educationLevel={finalEducationLevel}
         />
 
         {/* Mortality and Prevalence (for attending level or emergency mode) */}
-        {(educationLevel === 'attending' || emergencyMode) && clinicalData.mortality && (
+        {(finalEducationLevel === 'attending' || finalEmergencyMode) && clinicalData.mortality && (
           <div className="epidemiology border-t border-gray-200 pt-3 mt-3">
             <div className="grid grid-cols-1 gap-2 text-xs">
               {clinicalData.mortality && (
@@ -647,7 +721,7 @@ const ClinicalTooltip = ({
           <p className="text-xs text-gray-500">
             {context.antibiotic?.name} 
             {context.antibiotic?.class && ` (${context.antibiotic.class})`}
-            {emergencyMode && ' | Emergency Access Mode Active'}
+            {finalEmergencyMode && ' | Emergency Access Mode Active'}
           </p>
         </div>
       </div>
@@ -658,23 +732,28 @@ const ClinicalTooltip = ({
 // PropTypes validation
 ClinicalTooltip.propTypes = {
   tooltipData: PropTypes.shape({
-    segment: PropTypes.string.isRequired,
+    segment: PropTypes.string,
+    segmentKey: PropTypes.string, // Also accept segmentKey from tests
     context: PropTypes.shape({
-      coverage: PropTypes.number.isRequired,
+      coverage: PropTypes.number,
       antibiotic: PropTypes.shape({
         name: PropTypes.string,
         class: PropTypes.string
       })
-    }).isRequired,
+    }),
     position: PropTypes.shape({
-      x: PropTypes.number.isRequired,
-      y: PropTypes.number.isRequired
-    }).isRequired
+      x: PropTypes.number,
+      y: PropTypes.number
+    }),
+    visible: PropTypes.bool,
+    educationLevel: PropTypes.oneOf(['student', 'resident', 'attending', 'medical_student']),
+    emergencyMode: PropTypes.bool
   }),
-  educationLevel: PropTypes.oneOf(['student', 'resident', 'attending']),
+  educationLevel: PropTypes.oneOf(['student', 'resident', 'attending', 'medical_student']),
   emergencyMode: PropTypes.bool,
   className: PropTypes.string,
-  maxWidth: PropTypes.string
+  maxWidth: PropTypes.string,
+  onClose: PropTypes.func
 };
 
 EmergencyAlert.propTypes = {

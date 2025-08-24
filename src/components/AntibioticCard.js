@@ -11,19 +11,15 @@ import React, { useMemo, useState, useCallback } from 'react';
 import { 
   Pill, 
   AlertTriangle, 
-  Info, 
   Activity, 
   X,
   Shield,
   Droplets,
   Users,
-  Clock,
   ShieldAlert,
-  ShieldOff,
   PieChart,
   Navigation,
   Target,
-  Microscope,
   TrendingUp
 } from 'lucide-react';
 import NorthwesternPieChart from './NorthwesternPieChart';

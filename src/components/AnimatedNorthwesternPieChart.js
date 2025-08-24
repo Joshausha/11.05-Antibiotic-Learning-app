@@ -39,8 +39,7 @@ import {
   createHoverAnimation,
   createSelectionAnimation,
   createLearningProgressAnimation,
-  CLINICAL_TIMING,
-  MEDICAL_EASING
+  CLINICAL_TIMING
 } from '../animations/NorthwesternAnimations.js';
 
 /**
@@ -173,12 +172,7 @@ const AnimatedNorthwesternPieChart = ({
     return sequences[animationSequence] || sequences.educational;
   }, [customAnimationTiming, animationSequence]);
   
-  // Collect segment references
-  const collectSegmentRef = useCallback((segmentElement, segmentKey) => {
-    if (segmentElement) {
-      segmentRefs.current.set(segmentKey, segmentElement);
-    }
-  }, []);
+  // Collect segment references - removed unused function
   
   // Execute loading animation sequence
   const executeLoadingSequence = useCallback(async () => {

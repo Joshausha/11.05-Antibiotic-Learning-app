@@ -121,7 +121,7 @@ describe('Header Component', () => {
     render(<Header {...defaultProps} />);
     
     const navItems = screen.getAllByRole('button');
-    expect(navItems).toHaveLength(6); // all navigation items
+    expect(navItems).toHaveLength(7); // all navigation items (including visualizations tab)
     
     // Each nav item should be focusable
     navItems.forEach(item => {

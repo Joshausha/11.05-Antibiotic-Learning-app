@@ -23,7 +23,7 @@ import quizQuestions from './data/quizQuestions';
 import ConsolidatedPathogenExplorer from './components/ConsolidatedPathogenExplorer';
 import AntibioticExplorer from './components/AntibioticExplorer';
 import LearningAnalyticsDashboard from './components/analytics/LearningAnalyticsDashboard';
-// const VisualizationsTab = lazy(() => import('./components/VisualizationsTab'));
+import VisualizationsTab from './components/VisualizationsTab';
 
 /**
  * AppContent Component
@@ -148,6 +148,21 @@ const AppContent = () => {
             <ErrorBoundary>
               <AntibioticExplorer 
                 antibioticData={antibioticData}
+              />
+            </ErrorBoundary>
+          )}
+
+          {activeTab === 'visualizations' && (
+            <ErrorBoundary>
+              <VisualizationsTab 
+                pathogenData={pathogenData}
+                antibioticData={antibioticData}
+                medicalConditions={medicalConditions}
+                onSelectCondition={setSelectedCondition}
+                onSelectPathogen={(pathogen) => {
+                  // Handle pathogen selection if needed
+                  console.log('Selected pathogen:', pathogen);
+                }}
               />
             </ErrorBoundary>
           )}

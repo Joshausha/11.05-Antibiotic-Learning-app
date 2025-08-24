@@ -6,11 +6,10 @@
 
 import { renderHook, act } from '@testing-library/react';
 import useBookmarks from '../../hooks/useBookmarks';
-import { setupTestEnvironment, createTestCondition, mockLocalStorage } from '../../utils/testUtils';
-import useLocalStorage from '../../hooks/useLocalStorage';
+import { createTestCondition } from '../../utils/testUtils';
 import { flushSync } from 'react-dom';
 
-import React from 'react';
+// React import removed - not needed for hook tests
 
 // Mock localStorage like useLocalStorage tests do
 const mockStore = {};

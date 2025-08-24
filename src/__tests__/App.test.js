@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import App from '../App';
 
@@ -436,10 +436,6 @@ describe('App Component Integration Tests', () => {
     render(<App />);
     
     // Test keyboard navigation through tabs
-    const learnTab = screen.getByLabelText(/navigate to learn/i);
-    const referenceTab = screen.getByLabelText(/navigate to reference/i);
-    const quizTab = screen.getByLabelText(/navigate to quiz/i);
-    
     // Navigate to conditions with keyboard using aria-label
     const referenceButton = screen.getByLabelText(/navigate to reference/i);
     referenceButton.focus();

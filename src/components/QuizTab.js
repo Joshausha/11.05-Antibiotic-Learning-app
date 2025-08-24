@@ -87,7 +87,7 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
       let questionsToUse = filteredQuestions;
       
       // Use spaced repetition if enabled
-      if (useSpacedRepetition) {
+      if (useSpacedRepetition && spacedRepetitionManager) {
         try {
           const targetCount = Math.min(10, filteredQuestions.length);
           const adaptiveRecommendations = spacedRepetitionManager.getAdaptiveQuizQuestions(
@@ -95,9 +95,15 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
             targetCount
           );
           
-          if (adaptiveRecommendations.length > 0) {
+          // Defensive programming: ensure we got a valid array with valid questions
+          if (Array.isArray(adaptiveRecommendations) && 
+              adaptiveRecommendations.length > 0 && 
+              adaptiveRecommendations.every(q => q && q.question)) {
             questionsToUse = adaptiveRecommendations;
             setAdaptiveQuestions(adaptiveRecommendations);
+            console.log(`Using ${adaptiveRecommendations.length} spaced repetition questions`);
+          } else {
+            console.log('Spaced repetition returned no valid questions, using standard quiz');
           }
         } catch (error) {
           console.warn('Spaced repetition unavailable, using standard quiz:', error);
