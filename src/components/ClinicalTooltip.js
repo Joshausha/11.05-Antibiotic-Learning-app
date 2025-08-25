@@ -589,9 +589,11 @@ const ClinicalTooltip = ({
     <div
       ref={tooltipRef}
       data-testid="clinical-tooltip"
-      role="dialog"
+      role="tooltip"
+      aria-live="polite"
       aria-labelledby="tooltip-title"
       aria-describedby="tooltip-content"
+      tabIndex="0"
       className={`clinical-tooltip fixed z-50 bg-white border border-gray-300 rounded-lg shadow-xl ${maxWidth} ${className}`}
       style={{
         left: position.x,
@@ -674,6 +676,21 @@ const ClinicalTooltip = ({
           </ul>
         </div>
 
+        {/* Resistance Mechanisms */}
+        {clinicalData.resistanceMechanisms && (
+          <div className="resistance-mechanisms mb-3">
+            <h4 className="text-sm font-medium text-gray-800 mb-2">Resistance Patterns</h4>
+            <ul className="text-sm text-gray-600 space-y-1">
+              {clinicalData.resistanceMechanisms.slice(0, 3).map((mechanism, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="text-red-500 mr-2 mt-1">•</span>
+                  <span>{mechanism}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Treatment Recommendations */}
         <TreatmentRecommendations 
           segmentKey={segment}
@@ -712,6 +729,18 @@ const ClinicalTooltip = ({
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Emergency Contact Information */}
+        {finalEmergencyMode && (
+          <div className="emergency-contacts border-t border-red-200 pt-3 mt-3 bg-red-50 p-3 rounded">
+            <h4 className="text-xs font-medium text-red-800 mb-2">Emergency Contacts</h4>
+            <div className="text-xs text-red-700 space-y-1">
+              <p>• Pharmacy: x1234 (24/7 drug information)</p>
+              <p>• Infectious Disease: x5678 (after hours on-call)</p>
+              <p>• Clinical Supervisor: x9012 (immediate consultation)</p>
             </div>
           </div>
         )}

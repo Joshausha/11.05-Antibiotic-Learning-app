@@ -1376,5 +1376,60 @@ export class ClinicalPerformanceMonitor {
   }
 }
 
+// Create global monitor instance for standalone function exports
+let globalMonitor = null;
+
+const getGlobalMonitor = () => {
+  if (!globalMonitor) {
+    globalMonitor = new ClinicalPerformanceMonitor();
+  }
+  return globalMonitor;
+};
+
+// Export individual functions for backward compatibility with tests
+export const initializePerformanceMonitoring = (options = {}) => {
+  globalMonitor = new ClinicalPerformanceMonitor(options);
+  return globalMonitor;
+};
+
+export const trackRenderingPerformance = (type, duration, metadata = {}) => {
+  return getGlobalMonitor().recordRenderingMetric({ type, duration, ...metadata });
+};
+
+export const trackClinicalWorkflow = (workflow, duration, metadata = {}) => {
+  return getGlobalMonitor().recordClinicalMetric({ type: workflow, duration, ...metadata });
+};
+
+export const trackMemoryUsage = (type, usage, metadata = {}) => {
+  return getGlobalMonitor().recordMemoryMetric({ type, usage, ...metadata });
+};
+
+export const trackUserInteraction = (type, duration, metadata = {}) => {
+  return getGlobalMonitor().recordUXMetric({ type, duration, ...metadata });
+};
+
+export const trackNetworkPerformance = (type, duration, metadata = {}) => {
+  return getGlobalMonitor().recordNetworkMetric({ type, duration, ...metadata });
+};
+
+export const trackDevicePerformance = (type, value, metadata = {}) => {
+  return getGlobalMonitor().recordBatteryMetric({ type, value, ...metadata });
+};
+
+export const getPerformanceReport = () => {
+  return getGlobalMonitor().generateClinicalPerformanceReport();
+};
+
+export const exportPerformanceData = (format = 'json') => {
+  return getGlobalMonitor().exportPerformanceData(format);
+};
+
+export const clearPerformanceData = () => {
+  if (globalMonitor) {
+    globalMonitor.dispose();
+    globalMonitor = null;
+  }
+};
+
 // Export for use in other components
 export default ClinicalPerformanceMonitor;

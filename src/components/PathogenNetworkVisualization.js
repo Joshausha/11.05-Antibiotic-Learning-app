@@ -71,7 +71,7 @@ const PathogenNetworkVisualization = ({
 
   // Enhanced network data with real pathogen information
   const allNetworkData = network || {
-    nodes: simplePathogens.map(pathogen => ({
+    nodes: (simplePathogens || []).map(pathogen => ({
       id: pathogen.commonName,
       pathogenId: pathogen.id,
       gramStatus: pathogen.gramStatus,
@@ -95,7 +95,7 @@ const PathogenNetworkVisualization = ({
 
   // Apply node filters
   const getFilteredNodes = () => {
-    return allNetworkData.nodes.filter(node => {
+    return (allNetworkData.nodes || []).filter(node => {
       // Gram status filter
       if (gramFilter !== 'all' && node.gramStatus !== gramFilter) return false;
       
@@ -122,7 +122,7 @@ const PathogenNetworkVisualization = ({
     const visibleNodes = getFilteredNodes();
     const visibleNodeIds = new Set(visibleNodes.map(node => node.id));
     
-    let edges = allNetworkData.edges.filter(edge => 
+    let edges = (allNetworkData.edges || []).filter(edge => 
       visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)
     );
     
