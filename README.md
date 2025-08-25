@@ -25,15 +25,19 @@ breakthrough_achievement: test-infrastructure-recovery-plus-linting-optimization
 
 ## 📋 Documentation Structure
 
-- **Primary Documentation**: This README.md provides comprehensive application overview and quick start guide
-- **Development Planning**: [`ACTIVE_DEVELOPMENT_PLAN.md`](ACTIVE_DEVELOPMENT_PLAN.md) - Single source of truth for all development planning and project status
-- **AI Development Guide**: [`CLAUDE.md`](CLAUDE.md) - Comprehensive technical development guidance and project instructions  
-- **Supplementary Documentation**: [`docs/`](docs/) - Organized technical, medical, and development documentation
+> **⭐ CONSOLIDATED DOCUMENTATION STRUCTURE (2025-08-24)**
+
+- **🎯 Primary Project Reference**: [`PROJECT_STATUS.md`](PROJECT_STATUS.md) - **Single source of truth** for all development planning, current status, technical specifications, and project roadmap
+- **📖 Application Overview**: This README.md provides comprehensive application overview and quick start guide
+- **🔧 Development Reference**: [`CLAUDE.md`](CLAUDE.md) - Streamlined technical patterns and development guidance
+- **📂 Supplementary Documentation**: [`docs/`](docs/) - Organized technical, medical, and development documentation
   - **System Architecture**: [`docs/system/`](docs/system/) - Technical architecture and testing status
   - **Medical Validation**: [`docs/medical/`](docs/medical/) - Clinical accuracy and medical education compliance
   - **Development Guides**: [`docs/development/`](docs/development/) - Build processes and development workflows
   - **Data Analysis**: [`docs/analysis/`](docs/analysis/) - Comprehensive medical data and performance analysis
-- **Historical Reference**: `documentation_archive/` - Archived outdated documents (⚠️ Contains obsolete information - do not reference)
+- **📚 Historical Archive**: `documentation_archive/2025-08-24_consolidation/` - Archived pre-consolidation documents (for reference only)
+
+> **🚨 IMPORTANT**: All previous planning documents have been consolidated into PROJECT_STATUS.md. Use PROJECT_STATUS.md for current project information.
 
 ## 🎯 Overview
 
