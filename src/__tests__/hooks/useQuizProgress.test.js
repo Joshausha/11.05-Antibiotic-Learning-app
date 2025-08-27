@@ -4,7 +4,8 @@
  * @created 2025-07-28 09:00:33
  */
 
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
+import { act } from 'react';
 import useQuizProgress from '../../hooks/useQuizProgress';
 // Remove setupTestEnvironment import as it replaces localStorage mock
 

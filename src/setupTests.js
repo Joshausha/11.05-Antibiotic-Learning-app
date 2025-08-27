@@ -198,16 +198,11 @@ jest.mock('lucide-react', () => {
 
 // Note: NorthwesternPieChart component testing handled in dedicated test file
 
-// Suppress console warnings for cleaner test output
+// Console error handler for debugging (removed ReactDOMTestUtils.act suppression)
 const originalError = console.error;
 beforeAll(() => {
   console.error = (...args) => {
-    if (
-      typeof args[0] === 'string' &&
-      args[0].includes('Warning: ReactDOMTestUtils.act')
-    ) {
-      return;
-    }
+    // Allow ReactDOMTestUtils.act warnings to surface so we can fix them
     originalError.call(console, ...args);
   };
 });

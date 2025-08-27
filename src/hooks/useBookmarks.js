@@ -161,12 +161,13 @@ const useBookmarks = () => {
     toggleBookmark,
     isBookmarked,
     clearAllBookmarks,
+    clearBookmarks: clearAllBookmarks, // Alias for test compatibility
     getBookmarksByCategory,
     
     // Import/Export
     exportBookmarks,
     importBookmarks
   };
-};
+};;
 
 export default useBookmarks;

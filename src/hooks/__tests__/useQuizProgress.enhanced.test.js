@@ -6,7 +6,8 @@
  * Agent: Delta-1 - Coverage Improvement Specialist
  */
 
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
+import { act } from 'react';
 import useQuizProgress from '../useQuizProgress';
 
 // Mock localStorage hook

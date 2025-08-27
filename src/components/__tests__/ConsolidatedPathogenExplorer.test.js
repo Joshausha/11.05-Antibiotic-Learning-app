@@ -173,7 +173,7 @@ jest.mock('../../data/durationMappings', () => {
 jest.mock('../PathogenList', () => {
   return function MockPathogenList({ 
     pathogens, 
-    onSelectPathogen, 
+    onPathogenSelect, 
     selectedPathogen,
     searchTerm,
     onSearch,
@@ -226,7 +226,7 @@ jest.mock('../PathogenList', () => {
           <div 
             key={pathogen.id}
             data-testid={`pathogen-${pathogen.id}`}
-            onClick={() => onSelectPathogen(pathogen)}
+            onClick={() => onPathogenSelect(pathogen)}
             className={selectedPathogen?.id === pathogen.id ? 'selected' : ''}
           >
             <div>{pathogen.name}</div>
@@ -290,7 +290,7 @@ jest.mock('../SimpleNetworkView', () => {
   return function MockSimpleNetworkView({ 
     pathogens, 
     selectedPathogen, 
-    onSelectPathogen,
+    onPathogenSelect,
     relationships 
   }) {
     return (
@@ -300,7 +300,7 @@ jest.mock('../SimpleNetworkView', () => {
           <div 
             key={pathogen.id}
             data-testid={`network-pathogen-${pathogen.id}`}
-            onClick={() => onSelectPathogen(pathogen)}
+            onClick={() => onPathogenSelect(pathogen)}
             className={selectedPathogen?.id === pathogen.id ? 'selected' : ''}
           >
             <div>{pathogen.name}</div>
@@ -327,6 +327,7 @@ describe('ConsolidatedPathogenExplorer Component', () => {
   const defaultProps = {
     pathogenData: mockPathogenData,
     onPathogenSelect: mockOnSelectCondition,
+    onSelectCondition: mockOnSelectCondition,
     onSelectPathogen: mockOnSelectCondition
   };
 

@@ -95,6 +95,12 @@ export class ClinicalAnimationManager {
     this.reducedMotion = this.detectReducedMotion();
     this.performanceMode = 'standard'; // 'standard', 'performance', 'battery'
     
+    // Mobile and clinical device detection
+    this.deviceInfo = this.detectDeviceCapabilities();
+    this.isMobile = this.deviceInfo.isMobile;
+    this.isLowPowerDevice = this.deviceInfo.isLowPower;
+    this.screenSize = this.deviceInfo.screenSize;
+    
     // Performance monitoring
     this.frameTime = 0;
     this.lastFrameTime = performance.now();
@@ -119,6 +125,50 @@ export class ClinicalAnimationManager {
   }
   
   /**
+   * Detect device capabilities for mobile optimization
+   * Critical for clinical bedside workflow optimization
+   */
+  detectDeviceCapabilities() {
+    if (typeof window === 'undefined') {
+      return {
+        isMobile: false,
+        isLowPower: false,
+        screenSize: 'desktop',
+        hasTouch: false,
+        deviceMemory: 8,
+        hardwareConcurrency: 4
+      };
+    }
+    
+    const userAgent = navigator.userAgent || '';
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // Screen size detection for clinical workflow optimization
+    const screenWidth = window.innerWidth;
+    let screenSize = 'desktop';
+    if (screenWidth < 768) screenSize = 'mobile';
+    else if (screenWidth < 1024) screenSize = 'tablet';
+    
+    // Performance indicators for low-power device detection
+    const deviceMemory = navigator.deviceMemory || 4; // GB, default 4GB if not available
+    const hardwareConcurrency = navigator.hardwareConcurrency || 4; // CPU cores
+    const isLowPower = deviceMemory < 4 || hardwareConcurrency < 4;
+    
+    return {
+      isMobile,
+      isLowPower,
+      screenSize,
+      hasTouch,
+      deviceMemory,
+      hardwareConcurrency,
+      // Clinical-specific indicators
+      isClinicalBedside: isMobile && screenSize === 'mobile',
+      isTabletWorkstation: !isMobile && screenSize === 'tablet'
+    };
+  }
+  
+  /**
    * Initialize performance monitoring for clinical environments
    */
   initializePerformanceMonitoring() {
@@ -130,19 +180,81 @@ export class ClinicalAnimationManager {
       this.frameTime = currentTime - this.lastFrameTime;
       this.lastFrameTime = currentTime;
       
-      // Adjust performance mode based on frame rate
-      if (this.frameTime > 32) { // < 30fps
-        this.performanceMode = 'performance';
-      } else if (this.frameTime > 20) { // < 50fps
-        this.performanceMode = 'battery';
-      } else {
-        this.performanceMode = 'standard';
-      }
+      // Adjust performance mode based on frame rate and device capabilities
+      this.adaptPerformanceModeForDevice();
       
       this.animationFrameId = requestAnimationFrame(monitorFrameRate);
     };
     
     monitorFrameRate();
+  }
+  
+  /**
+   * Mobile and clinical device-aware performance mode adaptation
+   * Enhanced for clinical workflow optimization
+   */
+  adaptPerformanceModeForDevice() {
+    // Base performance mode on frame rate with mobile-specific thresholds
+    let baseMode = 'standard';
+    
+    // Mobile devices get more aggressive optimization thresholds
+    const mobileFrameThresholds = this.isMobile ? 
+      { performance: 28, battery: 18 } : // 35fps and 55fps for mobile
+      { performance: 32, battery: 20 };  // 30fps and 50fps for desktop
+    
+    if (this.frameTime > mobileFrameThresholds.performance) {
+      baseMode = 'performance';
+    } else if (this.frameTime > mobileFrameThresholds.battery) {
+      baseMode = 'battery';
+    }
+    
+    // Apply mobile-specific optimizations
+    if (this.isMobile || this.isLowPowerDevice) {
+      // More aggressive performance mode for mobile devices
+      if (baseMode === 'standard' && this.isLowPowerDevice) {
+        baseMode = 'battery';
+      }
+      
+      // Clinical bedside optimization - prioritize battery life and responsiveness
+      if (this.deviceInfo.isClinicalBedside) {
+        baseMode = 'battery';
+        
+        // Ultra-aggressive optimization for clinical bedside workflows
+        if (this.frameTime > 25) { // < 40fps triggers ultra mode
+          this.performanceMode = 'ultra-battery';
+          return;
+        }
+      }
+      
+      // Tablet workstation optimization
+      if (this.deviceInfo.isTabletWorkstation) {
+        // Balance performance and battery for longer clinical sessions
+        if (baseMode === 'standard' && this.frameTime > 22) { // < 45fps
+          baseMode = 'battery';
+        }
+      }
+    }
+    
+    // Network-aware optimizations for clinical environments
+    if (navigator.connection && navigator.connection.effectiveType) {
+      const connectionType = navigator.connection.effectiveType;
+      if (connectionType === 'slow-2g' || connectionType === '2g') {
+        baseMode = 'battery'; // Ultra-conservative for poor connections
+      } else if (connectionType === '3g' && this.isMobile) {
+        // Moderate optimization for 3G mobile connections
+        if (baseMode === 'standard') baseMode = 'battery';
+      }
+    }
+    
+    // Memory pressure detection for extended clinical sessions
+    if ('memory' in performance && performance.memory) {
+      const memoryUsage = performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit;
+      if (memoryUsage > 0.8) { // > 80% memory usage
+        baseMode = 'battery'; // Reduce animation complexity to free memory
+      }
+    }
+    
+    this.performanceMode = baseMode;
   }
   
   /**
@@ -177,8 +289,13 @@ export class ClinicalAnimationManager {
       return Promise.resolve();
     }
     
-    // Performance adaptation
-    const adaptedConfig = this.adaptConfigForPerformance(config);
+    // Performance and mobile adaptation
+    let adaptedConfig = this.adaptConfigForPerformance(config);
+    adaptedConfig = this.optimizeForSmallScreen(element, adaptedConfig);
+    adaptedConfig = this.optimizeForClinicalAccessibility(element, adaptedConfig);
+    
+    // Apply mobile touch optimizations
+    this.optimizeForTouchInteraction(element);
     
     return new Promise((resolve) => {
       // Cancel existing animation on this element
@@ -222,6 +339,7 @@ export class ClinicalAnimationManager {
   adaptConfigForPerformance(config) {
     const adapted = { ...config };
     
+    // Apply performance mode optimizations
     switch (this.performanceMode) {
       case 'performance':
         adapted.duration *= 0.7; // Faster animations
@@ -231,6 +349,44 @@ export class ClinicalAnimationManager {
         adapted.duration *= 0.5; // Much faster animations
         adapted.keyframes = this.simplifyKeyframes(config.keyframes);
         break;
+    }
+    
+    // Apply mobile-specific optimizations
+    if (this.isMobile) {
+      // Mobile devices benefit from shorter, snappier animations
+      adapted.duration *= 0.8;
+      
+      // Clinical bedside optimization - ultra-fast for critical workflows
+      if (this.deviceInfo.isClinicalBedside) {
+        adapted.duration *= 0.6; // Aggressive optimization for bedside use
+        
+        // For emergency situations, make animations near-instant on mobile
+        if (config.priority === 'critical' || this.emergencyMode) {
+          adapted.duration = Math.min(adapted.duration, 50); // Max 50ms for critical
+        }
+      }
+      
+      // Touch interaction optimization
+      if (this.deviceInfo.hasTouch) {
+        adapted.easing = MEDICAL_EASING.clinical; // Snappy clinical easing for touch
+      }
+    }
+    
+    // Low-power device optimizations
+    if (this.isLowPowerDevice) {
+      adapted.duration *= 0.7;
+      adapted.keyframes = this.simplifyKeyframes(adapted.keyframes);
+      
+      // Reduce motion complexity for older devices
+      if (adapted.keyframes && adapted.keyframes.length > 3) {
+        adapted.keyframes = this.simplifyKeyframes(adapted.keyframes);
+      }
+    }
+    
+    // Accessibility - respect reduced motion preferences
+    if (this.reducedMotion) {
+      adapted.duration = Math.min(adapted.duration, 150); // Max 150ms
+      adapted.keyframes = this.simplifyKeyframes(adapted.keyframes);
     }
     
     return adapted;
@@ -265,6 +421,112 @@ export class ClinicalAnimationManager {
       animationData.animation.cancel();
       this.activeAnimations.delete(element);
     }
+  }
+  
+  /**
+   * Mobile-specific touch interaction optimization
+   * Provides immediate visual feedback for clinical workflows
+   */
+  optimizeForTouchInteraction(element) {
+    if (!this.deviceInfo.hasTouch) return;
+    
+    // Add touch-friendly properties
+    element.style.touchAction = 'manipulation'; // Prevents zoom delays
+    element.style.userSelect = 'none'; // Prevents text selection on touch
+    
+    // Clinical bedside optimization - larger touch targets
+    if (this.deviceInfo.isClinicalBedside) {
+      const currentMinHeight = parseInt(getComputedStyle(element).minHeight) || 0;
+      if (currentMinHeight < 44) { // Apple's 44px minimum touch target
+        element.style.minHeight = '44px';
+        element.style.minWidth = '44px';
+      }
+    }
+  }
+  
+  /**
+   * Small screen layout optimization for clinical displays
+   */
+  optimizeForSmallScreen(element, config) {
+    if (this.deviceInfo.screenSize !== 'mobile') return config;
+    
+    const optimized = { ...config };
+    
+    // Reduce animation complexity for small screens
+    if (optimized.keyframes && optimized.keyframes.length > 2) {
+      // Keep critical keyframes only
+      const start = optimized.keyframes[0];
+      const end = optimized.keyframes[optimized.keyframes.length - 1];
+      optimized.keyframes = [start, end];
+    }
+    
+    // Scale down transform values for better mobile visibility
+    if (optimized.keyframes) {
+      optimized.keyframes = optimized.keyframes.map(keyframe => {
+        const scaled = { ...keyframe };
+        if (scaled.transform && scaled.transform.includes('scale')) {
+          // Reduce scale transformations for mobile screens
+          scaled.transform = scaled.transform.replace(/scale\(([^)]+)\)/g, (match, value) => {
+            const scaleValue = parseFloat(value);
+            return `scale(${Math.min(scaleValue, 1.2)})`; // Cap at 1.2x for mobile
+          });
+        }
+        return scaled;
+      });
+    }
+    
+    return optimized;
+  }
+  
+  /**
+   * Clinical accessibility optimization for medical environments
+   * Ensures animations meet healthcare accessibility standards
+   */
+  optimizeForClinicalAccessibility(element, config) {
+    const optimized = { ...config };
+    
+    // High contrast mode detection (common in clinical environments)
+    if (window.matchMedia && window.matchMedia('(prefers-contrast: high)').matches) {
+      // Simplify animations for high contrast displays
+      optimized.duration *= 0.8;
+      if (optimized.keyframes) {
+        optimized.keyframes = this.simplifyKeyframes(optimized.keyframes);
+      }
+    }
+    
+    // Clinical lighting adaptation (bright clinical environments)
+    if (this.deviceInfo.screenSize === 'mobile' || this.deviceInfo.isClinicalBedside) {
+      // Increase visual emphasis for clinical visibility
+      if (optimized.keyframes) {
+        optimized.keyframes = optimized.keyframes.map(keyframe => {
+          const enhanced = { ...keyframe };
+          
+          // Enhance borders and shadows for clinical visibility
+          if (enhanced.boxShadow) {
+            enhanced.boxShadow = enhanced.boxShadow.replace(/rgba\(([^)]+)\)/g, (match, values) => {
+              const [r, g, b, a] = values.split(',').map(v => parseFloat(v.trim()));
+              return `rgba(${r}, ${g}, ${b}, ${Math.min(a + 0.1, 1)})`; // Increase opacity
+            });
+          }
+          
+          return enhanced;
+        });
+      }
+    }
+    
+    // Focus management for clinical workflows
+    if (element.matches('[role="button"], button, [tabindex]')) {
+      // Ensure focus indicators are visible during animations
+      element.style.outline = 'none'; // We'll handle focus ourselves
+      element.addEventListener('focus', () => {
+        element.style.boxShadow = '0 0 0 2px #0066cc, 0 0 0 4px rgba(0, 102, 204, 0.3)';
+      });
+      element.addEventListener('blur', () => {
+        element.style.boxShadow = '';
+      });
+    }
+    
+    return optimized;
   }
   
   /**
@@ -636,8 +898,9 @@ export const createSpacedRepetitionAnimation = (element, urgency = 'low', option
  * Promotes animations to GPU layer for better performance
  */
 export class GPUAccelerationOptimizer {
-  constructor() {
+  constructor(animationManager = null) {
     this.acceleratedElements = new WeakSet();
+    this.animationManager = animationManager;
   }
   
   /**
@@ -667,19 +930,43 @@ export class GPUAccelerationOptimizer {
   }
   
   /**
-   * Auto-promote elements based on animation complexity
+   * Auto-promote elements based on animation complexity and device capabilities
    */
   autoPromote(element, config) {
     const complexityScore = this.calculateComplexityScore(config);
     
-    if (complexityScore > 0.5) {
-      this.promoteToGPU(element);
+    // Mobile-specific GPU promotion logic
+    if (this.animationManager) {
+      const deviceInfo = this.animationManager.deviceInfo;
       
-      // Auto-demote after animation
-      setTimeout(() => {
-        this.demoteFromGPU(element);
-      }, config.duration + 100);
+      // Be more conservative on low-power devices
+      if (deviceInfo.isLowPower) {
+        if (complexityScore > 0.7) { // Higher threshold for low-power devices
+          this.promoteToGPU(element);
+        }
+      } else if (deviceInfo.isMobile) {
+        // More aggressive GPU promotion on capable mobile devices
+        if (complexityScore > 0.3) {
+          this.promoteToGPU(element);
+        }
+      } else {
+        // Standard desktop behavior
+        if (complexityScore > 0.5) {
+          this.promoteToGPU(element);
+        }
+      }
+    } else {
+      // Fallback behavior when no animation manager is available
+      if (complexityScore > 0.5) {
+        this.promoteToGPU(element);
+      }
     }
+    
+    // Auto-demote after animation with mobile-specific timing
+    const demoteDelay = this.animationManager?.isMobile ? config.duration + 50 : config.duration + 100;
+    setTimeout(() => {
+      this.demoteFromGPU(element);
+    }, demoteDelay);
   }
   
   /**
@@ -726,7 +1013,7 @@ export const useNorthwesternAnimations = (options = {}) => {
   
   // This would be used with proper React imports in a React component
   const animationManager = new ClinicalAnimationManager();
-  const gpuOptimizer = new GPUAccelerationOptimizer();
+  const gpuOptimizer = new GPUAccelerationOptimizer(animationManager);
   
   // Configure manager
   animationManager.setEmergencyMode(emergencyMode);
@@ -828,7 +1115,7 @@ export class AnimationPerformanceMonitor {
 
 // Default animation manager instance
 export const defaultAnimationManager = new ClinicalAnimationManager();
-export const defaultGPUOptimizer = new GPUAccelerationOptimizer();
+export const defaultGPUOptimizer = new GPUAccelerationOptimizer(defaultAnimationManager);
 export const defaultPerformanceMonitor = new AnimationPerformanceMonitor();
 
 // Default configuration for Northwestern animations

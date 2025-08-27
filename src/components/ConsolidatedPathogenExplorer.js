@@ -4,7 +4,8 @@
  * Provides both simple and advanced pathogen exploration features
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { Search, Filter, BarChart3, Network, AlertTriangle, X } from 'lucide-react';
 import PathogenList from './PathogenList';
 import PathogenCard from './PathogenCard';
@@ -15,6 +16,8 @@ import simplePathogens, { searchPathogens } from '../data/SimplePathogenData';
 const ConsolidatedPathogenExplorer = ({ 
   pathogenData, 
   onPathogenSelect, 
+  onSelectCondition,
+  onSelectPathogen,
   selectedPathogen: propSelectedPathogen, 
   className = '' 
 }) => {
@@ -28,11 +31,15 @@ const ConsolidatedPathogenExplorer = ({
   const [selectedAntibiotic, setSelectedAntibiotic] = useState(null);
   const [showResistanceAlert, setShowResistanceAlert] = useState(true);
 
+  // Create unified callback function from any of the provided prop names
+  const hasCallback = !!(onPathogenSelect || onSelectCondition || onSelectPathogen);
+  const unifiedOnSelectPathogen = onPathogenSelect || onSelectCondition || onSelectPathogen || (() => {});
+
   // Use controlled prop if provided, otherwise use internal state
   const selectedPathogen = propSelectedPathogen !== undefined ? propSelectedPathogen : internalSelectedPathogen;
 
   // Comprehensive search function that works with both prop data and imported data
-  const searchPathogensConditionally = (searchTerm, filters = {}) => {
+  const searchPathogensConditionally = useCallback((searchTerm, filters = {}) => {
     if (pathogenData) {
       // Use prop data - apply manual filtering since searchPathogens expects imported data
       let filtered = pathogenData;
@@ -69,7 +76,7 @@ const ConsolidatedPathogenExplorer = ({
       // Use imported data - leverage existing search functions
       return searchPathogens(searchTerm, filters);
     }
-  };
+  }, [pathogenData]);
 
   // Safe pathogen access
   const safePathogens = useMemo(() => pathogenData || simplePathogens, [pathogenData]);
@@ -81,7 +88,7 @@ const ConsolidatedPathogenExplorer = ({
       severity: severityFilter,
       duration: durationFilter
     });
-  }, [searchTerm, gramFilter, severityFilter, durationFilter, pathogenData, searchPathogensConditionally]);
+  }, [searchTerm, gramFilter, severityFilter, durationFilter, searchPathogensConditionally]);
 
   // Get gram status counts from the safe data source
   const getGramStatusCount = (status) => {
@@ -301,8 +308,8 @@ const ConsolidatedPathogenExplorer = ({
                 pathogens={filteredPathogens}
                 selectedPathogen={selectedPathogen}
                 onPathogenSelect={(pathogen) => {
-                  if (onPathogenSelect) {
-                    onPathogenSelect(pathogen);
+                  if (hasCallback) {
+                    unifiedOnSelectPathogen(pathogen);
                   } else {
                     setInternalSelectedPathogen(pathogen);
                   }
@@ -316,8 +323,8 @@ const ConsolidatedPathogenExplorer = ({
                 pathogens={filteredPathogens}
                 selectedPathogen={selectedPathogen}
                 onPathogenSelect={(pathogen) => {
-                  if (onPathogenSelect) {
-                    onPathogenSelect(pathogen);
+                  if (hasCallback) {
+                    unifiedOnSelectPathogen(pathogen);
                   } else {
                     setInternalSelectedPathogen(pathogen);
                   }
@@ -343,8 +350,8 @@ const ConsolidatedPathogenExplorer = ({
                 <PathogenCard 
                   pathogen={selectedPathogen} 
                   onClose={() => {
-                    if (onPathogenSelect) {
-                      onPathogenSelect(null);
+                    if (hasCallback) {
+                      unifiedOnSelectPathogen(null);
                     } else {
                       setInternalSelectedPathogen(null);
                     }
@@ -448,6 +455,26 @@ const ConsolidatedPathogenExplorer = ({
       </div>
     </div>
   );
+};
+
+// PropTypes for comprehensive prop validation and documentation
+ConsolidatedPathogenExplorer.propTypes = {
+  pathogenData: PropTypes.arrayOf(PropTypes.object),
+  onPathogenSelect: PropTypes.func,
+  onSelectCondition: PropTypes.func,
+  onSelectPathogen: PropTypes.func,
+  selectedPathogen: PropTypes.object,
+  className: PropTypes.string
+};
+
+// Default props for safety and backwards compatibility
+ConsolidatedPathogenExplorer.defaultProps = {
+  pathogenData: null,
+  onPathogenSelect: () => {},
+  onSelectCondition: () => {},
+  onSelectPathogen: () => {},
+  selectedPathogen: undefined,
+  className: ''
 };
 
 export default ConsolidatedPathogenExplorer;

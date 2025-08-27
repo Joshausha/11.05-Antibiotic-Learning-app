@@ -4,7 +4,8 @@
  * @created 2025-07-28 09:15:44
  */
 
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
+import { act } from 'react';
 import useBookmarks from '../../hooks/useBookmarks';
 import { createTestCondition } from '../../utils/testUtils';
 import { flushSync } from 'react-dom';

@@ -22,6 +22,7 @@
  * @medical-disclaimer Educational purposes only - not for clinical practice
  */
 
+import React from 'react';
 import { 
   groupAntibioticsByClass, 
   analyzeCoveragePatterns,

@@ -24,7 +24,7 @@ import { NORTHWESTERN_CATEGORIES, COVERAGE_LEVELS } from './northwesternFilterLo
 /**
  * Emergency clinical scenarios with <30 second access protocols
  */
-export const EMERGENCY_SCENARIOS = {
+const EMERGENCY_SCENARIOS = {
   septicShock: {
     name: 'Septic Shock',
     urgency: 'critical',
@@ -119,7 +119,7 @@ export const EMERGENCY_SCENARIOS = {
 /**
  * Standard clinical scenarios for common presentations
  */
-export const STANDARD_SCENARIOS = {
+const STANDARD_SCENARIOS = {
   communityPneumonia: {
     name: 'Community-Acquired Pneumonia',
     category: 'respiratory',

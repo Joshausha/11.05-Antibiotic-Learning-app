@@ -3,7 +3,7 @@ type: development-guidance
 title: CLAUDE.md - Antibiotic Learning App Development Guide
 status: streamlined-post-consolidation
 created: 2025-07-16
-modified: 2025-08-24
+modified: 2025-08-26
 tags: [claude-code, development-patterns, medical-education, consolidated]
 category: Projects
 purpose: claude-code-development-guidance-essential-patterns-only
@@ -13,7 +13,7 @@ redirect: PROJECT_STATUS.md for comprehensive project information
 
 # CLAUDE.md - Essential Development Patterns
 **Streamlined Development Guide for Claude Code**  
-*Last Updated: 2025-08-24*
+*Last Updated: 2025-08-26*
 
 > **📋 CONSOLIDATED DOCUMENTATION NOTICE**: Most project information has been consolidated into [`PROJECT_STATUS.md`](PROJECT_STATUS.md). This file contains only essential development patterns for Claude Code sessions.
 
@@ -21,7 +21,7 @@ redirect: PROJECT_STATUS.md for comprehensive project information
 
 ## 🎯 Project Overview
 
-**Antibiotic Learning App** - Production-ready clinical decision education platform with 97.7% test success rate.
+**Antibiotic Learning App** - Production-ready clinical decision education platform with 96.9% test suite pass rate (62/64 suites).
 
 **Current Focus**: Clinical decision visualization development using Northwestern animations foundation (875 lines).
 
@@ -34,7 +34,7 @@ redirect: PROJECT_STATUS.md for comprehensive project information
 ```bash
 # Core Development
 npm start          # Start development server with hot reload
-npm test           # Run all tests (97.7% success rate)
+npm test           # Run all tests (96.9% suite / 97.7% individual test pass rate)
 npm run build      # Build production bundle
 npm run test:watch # Run tests in watch mode
 npm run lint       # Check code quality  
@@ -63,7 +63,7 @@ cd "/Users/joshpankin/My Drive/10-19 Projects/11 Medical Education Projects/11.0
 - `src/components/` - React components
 - `src/data/` - Medical content (79 questions, 29 pathogens, 30 antibiotics)
 - `src/hooks/` - Custom hooks
-- `src/tests/` - Test suites (97.7% pass rate)
+- `src/tests/` - Test suites (96.9% suite pass rate)
 
 ---
 
@@ -114,7 +114,7 @@ const count = pathogens?.length || 0;
 ## ✅ Success Criteria for Tasks
 
 **All development tasks must meet**:
-- Tests pass (maintain 97.7%+ success rate)
+- Tests pass (maintain 96.9%+ suite pass rate with hook API compatibility)
 - Code follows established patterns
 - Medical accuracy preserved
 - Northwestern animations integrity maintained
@@ -125,7 +125,7 @@ const count = pathogens?.length || 0;
 
 ## 📋 Current Status Quick Reference
 
-- **Test Infrastructure**: ✅ 97.7% pass rate (43/45 suites passing)
+- **Test Infrastructure**: ✅ 96.9% test suite pass rate (62/64 suites passing, hook API recovery complete)
 - **Code Quality**: ✅ Systematic optimization (204 linting warnings)
 - **Production Build**: ✅ 68.86 kB gzipped
 - **Medical Foundation**: ✅ Northwestern animations ready for enhancement

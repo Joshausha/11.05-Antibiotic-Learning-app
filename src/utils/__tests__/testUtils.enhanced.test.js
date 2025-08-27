@@ -30,7 +30,8 @@ import {
   setupTestEnvironment,
   createTestCondition,
   createTestPathogen,
-  createTestUser
+  createTestUser,
+  restoreMockImplementations
 } from '../testUtils';
 
 // Mock console methods to reduce test noise
@@ -58,6 +59,8 @@ describe('Enhanced Test Utils Coverage', () => {
   beforeEach(() => {
     // Clear all mock calls before each test
     jest.clearAllMocks();
+    // Restore mock implementations after clearing
+    restoreMockImplementations();
   });
 
   describe('Mock Data Validation', () => {

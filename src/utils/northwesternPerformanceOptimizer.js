@@ -223,7 +223,7 @@ export class VirtualizationManager {
 /**
  * Render prioritization system for clinical workflows
  */
-export class RenderPrioritizationEngine {
+class RenderPrioritizationEngine {
   constructor(options = {}) {
     this.config = {
       emergencyMode: options.emergencyMode || false,
@@ -534,7 +534,7 @@ export class RenderPrioritizationEngine {
 /**
  * Memory management system for extended clinical sessions
  */
-export class MemoryManager {
+class MemoryManager {
   constructor(options = {}) {
     this.config = {
       maxMemoryMB: options.maxMemoryMB || 50,
