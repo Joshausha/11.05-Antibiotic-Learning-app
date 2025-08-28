@@ -2,7 +2,7 @@
 type: development-plan
 title: Network Visualization Upgrade - Strategic Architecture Plan
 date: 2025-08-25
-modified: 2025-08-25 19:44:34
+modified: 2025-08-28 17:30:00
 sprint: Visualization Enhancement Sprint
 focus: Interactive Medical Education Networks
 medical-validation: required
@@ -57,7 +57,7 @@ project_id: 11.05
 
 - **Biological Networks Heritage**: Created at University of Toronto specifically for molecular interaction networks
 - **Medical Research Proven**: Used in bacterial genome analysis, antibiotic resistance studies, pathogen clustering research
-- **Educational Suitability**: Progressive disclosure, multi-level exploration, evidence-based visualizations
+- **Educational Suitability**: Progressive disclosure, multi-level exploration, coverage pattern visualizations
 - **Clinical Performance**: Handles 1000+ nodes (future growth), advanced filtering, real-time updates
 
 **Technical Advantages**:
@@ -81,7 +81,27 @@ layout: {
 - **Integration**: Complements Cytoscape for workflow-based visualizations
 - **Future Enhancement**: Connect network insights to clinical decision support
 
-## 📐 Architecture Design - MEDICAL EDUCATION FOCUSED
+## 📐 Architecture Design - NORTHWESTERN-INSPIRED COVERAGE WHEELS
+
+### Coverage Wheel Architecture
+
+**Northwestern-Inspired Visual Design**:
+- **Pie Chart Nodes**: Circular antibiotic nodes showing coverage spectrums
+- **Visual Segments**: 
+  - Gram-positive coverage (blue segments)
+  - Gram-negative coverage (red segments) 
+  - Anaerobic coverage (green segments)
+- **Interactive Rotation**: Coverage wheel rotation on hover/selection
+- **Coverage Constellation Patterns**: Visual clustering by antibiotic classes
+- **Mechanism-Based Groupings**: Cell wall, protein synthesis, DNA/RNA clusters
+
+**Educational Benefits**:
+- **Intuitive Coverage Understanding**: Students quickly see antibiotic spectrum breadth
+- **Class Relationship Visualization**: Beta-lactams, aminoglycosides, macrolides clustering
+- **Mechanism Learning**: Visual encoding connects structure to function
+- **Coverage Gap Identification**: Students learn combination therapy principles
+
+## 📐 Component Architecture Design - MEDICAL EDUCATION FOCUSED
 
 ### Component Hierarchy
 
@@ -105,30 +125,56 @@ VisualizationsTab
 ### Medical Data Flow Architecture
 
 ```javascript
-// Unified medical data model for network visualizations
-const MedicalNetworkDataModel = {
+// Northwestern-Inspired Coverage Wheel Data Model
+const CoverageWheelDataModel = {
   nodes: [
     {
       data: {
-        id: 'staph-aureus',
-        type: 'pathogen',
-        label: 'Staphylococcus aureus',
-        // Medical properties
-        gramStatus: 'positive',
-        clinicalSeverity: 'high',
-        resistancePatterns: ['MRSA', 'VISA'],
-        primarySites: ['skin', 'bone', 'blood'],
+        id: 'vancomycin',
+        type: 'antibiotic',
+        label: 'Vancomycin',
+        // Coverage wheel properties
+        coverageSpectrum: ['gram-positive', 'anaerobic-limited'],
+        coveragePattern: 'narrow-spectrum',
+        antibioticClass: 'glycopeptide',
+        mechanismOfAction: 'cell-wall-synthesis-inhibition',
+        // Visual wheel data
+        wheelSegments: {
+          gramPositive: 85,    // 85% coverage
+          gramNegative: 0,     // 0% coverage  
+          anaerobic: 15        // 15% coverage
+        },
         // Educational content
         educationalLevel: {
-          basic: 'Common skin pathogen',
-          intermediate: 'Major cause of healthcare-associated infections',
-          advanced: 'Leading cause of bacteremia with high mortality',
-          clinical: 'Requires rapid identification and appropriate therapy'
+          basic: 'Gram-positive antibiotic',
+          intermediate: 'MRSA-active cell wall inhibitor',
+          advanced: 'Glycopeptide with nephrotoxicity monitoring',
+          clinical: 'Requires therapeutic drug monitoring'
         },
-        // Evidence-based content
-        guidelines: ['AAP', 'IDSA', 'CDC'],
-        evidenceStrength: 'A',
-        lastUpdated: '2025-08-25'
+        // Class relationship
+        classPosition: { x: 100, y: 200 }, // Cell wall inhibitor cluster
+        relatedAntibiotics: ['teicoplanin', 'linezolid']
+      }
+    },
+    {
+      data: {
+        id: 'ciprofloxacin',
+        type: 'antibiotic',
+        label: 'Ciprofloxacin',
+        // Coverage wheel properties
+        coverageSpectrum: ['gram-negative', 'gram-positive-limited'],
+        coveragePattern: 'broad-spectrum',
+        antibioticClass: 'fluoroquinolone',
+        mechanismOfAction: 'dna-synthesis-inhibition',
+        // Visual wheel data
+        wheelSegments: {
+          gramPositive: 25,    // 25% coverage (limited)
+          gramNegative: 70,    // 70% coverage (excellent)
+          anaerobic: 5         // 5% coverage (poor)
+        },
+        // Class relationship
+        classPosition: { x: 300, y: 100 }, // DNA inhibitor cluster
+        relatedAntibiotics: ['levofloxacin', 'moxifloxacin']
       }
     }
   ],
@@ -137,15 +183,13 @@ const MedicalNetworkDataModel = {
       data: {
         source: 'staph-aureus',
         target: 'vancomycin',
-        // Clinical effectiveness
+        // Coverage relationship
         effectiveness: 'high',
-        resistanceRisk: 'low',
-        evidenceLevel: 'A',
+        coverageType: 'gram-positive-target',
         // Educational content
-        clinicalNotes: 'Gold standard for MRSA treatment',
-        dosing: 'Weight-based with trough monitoring',
-        guidelines: ['AAP', 'IDSA'],
-        contraindications: ['Renal impairment without monitoring']
+        clinicalNotes: 'Excellent gram-positive coverage including MRSA',
+        mechanismMatch: 'cell-wall-target-match',
+        classAdvantage: 'glycopeptide-gram-positive-specificity'
       }
     }
   ]
@@ -165,7 +209,7 @@ const MedicalNetworkDataModel = {
 
 - **Pathogen Clustering**: Automatic grouping by resistance patterns, clinical severity
 - **Antibiotic Effectiveness Heat Mapping**: Visual strength of connections
-- **Evidence-Based Visualization**: Connection thickness by evidence quality
+- **Coverage-Based Visualization**: Connection thickness by spectrum effectiveness
 - **Clinical Severity Encoding**: Node size, color intensity, warning indicators  
 - **Educational Tooltips**: Clinical pearls, mechanism of action, key points
 - **Guideline Integration**: AAP/IDSA/CDC source indicators on relationships
@@ -186,7 +230,7 @@ const ClinicalIntegration = {
   guidelineIntegration: {
     filterByGuideline: (source) => { /* Show only AAP/IDSA/CDC */ },
     highlightConflicts: () => { /* Visual conflict indicators */ },
-    showEvidenceStrength: () => { /* Evidence level visualization */ }
+    showCoverageStrength: () => { /* Coverage spectrum visualization */ }
   },
 
   // Preserve existing 875-line Northwestern Animation System
@@ -287,7 +331,7 @@ const ClinicalIntegration = {
 - **Northwestern Animation Preservation**: 875-line system remains intact
 - **Clinical Workflow Enhancement**: <30 second emergency access maintained/improved
 - **Medical Student Feedback**: Positive learning outcome reports
-- **Clinical Accuracy**: All pathogen-antibiotic relationships evidence-based
+- **Clinical Accuracy**: All pathogen-antibiotic relationships coverage-validated
 
 ## 🔄 Four-Week Implementation Strategy
 
@@ -474,7 +518,7 @@ const validateMedicalAccuracy = (pathogenData, antibioticMap) => {
   };
   
   // Validate each pathogen-antibiotic relationship
-  // Ensure evidence-based effectiveness ratings
+  // Ensure coverage-based effectiveness ratings
   // Check for missing contraindications
   
   return validationResults;

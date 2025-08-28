@@ -2,7 +2,7 @@
 type: task-list
 title: Network Visualization Upgrade - Atomic Implementation Tasks
 date: 2025-08-25
-modified: 2025-08-25 19:44:34
+modified: 2025-08-28 17:30:00
 status: ready-for-implementation
 priority: high
 estimated-hours: 160
@@ -405,94 +405,92 @@ medical-validation: required-each-milestone
 
 ---
 
-## 🏥 Phase 2: Medical Features Enhancement (Week 2 - 40 hours)
+## 🏥 Phase 2: Coverage Wheel & Class Visualization (Week 2 - 40 hours)
 
-### Day 6-7: Resistance Pattern Clustering [16 hours]
+### Day 6-7: Northwestern-Inspired Coverage Wheel Implementation [16 hours]
 
-#### Advanced Medical Clustering [8 hours/day x 2 days]
-- [ ] **Implement resistance-based clustering algorithm [4 hours]**
-  - [ ] Group pathogens by shared resistance patterns
-  - [ ] Create MRSA cluster (methicillin-resistant Staphylococci)
-  - [ ] Create ESBL cluster (extended-spectrum beta-lactamase)
-  - [ ] Create VRE cluster (vancomycin-resistant Enterococci)
-  - [ ] Position clusters based on clinical relationships
-  - [ ] Add cluster boundary visualizations
+#### Coverage Pie Chart Node Development [8 hours/day x 2 days]
+- [ ] **Create pie chart node component for antibiotics [6 hours]**
+  - [ ] Implement circular pie chart nodes similar to Northwestern wheel design
+  - [ ] Visual segments: Gram-positive (blue), Gram-negative (red), Anaerobic (green)
+  - [ ] Interactive rotation animation on hover/selection
+  - [ ] Coverage percentage indicators for each segment
+  - [ ] Smooth transitions between different antibiotics
+  - [ ] Responsive sizing based on spectrum breadth
 
-- [ ] **Create resistance pattern visualization [4 hours]**
-  - [ ] Heat map overlay showing resistance intensity
-  - [ ] Color coding: Green=susceptible, Yellow=intermediate, Red=resistant
-  - [ ] Interactive resistance pattern tooltips
-  - [ ] Filter by specific resistance mechanisms
-  - [ ] Connect to antibiotic stewardship principles
+- [ ] **Develop antibiotic class clustering [4 hours]**
+  - [ ] Group beta-lactams together (penicillins, cephalosporins, carbapenems)
+  - [ ] Cluster aminoglycosides (gentamicin, tobramycin, amikacin)
+  - [ ] Group macrolides/lincosamides (azithromycin, clindamycin)
+  - [ ] Position fluoroquinolones as distinct cluster
+  - [ ] Add visual class boundary indicators
+  - [ ] Color-code class relationships
 
-- [ ] **Add temporal resistance trends [4 hours]**
-  - [ ] Show resistance trend arrows if data available
-  - [ ] Highlight emerging resistance patterns
-  - [ ] Add "resistance alert" indicators for concerning trends
-  - [ ] Connect to CDC/WHO resistance surveillance data
-  - [ ] Educational overlays explaining resistance development
+- [ ] **Implement mechanism of action groupings [3 hours]**
+  - [ ] Cell wall synthesis inhibitors: Beta-lactams cluster
+  - [ ] Protein synthesis inhibitors: Aminoglycosides, macrolides cluster
+  - [ ] DNA/RNA inhibitors: Fluoroquinolones, metronidazole cluster
+  - [ ] Add mechanism-based connection lines between related antibiotics
+  - [ ] Visual encoding for mechanism similarity
 
-- [ ] **Clinical correlation integration [4 hours]**
-  - [ ] Connect resistance patterns to clinical outcomes
-  - [ ] Show relationship to hospital length of stay
-  - [ ] Mortality risk indicators for highly resistant organisms
-  - [ ] Treatment failure probability visualizations
-  - [ ] Link to infection control measures
+- [ ] **Add spectrum visualization system [3 hours]**
+  - [ ] Broad spectrum: Large, multi-color wheels (coverage across gram types)
+  - [ ] Narrow spectrum: Focused, single-color segments
+  - [ ] Visual comparison tool for side-by-side spectrum analysis
+  - [ ] Interactive spectrum slider for educational exploration
 
-### Day 8-9: Clinical Severity & Evidence Integration [16 hours]
+### Day 8-9: Interactive Coverage Wheel & Class Relationships [16 hours]
 
-#### Clinical Severity Visual Encoding [8 hours/day x 2 days]
-- [ ] **Implement severity-based node sizing [4 hours]**
-  - [ ] High severity: Large nodes with warning indicators
-  - [ ] Medium severity: Standard size with caution colors
-  - [ ] Low severity: Smaller nodes with standard colors
-  - [ ] Add pulsing animation for critical pathogens
-  - [ ] Test color accessibility for color-blind users
+#### Coverage Constellation Development [8 hours/day x 2 days]
+- [ ] **Implement interactive coverage wheels for pathogens [5 hours]**
+  - [ ] Show which antibiotics are effective against each pathogen
+  - [ ] Visual wheel segments representing different antibiotic classes
+  - [ ] Hover interactions show coverage percentages
+  - [ ] Click interactions for detailed effectiveness information
+  - [ ] Color-coded segments: Effective (green), Moderate (yellow), Resistant (red)
 
-- [ ] **Create clinical priority system [4 hours]**
-  - [ ] Rapid identification priorities (blood culture positives)
-  - [ ] Empiric therapy considerations
-  - [ ] De-escalation pathway indicators
-  - [ ] Duration of therapy visual cues
-  - [ ] Monitoring requirement indicators
+- [ ] **Create gram coverage pattern visualization [4 hours]**
+  - [ ] Visual encoding for gram-positive coverage (blue background)
+  - [ ] Visual encoding for gram-negative coverage (red background)
+  - [ ] Mixed coverage visualization (purple gradient)
+  - [ ] Interactive gram filter toggles
+  - [ ] Educational tooltips explaining gram stain significance
 
-- [ ] **Evidence level integration [4 hours]**
-  - [ ] A-level evidence: Thick, solid connections
-  - [ ] B-level evidence: Medium, dashed connections
-  - [ ] C-level evidence: Thin, dotted connections
-  - [ ] Expert opinion: Very thin, gray connections
-  - [ ] Guideline source indicators (AAP, IDSA, CDC badges)
+- [ ] **Develop class-based relationship networks [4 hours]**
+  - [ ] Connect antibiotics within same class with visual lines
+  - [ ] Show cross-resistance patterns between classes
+  - [ ] Interactive class selection highlighting
+  - [ ] Class comparison view for educational purposes
+  - [ ] Visual indicators for mechanism of action similarity
 
-- [ ] **Interactive clinical scenarios [4 hours]**
-  - [ ] "What if" scenario simulator
-  - [ ] Show recommended therapy changes based on culture results
-  - [ ] Highlight therapy escalation/de-escalation paths
-  - [ ] Interactive resistance development prevention education
-  - [ ] Case-based learning integration hooks
+- [ ] **Add coverage overlap analysis [3 hours]**
+  - [ ] Highlight antibiotics with similar coverage patterns
+  - [ ] Visual Venn diagram-style overlaps for spectrum comparison
+  - [ ] Interactive comparison mode (select 2-3 antibiotics)
+  - [ ] Coverage gap identification (pathogens not covered)
+  - [ ] Educational insights about spectrum selection
 
-### Day 10: Antibiotic Effectiveness & Guidelines [8 hours]
+### Day 10: Class Relationships & Mechanism Visualization [8 hours]
 
-#### Advanced Effectiveness Visualization [8 hours]
-- [ ] **Multi-dimensional effectiveness display [3 hours]**
-  - [ ] Edge thickness: Overall effectiveness
-  - [ ] Edge color gradient: Spectrum activity
-  - [ ] Animation: Time to effect (pharmacokinetics)
-  - [ ] Dosing complexity indicators
-  - [ ] Route of administration visual encoding
+#### Advanced Class-Based Visualization [8 hours]
+- [ ] **Multi-dimensional class relationship display [4 hours]**
+  - [ ] Edge thickness: Class relationship strength
+  - [ ] Edge color coding: Mechanism of action similarity
+  - [ ] Visual clustering: Group antibiotics by shared mechanisms
+  - [ ] Interactive class exploration mode
+  - [ ] Mechanism-based pathogen targeting visualization
 
-- [ ] **Guideline integration system [3 hours]**
-  - [ ] AAP guideline adherence indicators
-  - [ ] IDSA recommendation strength
-  - [ ] CDC surveillance integration
-  - [ ] Local antibiogram integration hooks
-  - [ ] Hospital formulary compatibility
+- [ ] **Coverage overlap network analysis [2 hours]**
+  - [ ] Visual representation of antibiotic spectrum overlaps
+  - [ ] Class-based coverage redundancy identification
+  - [ ] Optimal combination suggestions for broad coverage
+  - [ ] Coverage gap visualization and alternative suggestions
 
-- [ ] **Pharmacokinetic/Pharmacodynamic integration [2 hours]**
-  - [ ] Tissue penetration indicators
-  - [ ] CNS penetration special indicators
-  - [ ] Renal dose adjustment warnings
-  - [ ] Drug interaction alerts
-  - [ ] Pregnancy category visual indicators
+- [ ] **Educational comparison tools [2 hours]**
+  - [ ] Side-by-side class comparison views
+  - [ ] Interactive "build your own coverage" educational game
+  - [ ] Coverage pattern learning assessment tools
+  - [ ] Class-mechanism understanding reinforcement features
 
 ---
 
