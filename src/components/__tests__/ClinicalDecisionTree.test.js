@@ -9,6 +9,117 @@
  * @version 1.0.0
  */
 
+// Mock DecisionTreeDataStructure FIRST - create mock data constant
+const mockDecisionTreeData = {
+  condition: 'community-acquired-pneumonia',
+  nodes: {
+    root: {
+      id: 'root',
+      type: 'root',
+      title: 'Start Clinical Assessment',
+      next: 'input_age'
+    },
+    input_age: {
+      id: 'input_age',
+      type: 'input',
+      title: 'Patient Age Assessment',
+      next: 'decision_treatment'
+    },
+    decision_treatment: {
+      id: 'decision_treatment',
+      type: 'decision',
+      title: 'Treatment Decision',
+      branches: [
+        {
+          condition: { field: 'age', operator: '<', value: 12 },
+          next: 'outcome_pediatric'
+        },
+        {
+          condition: { field: 'age', operator: '>=', value: 12 },
+          next: 'outcome_adolescent'
+        }
+      ]
+    },
+    outcome_pediatric: {
+      id: 'outcome_pediatric',
+      type: 'outcome',
+      title: 'Pediatric Treatment Plan',
+      recommendations: [{ name: 'Amoxicillin', dose: '20mg/kg' }],
+      evidenceLevel: 'A'
+    },
+    outcome_adolescent: {
+      id: 'outcome_adolescent',
+      type: 'outcome',
+      title: 'Adolescent Treatment Plan',
+      recommendations: [{ name: 'Azithromycin', dose: '500mg' }],
+      evidenceLevel: 'B'
+    }
+  }
+};
+
+// Mock with require.resolve to ensure correct path
+jest.mock('../ClinicalDecision/DecisionTreeDataStructure', () => ({
+  getDecisionTree: jest.fn().mockImplementation((condition) => {
+    console.log('Mock getDecisionTree called with:', condition);
+    return {
+    condition: 'community-acquired-pneumonia',
+    nodes: {
+      root: {
+        id: 'root',
+        type: 'root',
+        title: 'Start Clinical Assessment',
+        next: 'input_age'
+      },
+      input_age: {
+        id: 'input_age',
+        type: 'input',
+        title: 'Patient Age Assessment',
+        next: 'decision_treatment'
+      },
+      decision_treatment: {
+        id: 'decision_treatment',
+        type: 'decision',
+        title: 'Treatment Decision',
+        branches: [
+          {
+            condition: { field: 'age', operator: '<', value: 12 },
+            next: 'outcome_pediatric'
+          },
+          {
+            condition: { field: 'age', operator: '>=', value: 12 },
+            next: 'outcome_adolescent'
+          }
+        ]
+      },
+      outcome_pediatric: {
+        id: 'outcome_pediatric',
+        type: 'outcome',
+        title: 'Pediatric Treatment Plan',
+        recommendations: [{ name: 'Amoxicillin', dose: '20mg/kg' }],
+        evidenceLevel: 'A'
+      },
+      outcome_adolescent: {
+        id: 'outcome_adolescent',
+        type: 'outcome',
+        title: 'Adolescent Treatment Plan',
+        recommendations: [{ name: 'Azithromycin', dose: '500mg' }],
+        evidenceLevel: 'B'
+      }
+    }
+    };
+  }),
+  validateClinicalInputs: jest.fn().mockReturnValue({ isValid: true, errors: [] }),
+  NODE_TYPES: {
+    ROOT: 'root',
+    INPUT: 'input', 
+    DECISION: 'decision',
+    OUTCOME: 'outcome',
+    EVIDENCE: 'evidence',
+    WARNING: 'warning'
+  },
+  SEVERITY_LEVELS: {}
+}));
+
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { act } from 'react';
@@ -77,59 +188,6 @@ jest.mock('../ClinicalDecision/ClinicalInputPanel', () => {
   };
 });
 
-// Mock DecisionTreeDataStructure
-jest.mock('../ClinicalDecision/DecisionTreeDataStructure', () => ({
-  getDecisionTree: jest.fn((condition) => ({
-    condition,
-    nodes: {
-      root: {
-        id: 'root',
-        type: 'root',
-        title: 'Start Clinical Assessment',
-        next: 'input_age'
-      },
-      input_age: {
-        id: 'input_age',
-        type: 'input',
-        title: 'Patient Age Assessment',
-        next: 'decision_treatment'
-      },
-      decision_treatment: {
-        id: 'decision_treatment',
-        type: 'decision',
-        title: 'Treatment Decision',
-        branches: [
-          {
-            condition: { field: 'age', operator: '<', value: 12 },
-            next: 'outcome_pediatric'
-          },
-          {
-            condition: { field: 'age', operator: '>=', value: 12 },
-            next: 'outcome_adolescent'
-          }
-        ]
-      },
-      outcome_pediatric: {
-        id: 'outcome_pediatric',
-        type: 'outcome',
-        title: 'Pediatric Treatment Plan',
-        recommendations: [{ name: 'Amoxicillin', dose: '20mg/kg' }],
-        evidenceLevel: 'A'
-      },
-      outcome_adolescent: {
-        id: 'outcome_adolescent',
-        type: 'outcome',
-        title: 'Adolescent Treatment Plan',
-        recommendations: [{ name: 'Azithromycin', dose: '500mg' }],
-        evidenceLevel: 'B'
-      }
-    }
-  })),
-  validateClinicalInputs: jest.fn((inputs) => ({ 
-    isValid: true, 
-    errors: [] 
-  }))
-}));
 
 // Mock medical grouping logic
 jest.mock('../../utils/medicalGroupingLogic', () => ({
@@ -203,11 +261,17 @@ describe('ClinicalDecisionTree', () => {
     });
 
     test('shows input panel for input nodes', async () => {
-      render(<ClinicalDecisionTree {...defaultProps} />);
+      let component;
+      await act(async () => {
+        component = render(<ClinicalDecisionTree {...defaultProps} />);
+      });
 
       // Navigate to input node (input_age)
       const nodeButton = screen.getByTestId('mock-node-click');
-      fireEvent.click(nodeButton);
+      
+      await act(async () => {
+        fireEvent.click(nodeButton);
+      });
 
       await waitFor(() => {
         expect(screen.getByTestId('clinical-input-panel')).toBeInTheDocument();

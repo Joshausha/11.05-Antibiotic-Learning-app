@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(npm install:*)",
+      "Bash(npm ls:*)",
+      "Read(/private/tmp/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

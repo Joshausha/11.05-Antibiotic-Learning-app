@@ -69,20 +69,28 @@ global.DOMParser = class MockDOMParser {
   }
 };
 
-// Mock window.matchMedia for responsive components
+// Mock window.matchMedia for responsive components and clinical accessibility features
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
+  value: jest.fn().mockImplementation(query => {
+    // Handle specific media queries that the app uses
+    const matches = query === '(prefers-contrast: high)' ? false : false;
+    
+    return {
+      matches,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(), // deprecated
+      removeListener: jest.fn(), // deprecated
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    };
+  }),
 });
+
+// Also ensure global.matchMedia is available for non-browser contexts
+global.matchMedia = window.matchMedia;
 
 // Mock window.scrollTo for navigation tests
 Object.defineProperty(window, 'scrollTo', {
@@ -198,11 +206,11 @@ jest.mock('lucide-react', () => {
 
 // Note: NorthwesternPieChart component testing handled in dedicated test file
 
-// Console error handler for debugging (removed ReactDOMTestUtils.act suppression)
+// Console error handler for debugging
 const originalError = console.error;
 beforeAll(() => {
   console.error = (...args) => {
-    // Allow ReactDOMTestUtils.act warnings to surface so we can fix them
+    // Log all console errors during tests for debugging
     originalError.call(console, ...args);
   };
 });

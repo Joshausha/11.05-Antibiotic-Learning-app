@@ -11,6 +11,19 @@ import useLocalStorage from './useLocalStorage';
 const useQuizProgress = () => {
   const [quizHistory, setQuizHistory] = useLocalStorage('quizHistory', []);
   const [currentSession, setCurrentSession] = useState(null);
+  
+  // Use refs for stable access to latest values in callbacks
+  const quizHistoryRef = useRef(quizHistory);
+  const setQuizHistoryRef = useRef(setQuizHistory);
+  
+  // Update refs whenever values change
+  useEffect(() => {
+    quizHistoryRef.current = quizHistory;
+  }, [quizHistory]);
+  
+  useEffect(() => {
+    setQuizHistoryRef.current = setQuizHistory;
+  }, [setQuizHistory]);
 
   // Stable empty stats object for referential stability
   const emptyStats = useMemo(() => ({
@@ -64,7 +77,7 @@ const useQuizProgress = () => {
   // Start a new quiz session - handle both parameter formats
   const startQuiz = useCallback((quizIdOrConfig, totalQuestions) => {
     let session;
-    const startTime = Date.now(); // Use timestamp for enhanced test compatibility
+    const startTime = new Date().toISOString(); // Use ISO string for test compatibility
     
     // Handle object parameter (enhanced test format)
     if (typeof quizIdOrConfig === 'object' && quizIdOrConfig !== null) {
@@ -93,10 +106,10 @@ const useQuizProgress = () => {
   const submitQuiz = useCallback((quizData) => {
     if (!quizData) return null;
     
-    // Add to history directly
-    setQuizHistory(prev => [...prev, quizData]);
+    // Add to history directly using ref for stability
+    setQuizHistoryRef.current(prev => [...prev, quizData]);
     return quizData;
-  }, [setQuizHistory]);
+  }, []); // No dependencies for referential stability
 
   // Update current session with new data
   const updateCurrentSession = useCallback((updateData) => {
@@ -151,14 +164,14 @@ const useQuizProgress = () => {
       completedAt: endTime
     };
 
-    // Add to history
-    setQuizHistory(prev => [...prev, completedQuiz]);
+    // Add to history using ref for consistency
+    setQuizHistoryRef.current(prev => [...prev, completedQuiz]);
     
     // Clear current session
     setCurrentSession(null);
 
     return completedQuiz;
-  }, [currentSession, setQuizHistory]);
+  }, [currentSession]); // Removed setQuizHistory dependency for better stability
 
   // Finish current session (alias for completeQuiz)
   const finishCurrentSession = useCallback(() => {
@@ -172,12 +185,12 @@ const useQuizProgress = () => {
 
   // Clear all history
   const clearHistory = useCallback(() => {
-    setQuizHistory([]);
-  }, [setQuizHistory]);
+    setQuizHistoryRef.current([]);
+  }, []); // No dependencies for referential stability
 
   // Get performance for a specific topic/category
   const getTopicPerformance = useCallback((topic) => {
-    const topicQuizzes = quizHistory.filter(quiz => 
+    const topicQuizzes = quizHistoryRef.current.filter(quiz => 
       quiz && quiz.answers && quiz.answers.some(answer => 
         answer.questionText && answer.questionText.toLowerCase().includes(topic.toLowerCase())
       )
@@ -203,18 +216,18 @@ const useQuizProgress = () => {
       correctAnswers: correctTopicAnswers,
       accuracy: Math.round((correctTopicAnswers / totalTopicQuestions) * 100)
     };
-  }, [quizHistory]);
+  }, []); // No dependencies for referential stability
 
   // Get quiz by ID - look for both 'id' and 'quizId' fields for compatibility
   const getQuizById = useCallback((quizId) => {
-    const quiz = quizHistory.find(quiz => quiz && (quiz.id === quizId || quiz.quizId === quizId));
+    const quiz = quizHistoryRef.current.find(quiz => quiz && (quiz.id === quizId || quiz.quizId === quizId));
     return quiz; // Return undefined if not found (default behavior)
-  }, [quizHistory]);
+  }, []); // No dependencies for referential stability
 
   // Get quizzes by category - look for direct category field
   const getQuizzesByCategory = useCallback((category) => {
     if (!category) return [];
-    return quizHistory.filter(quiz => {
+    return quizHistoryRef.current.filter(quiz => {
       if (!quiz) return false;
       // Check direct category field first (enhanced tests)
       if (quiz.category && quiz.category.toLowerCase() === category.toLowerCase()) {
@@ -228,7 +241,7 @@ const useQuizProgress = () => {
       }
       return false;
     });
-  }, [quizHistory]);
+  }, []); // No dependencies for referential stability
 
   // Computed properties
   const isQuizInProgress = currentSession !== null;
@@ -258,8 +271,9 @@ const useQuizProgress = () => {
 
 // Helper functions
 function calculateDuration(startTime, endTime) {
-  const start = new Date(startTime);
-  const end = new Date(endTime);
+  // Handle both timestamp numbers and ISO strings
+  const start = typeof startTime === 'number' ? new Date(startTime) : new Date(startTime);
+  const end = typeof endTime === 'number' ? new Date(endTime) : new Date(endTime);
   const durationMs = end - start;
   const minutes = Math.floor(durationMs / 60000);
   const seconds = Math.floor((durationMs % 60000) / 1000);

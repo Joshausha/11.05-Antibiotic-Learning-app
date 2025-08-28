@@ -199,7 +199,7 @@ describe('Enhanced useQuizProgress Hook', () => {
           category: 'respiratory',
           difficulty: 'intermediate',
           questionCount: 10,
-          startTime: expect.any(Number)
+          startTime: expect.any(String) // Updated to expect ISO string format
         })
       );
       expect(result.current.isQuizInProgress).toBe(true);
