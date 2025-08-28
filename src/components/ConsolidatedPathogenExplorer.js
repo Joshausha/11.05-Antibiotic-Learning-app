@@ -40,7 +40,7 @@ const ConsolidatedPathogenExplorer = ({
 
   // Comprehensive search function that works with both prop data and imported data
   const searchPathogensConditionally = useCallback((searchTerm, filters = {}) => {
-    if (pathogenData) {
+    if (Array.isArray(pathogenData)) {
       // Use prop data - apply manual filtering since searchPathogens expects imported data
       let filtered = pathogenData;
       
@@ -79,7 +79,7 @@ const ConsolidatedPathogenExplorer = ({
   }, [pathogenData]);
 
   // Safe pathogen access
-  const safePathogens = useMemo(() => pathogenData || simplePathogens, [pathogenData]);
+  const safePathogens = useMemo(() => Array.isArray(pathogenData) ? pathogenData : simplePathogens, [pathogenData]);
 
   // Apply all filters
   const filteredPathogens = useMemo(() => {

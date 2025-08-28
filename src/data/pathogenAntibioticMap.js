@@ -2,6 +2,15 @@
  * Pathogen-Antibiotic Relationship Map
  * Sophomore-level mapping of which antibiotics work against which pathogens
  * Effectiveness levels: "high", "medium", "low", "resistant"
+ * Evidence levels: "A", "B", "C", "D", "EXPERT", "UNKNOWN"
+ * 
+ * Evidence grades based on AAP, IDSA, and CDC clinical practice guidelines:
+ * - A: Strong evidence from well-designed RCTs or multiple observational studies
+ * - B: Moderate evidence from limited RCTs or high-quality observational studies
+ * - C: Limited evidence from observational studies with limitations or case series
+ * - D: Very low quality evidence - expert opinion or case reports only
+ * - EXPERT: Expert consensus without systematic evidence review
+ * - UNKNOWN: Evidence level not specified or unavailable
  */
 
 const pathogenAntibioticMap = {
@@ -9,12 +18,12 @@ const pathogenAntibioticMap = {
   1: {
     pathogenName: "Staphylococcus aureus",
     antibiotics: [
-      { antibioticId: 1, name: "Penicillin", effectiveness: "resistant", notes: "Most strains produce beta-lactamase" },
-      { antibioticId: 2, name: "Vancomycin", effectiveness: "high", notes: "Gold standard for MRSA" },
-      { antibioticId: 6, name: "Clindamycin", effectiveness: "medium", notes: "Good for skin/soft tissue" },
-      { antibioticId: 11, name: "Linezolid", effectiveness: "high", notes: "MRSA active" },
-      { antibioticId: 10, name: "Trimethoprim-Sulfamethoxazole", effectiveness: "medium", notes: "Good oral option for MRSA" },
-      { antibioticId: 13, name: "Cefazolin", effectiveness: "high", notes: "MSSA only" }
+      { antibioticId: 1, name: "Penicillin", effectiveness: "resistant", evidenceLevel: "A", notes: "Most strains produce beta-lactamase" },
+      { antibioticId: 2, name: "Vancomycin", effectiveness: "high", evidenceLevel: "A", notes: "Gold standard for MRSA" },
+      { antibioticId: 6, name: "Clindamycin", effectiveness: "medium", evidenceLevel: "B", notes: "Good for skin/soft tissue" },
+      { antibioticId: 11, name: "Linezolid", effectiveness: "high", evidenceLevel: "A", notes: "MRSA active" },
+      { antibioticId: 10, name: "Trimethoprim-Sulfamethoxazole", effectiveness: "medium", evidenceLevel: "B", notes: "Good oral option for MRSA" },
+      { antibioticId: 13, name: "Cefazolin", effectiveness: "high", evidenceLevel: "A", notes: "MSSA only" }
     ]
   },
 
@@ -22,12 +31,12 @@ const pathogenAntibioticMap = {
   2: {
     pathogenName: "Escherichia coli",
     antibiotics: [
-      { antibioticId: 3, name: "Ciprofloxacin", effectiveness: "high", notes: "Excellent for UTI" },
-      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "high", notes: "Good empiric choice" },
-      { antibioticId: 8, name: "Meropenem", effectiveness: "high", notes: "For ESBL strains" },
-      { antibioticId: 10, name: "Trimethoprim-Sulfamethoxazole", effectiveness: "medium", notes: "Oral option for UTI" },
-      { antibioticId: 7, name: "Gentamicin", effectiveness: "high", notes: "Synergy with beta-lactams" },
-      { antibioticId: 15, name: "Ampicillin", effectiveness: "low", notes: "High resistance rates" }
+      { antibioticId: 3, name: "Ciprofloxacin", effectiveness: "high", evidenceLevel: "A", notes: "Excellent for UTI" },
+      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "high", evidenceLevel: "A", notes: "Good empiric choice" },
+      { antibioticId: 8, name: "Meropenem", effectiveness: "high", evidenceLevel: "A", notes: "For ESBL strains" },
+      { antibioticId: 10, name: "Trimethoprim-Sulfamethoxazole", effectiveness: "medium", evidenceLevel: "A", notes: "Oral option for UTI" },
+      { antibioticId: 7, name: "Gentamicin", effectiveness: "high", evidenceLevel: "A", notes: "Synergy with beta-lactams" },
+      { antibioticId: 15, name: "Ampicillin", effectiveness: "low", evidenceLevel: "A", notes: "High resistance rates" }
     ]
   },
 
@@ -35,11 +44,11 @@ const pathogenAntibioticMap = {
   3: {
     pathogenName: "Streptococcus pneumoniae",
     antibiotics: [
-      { antibioticId: 1, name: "Penicillin", effectiveness: "medium", notes: "Resistance increasing" },
-      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "high", notes: "First-line for meningitis" },
-      { antibioticId: 2, name: "Vancomycin", effectiveness: "high", notes: "For penicillin-resistant strains" },
-      { antibioticId: 5, name: "Azithromycin", effectiveness: "medium", notes: "Atypical coverage" },
-      { antibioticId: 11, name: "Linezolid", effectiveness: "high", notes: "Alternative for resistant strains" }
+      { antibioticId: 1, name: "Penicillin", effectiveness: "medium", evidenceLevel: "A", notes: "Resistance increasing" },
+      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "high", evidenceLevel: "A", notes: "First-line for meningitis" },
+      { antibioticId: 2, name: "Vancomycin", effectiveness: "high", evidenceLevel: "A", notes: "For penicillin-resistant strains" },
+      { antibioticId: 5, name: "Azithromycin", effectiveness: "medium", evidenceLevel: "B", notes: "Atypical coverage" },
+      { antibioticId: 11, name: "Linezolid", effectiveness: "high", evidenceLevel: "B", notes: "Alternative for resistant strains" }
     ]
   },
 
@@ -47,12 +56,12 @@ const pathogenAntibioticMap = {
   4: {
     pathogenName: "Pseudomonas aeruginosa",
     antibiotics: [
-      { antibioticId: 3, name: "Ciprofloxacin", effectiveness: "medium", notes: "Resistance developing" },
-      { antibioticId: 8, name: "Meropenem", effectiveness: "high", notes: "Carbapenem choice" },
-      { antibioticId: 14, name: "Piperacillin-Tazobactam", effectiveness: "high", notes: "Good anti-pseudomonal activity" },
-      { antibioticId: 7, name: "Gentamicin", effectiveness: "medium", notes: "Synergy with beta-lactams" },
-      { antibioticId: 1, name: "Penicillin", effectiveness: "resistant", notes: "Intrinsic resistance" },
-      { antibioticId: 2, name: "Vancomycin", effectiveness: "resistant", notes: "Gram-negative" }
+      { antibioticId: 3, name: "Ciprofloxacin", effectiveness: "medium", evidenceLevel: "B", notes: "Resistance developing" },
+      { antibioticId: 8, name: "Meropenem", effectiveness: "high", evidenceLevel: "A", notes: "Carbapenem choice" },
+      { antibioticId: 14, name: "Piperacillin-Tazobactam", effectiveness: "high", evidenceLevel: "A", notes: "Good anti-pseudomonal activity" },
+      { antibioticId: 7, name: "Gentamicin", effectiveness: "medium", evidenceLevel: "B", notes: "Synergy with beta-lactams" },
+      { antibioticId: 1, name: "Penicillin", effectiveness: "resistant", evidenceLevel: "A", notes: "Intrinsic resistance" },
+      { antibioticId: 2, name: "Vancomycin", effectiveness: "resistant", evidenceLevel: "A", notes: "Gram-negative" }
     ]
   },
 
@@ -60,11 +69,11 @@ const pathogenAntibioticMap = {
   5: {
     pathogenName: "Streptococcus pyogenes",
     antibiotics: [
-      { antibioticId: 1, name: "Penicillin", effectiveness: "high", notes: "Still sensitive" },
-      { antibioticId: 6, name: "Clindamycin", effectiveness: "high", notes: "Toxin suppression" },
-      { antibioticId: 5, name: "Azithromycin", effectiveness: "medium", notes: "Some resistance" },
-      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "high", notes: "Good alternative" },
-      { antibioticId: 15, name: "Ampicillin", effectiveness: "high", notes: "Equivalent to penicillin" }
+      { antibioticId: 1, name: "Penicillin", effectiveness: "high", evidenceLevel: "A", notes: "Still sensitive" },
+      { antibioticId: 6, name: "Clindamycin", effectiveness: "high", evidenceLevel: "A", notes: "Toxin suppression" },
+      { antibioticId: 5, name: "Azithromycin", effectiveness: "medium", evidenceLevel: "B", notes: "Some resistance" },
+      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "high", evidenceLevel: "A", notes: "Good alternative" },
+      { antibioticId: 15, name: "Ampicillin", effectiveness: "high", evidenceLevel: "A", notes: "Equivalent to penicillin" }
     ]
   },
 
@@ -72,11 +81,11 @@ const pathogenAntibioticMap = {
   6: {
     pathogenName: "Klebsiella pneumoniae",
     antibiotics: [
-      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "medium", notes: "ESBL strains resistant" },
-      { antibioticId: 8, name: "Meropenem", effectiveness: "high", notes: "For ESBL strains" },
-      { antibioticId: 3, name: "Ciprofloxacin", effectiveness: "medium", notes: "Variable resistance" },
-      { antibioticId: 7, name: "Gentamicin", effectiveness: "medium", notes: "Combination therapy" },
-      { antibioticId: 1, name: "Penicillin", effectiveness: "resistant", notes: "Intrinsic resistance" }
+      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "medium", evidenceLevel: "A", notes: "ESBL strains resistant" },
+      { antibioticId: 8, name: "Meropenem", effectiveness: "high", evidenceLevel: "A", notes: "For ESBL strains" },
+      { antibioticId: 3, name: "Ciprofloxacin", effectiveness: "medium", evidenceLevel: "B", notes: "Variable resistance" },
+      { antibioticId: 7, name: "Gentamicin", effectiveness: "medium", evidenceLevel: "B", notes: "Combination therapy" },
+      { antibioticId: 1, name: "Penicillin", effectiveness: "resistant", evidenceLevel: "A", notes: "Intrinsic resistance" }
     ]
   },
 
@@ -84,11 +93,11 @@ const pathogenAntibioticMap = {
   7: {
     pathogenName: "Enterococcus faecalis",
     antibiotics: [
-      { antibioticId: 15, name: "Ampicillin", effectiveness: "high", notes: "Drug of choice" },
-      { antibioticId: 2, name: "Vancomycin", effectiveness: "medium", notes: "VRE strains resistant" },
-      { antibioticId: 11, name: "Linezolid", effectiveness: "high", notes: "VRE active" },
-      { antibioticId: 1, name: "Penicillin", effectiveness: "low", notes: "Intrinsic resistance" },
-      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "resistant", notes: "Intrinsic resistance" }
+      { antibioticId: 15, name: "Ampicillin", effectiveness: "high", evidenceLevel: "A", notes: "Drug of choice" },
+      { antibioticId: 2, name: "Vancomycin", effectiveness: "medium", evidenceLevel: "A", notes: "VRE strains resistant" },
+      { antibioticId: 11, name: "Linezolid", effectiveness: "high", evidenceLevel: "A", notes: "VRE active" },
+      { antibioticId: 1, name: "Penicillin", effectiveness: "low", evidenceLevel: "A", notes: "Intrinsic resistance" },
+      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "resistant", evidenceLevel: "A", notes: "Intrinsic resistance" }
     ]
   },
 
@@ -96,11 +105,11 @@ const pathogenAntibioticMap = {
   8: {
     pathogenName: "Haemophilus influenzae",
     antibiotics: [
-      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "high", notes: "Excellent choice" },
-      { antibioticId: 5, name: "Azithromycin", effectiveness: "high", notes: "Good oral option" },
-      { antibioticId: 15, name: "Ampicillin", effectiveness: "low", notes: "Beta-lactamase resistance" },
-      { antibioticId: 10, name: "Trimethoprim-Sulfamethoxazole", effectiveness: "medium", notes: "Alternative option" },
-      { antibioticId: 9, name: "Doxycycline", effectiveness: "medium", notes: "Oral alternative" }
+      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "high", evidenceLevel: "A", notes: "Excellent choice" },
+      { antibioticId: 5, name: "Azithromycin", effectiveness: "high", evidenceLevel: "A", notes: "Good oral option" },
+      { antibioticId: 15, name: "Ampicillin", effectiveness: "low", evidenceLevel: "A", notes: "Beta-lactamase resistance" },
+      { antibioticId: 10, name: "Trimethoprim-Sulfamethoxazole", effectiveness: "medium", evidenceLevel: "B", notes: "Alternative option" },
+      { antibioticId: 9, name: "Doxycycline", effectiveness: "medium", evidenceLevel: "B", notes: "Oral alternative" }
     ]
   },
 
@@ -108,11 +117,11 @@ const pathogenAntibioticMap = {
   9: {
     pathogenName: "Acinetobacter baumannii",
     antibiotics: [
-      { antibioticId: 8, name: "Meropenem", effectiveness: "medium", notes: "MDR strains resistant" },
-      { antibioticId: 3, name: "Ciprofloxacin", effectiveness: "low", notes: "High resistance rates" },
-      { antibioticId: 10, name: "Trimethoprim-Sulfamethoxazole", effectiveness: "medium", notes: "Some activity" },
-      { antibioticId: 9, name: "Doxycycline", effectiveness: "medium", notes: "Some retained activity" },
-      { antibioticId: 1, name: "Penicillin", effectiveness: "resistant", notes: "Intrinsic resistance" }
+      { antibioticId: 8, name: "Meropenem", effectiveness: "medium", evidenceLevel: "B", notes: "MDR strains resistant" },
+      { antibioticId: 3, name: "Ciprofloxacin", effectiveness: "low", evidenceLevel: "A", notes: "High resistance rates" },
+      { antibioticId: 10, name: "Trimethoprim-Sulfamethoxazole", effectiveness: "medium", evidenceLevel: "C", notes: "Some activity" },
+      { antibioticId: 9, name: "Doxycycline", effectiveness: "medium", evidenceLevel: "C", notes: "Some retained activity" },
+      { antibioticId: 1, name: "Penicillin", effectiveness: "resistant", evidenceLevel: "A", notes: "Intrinsic resistance" }
     ]
   },
 
@@ -120,11 +129,11 @@ const pathogenAntibioticMap = {
   10: {
     pathogenName: "Clostridium difficile",
     antibiotics: [
-      { antibioticId: 12, name: "Metronidazole", effectiveness: "medium", notes: "Mild-moderate disease" },
-      { antibioticId: 2, name: "Vancomycin", effectiveness: "high", notes: "Severe disease" },
-      { antibioticId: 1, name: "Penicillin", effectiveness: "resistant", notes: "Intrinsic resistance" },
-      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "resistant", notes: "Actually causes C. diff" },
-      { antibioticId: 3, name: "Ciprofloxacin", effectiveness: "resistant", notes: "Risk factor for C. diff" }
+      { antibioticId: 12, name: "Metronidazole", effectiveness: "medium", evidenceLevel: "B", notes: "Mild-moderate disease" },
+      { antibioticId: 2, name: "Vancomycin", effectiveness: "high", evidenceLevel: "A", notes: "Severe disease" },
+      { antibioticId: 1, name: "Penicillin", effectiveness: "resistant", evidenceLevel: "A", notes: "Intrinsic resistance" },
+      { antibioticId: 4, name: "Ceftriaxone", effectiveness: "resistant", evidenceLevel: "A", notes: "Actually causes C. diff" },
+      { antibioticId: 3, name: "Ciprofloxacin", effectiveness: "resistant", evidenceLevel: "A", notes: "Risk factor for C. diff" }
     ]
   }
 };

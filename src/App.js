@@ -128,7 +128,7 @@ const AppContent = () => {
               {/* Consolidated Pathogen & Antibiotic Explorer */}
               <ErrorBoundary>
                 <ConsolidatedPathogenExplorer 
-                  pathogenData={pathogenData}
+                  pathogenData={pathogenData.pathogens}
                   onSelectCondition={setSelectedCondition}
                 />
               </ErrorBoundary>
@@ -138,7 +138,7 @@ const AppContent = () => {
           {activeTab === 'pathogen-explorer' && (
             <ErrorBoundary>
               <ConsolidatedPathogenExplorer 
-                pathogenData={pathogenData}
+                pathogenData={pathogenData.pathogens}
                 onSelectCondition={setSelectedCondition}
               />
             </ErrorBoundary>

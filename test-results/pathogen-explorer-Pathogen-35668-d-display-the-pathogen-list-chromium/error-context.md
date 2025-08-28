@@ -9,6 +9,7 @@
     - button "Navigate to Learn": Learn
     - button "Navigate to Quiz": Quiz
     - button "Navigate to Analytics": Analytics
+    - button "Navigate to Visualizations": Visualizations
     - button "Navigate to Reference": Reference
     - button "Navigate to Pathogens": Pathogens
     - button "Navigate to Antibiotics": Antibiotics
@@ -140,6 +141,6 @@
   - heading "Error Details:" [level=2]
   - paragraph: "TypeError: safePathogens.filter is not a function"
   - heading "Component Stack:" [level=3]
-  - text: at ConsolidatedPathogenExplorer (http://localhost:3000/static/js/bundle.js:68170:3) at ErrorBoundary (http://localhost:3000/static/js/bundle.js:69749:5) at div at main at div at ErrorBoundary (http://localhost:3000/static/js/bundle.js:69749:5) at AppContent (http://localhost:3000/static/js/bundle.js:63781:74) at ErrorBoundary (http://localhost:3000/static/js/bundle.js:69749:5) at AppProvider (http://localhost:3000/static/js/bundle.js:79062:3) at App
+  - text: at ConsolidatedPathogenExplorer (http://localhost:3000/static/js/bundle.js:70742:3) at ErrorBoundary (http://localhost:3000/static/js/bundle.js:73000:5) at div at main at div at ErrorBoundary (http://localhost:3000/static/js/bundle.js:73000:5) at AppContent (http://localhost:3000/static/js/bundle.js:64517:74) at ErrorBoundary (http://localhost:3000/static/js/bundle.js:73000:5) at AppProvider (http://localhost:3000/static/js/bundle.js:86673:3) at App
   - button "Reload Page"
 ```

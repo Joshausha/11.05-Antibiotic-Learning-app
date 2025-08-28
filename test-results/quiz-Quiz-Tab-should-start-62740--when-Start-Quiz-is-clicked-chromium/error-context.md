@@ -9,6 +9,7 @@
     - button "Navigate to Learn": Learn
     - button "Navigate to Quiz": Quiz
     - button "Navigate to Analytics": Analytics
+    - button "Navigate to Visualizations": Visualizations
     - button "Navigate to Reference": Reference
     - button "Navigate to Pathogens": Pathogens
     - button "Navigate to Antibiotics": Antibiotics

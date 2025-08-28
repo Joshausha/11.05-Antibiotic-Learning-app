@@ -176,26 +176,26 @@ jest.mock('../PathogenList', () => {
     onPathogenSelect, 
     selectedPathogen,
     searchTerm,
-    onSearch,
+    setSearchTerm,
     gramFilter,
-    onGramFilter,
+    setGramFilter,
     severityFilter,
-    onSeverityFilter,
+    setSeverityFilter,
     durationFilter,
-    onDurationFilter
+    setDurationFilter
   }) {
     return (
       <div data-testid="pathogen-list">
         <input 
           data-testid="pathogen-search"
           value={searchTerm}
-          onChange={(e) => onSearch(e.target.value)}
+          onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search pathogens"
         />
         <select 
           data-testid="gram-filter"
           value={gramFilter}
-          onChange={(e) => onGramFilter(e.target.value)}
+          onChange={(e) => setGramFilter(e.target.value)}
         >
           <option value="all">All</option>
           <option value="positive">Positive</option>
@@ -204,7 +204,7 @@ jest.mock('../PathogenList', () => {
         <select 
           data-testid="severity-filter"
           value={severityFilter}
-          onChange={(e) => onSeverityFilter(e.target.value)}
+          onChange={(e) => setSeverityFilter(e.target.value)}
         >
           <option value="all">All</option>
           <option value="high">High</option>
@@ -214,7 +214,7 @@ jest.mock('../PathogenList', () => {
         <select 
           data-testid="duration-filter"
           value={durationFilter}
-          onChange={(e) => onDurationFilter(e.target.value)}
+          onChange={(e) => setDurationFilter(e.target.value)}
         >
           <option value="all">All</option>
           <option value="short">Short</option>

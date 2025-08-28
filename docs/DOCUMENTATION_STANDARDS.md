@@ -29,21 +29,21 @@ This document establishes standards to prevent documentation quality issues and 
 
 ### **Standard Reporting Format**
 ```markdown
-✅ CORRECT: "96.9% test suite pass rate (62/64 suites), 97.7% individual test pass rate (1,248/1,278 tests)"
+✅ CORRECT: "88.3% test suite pass rate (53/60 suites), 95.2% individual test pass rate (1,538/1,616 tests)"
 
 ❌ INCORRECT: "97.7% test success rate" (ambiguous - which metric?)
 ❌ INCORRECT: "96.9% pass rate" (ambiguous - suites or tests?)
 ```
 
 ### **Approved Variations**
-- "Test suite pass rate: 96.9% (62/64)"
-- "Individual test pass rate: 97.7% (1,248/1,278)"  
-- "96.9% suite / 97.7% individual test pass rate"
+- "Test suite pass rate: 88.3% (53/60)"
+- "Individual test pass rate: 95.2% (1,538/1,616)"  
+- "88.3% suite / 95.2% individual test pass rate"
 
 ### **Metadata Standards**
 ```yaml
-test_status: 96.9-percent-suite-pass-rate
-individual_test_status: 97.7-percent-individual-pass-rate
+test_status: 88.3-percent-suite-pass-rate
+individual_test_status: 95.2-percent-individual-pass-rate
 ```
 
 ---
