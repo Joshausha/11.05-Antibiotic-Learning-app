@@ -73,8 +73,16 @@ global.DOMParser = class MockDOMParser {
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation(query => {
-    // Handle specific media queries that the app uses
-    const matches = query === '(prefers-contrast: high)' ? false : false;
+    // Handle all media queries that the Northwestern Animations system uses
+    let matches = false;
+    
+    if (query.includes('prefers-reduced-motion')) {
+      matches = false; // Default to motion enabled for testing
+    } else if (query.includes('prefers-contrast: high')) {
+      matches = false; // Default to normal contrast for testing
+    } else if (query.includes('max-width') || query.includes('min-width')) {
+      matches = true; // Default to desktop size for testing
+    }
     
     return {
       matches,

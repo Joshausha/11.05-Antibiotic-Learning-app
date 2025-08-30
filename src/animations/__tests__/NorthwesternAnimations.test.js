@@ -49,7 +49,15 @@ const createMockElement = (tagName = 'div') => {
       return animation;
     }),
     addEventListener: jest.fn(),
-    removeEventListener: jest.fn()
+    removeEventListener: jest.fn(),
+    // Add matches method for CSS selector matching (used by Northwestern Animations)
+    matches: jest.fn().mockImplementation(selector => {
+      // Mock common selectors used in clinical accessibility checks
+      if (selector.includes('[role="button"]')) return false;
+      if (selector.includes('button')) return tagName.toLowerCase() === 'button';
+      if (selector.includes('[tabindex]')) return false;
+      return false;
+    })
   };
   return element;
 };
@@ -171,17 +179,29 @@ describe('Northwestern Animations Framework', () => {
     
     describe('Reduced Motion Support', () => {
       test('detects reduced motion preference', () => {
-        // Mock matchMedia to return reduced motion preference
-        window.matchMedia.mockImplementation(query => ({
-          matches: query.includes('prefers-reduced-motion'),
-          media: query,
-          onchange: null,
-          addListener: jest.fn(),
-          removeListener: jest.fn(),
-          addEventListener: jest.fn(),
-          removeEventListener: jest.fn(),
-          dispatchEvent: jest.fn(),
-        }));
+        // Mock matchMedia to return reduced motion preference while handling ALL other queries
+        window.matchMedia.mockImplementation(query => {
+          let matches = false;
+          
+          if (query.includes('prefers-reduced-motion')) {
+            matches = true; // Enable reduced motion for this test
+          } else if (query.includes('prefers-contrast: high')) {
+            matches = false; // Normal contrast (handled properly)
+          } else if (query.includes('max-width') || query.includes('min-width')) {
+            matches = true; // Default to desktop size for testing
+          }
+          
+          return {
+            matches,
+            media: query,
+            onchange: null,
+            addListener: jest.fn(),
+            removeListener: jest.fn(),
+            addEventListener: jest.fn(),
+            removeEventListener: jest.fn(),
+            dispatchEvent: jest.fn(),
+          };
+        });
         
         const reducedMotionManager = new ClinicalAnimationManager();
         expect(reducedMotionManager.reducedMotion).toBe(true);

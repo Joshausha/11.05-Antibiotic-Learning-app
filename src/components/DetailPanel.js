@@ -495,7 +495,7 @@ const DetailPanel = ({
   ];
 
   return (
-    <div className={`detail-panel bg-white border border-gray-300 rounded-lg shadow-lg ${className}`}>
+    <div data-testid="detail-panel" className={`detail-panel bg-white border border-gray-300 rounded-lg shadow-lg ${className}`}>
       {/* Header */}
       <div className="panel-header border-b border-gray-200 p-4">
         <div className="flex items-center justify-between">

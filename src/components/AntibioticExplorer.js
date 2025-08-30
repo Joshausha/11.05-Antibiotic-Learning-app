@@ -145,6 +145,7 @@ const AntibioticExplorer = ({
                   key={index}
                   onClick={() => selectAntibiotic(antibiotic)}
                   className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${getDrugClassColor(antibiotic.class)} hover:opacity-80`}
+                  data-testid={`top-antibiotic-${antibiotic.name?.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   {antibiotic.name} ({antibiotic.count})
                 </button>
@@ -315,7 +316,12 @@ const AntibioticExplorer = ({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900">{antibiotic.name}</div>
+                      <div 
+                        className="font-medium text-gray-900"
+                        data-testid={`antibiotic-name-${antibiotic.name?.toLowerCase().replace(/\s+/g, '-')}`}
+                      >
+                        {antibiotic.name}
+                      </div>
                       <div className={`inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${getDrugClassColor(antibiotic.class)}`}>
                         {antibiotic.class}
                       </div>
@@ -344,7 +350,11 @@ const AntibioticExplorer = ({
                     }`}
                   >
                     <div className="text-center mb-2">
-                      <div className="font-medium text-sm text-gray-900 truncate" title={antibiotic.name}>
+                      <div 
+                        className="font-medium text-sm text-gray-900 truncate" 
+                        title={antibiotic.name}
+                        data-testid={`northwestern-antibiotic-${antibiotic.name?.toLowerCase().replace(/\s+/g, '-')}`}
+                      >
                         {antibiotic.name}
                       </div>
                       <div className={`inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${getDrugClassColor(antibiotic.class)}`}>

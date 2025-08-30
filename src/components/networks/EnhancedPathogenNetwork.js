@@ -35,8 +35,15 @@ import NetworkControls from './NetworkControls';
 import { MEDICAL_LAYOUTS, getRecommendedLayout, applyPerformanceProfile } from './NetworkLayout';
 
 // Data sources
-import { SimplePathogenData } from '../../data/SimplePathogenData';
-import { pathogenAntibioticMap } from '../../data/pathogenAntibioticMap';
+import SimplePathogenData from '../../data/SimplePathogenData';
+import pathogenAntibioticMap from '../../data/pathogenAntibioticMap';
+
+// Phase 2: Northwestern Coverage Wheel Styling
+import { 
+  NORTHWESTERN_COVERAGE_STYLE, 
+  applyNorthwesternCoverageTransform,
+  calculateCoverageSegments 
+} from './NorthwesternCoverageStyle';
 
 /**
  * Filter options for network visualization
@@ -259,13 +266,20 @@ const EnhancedPathogenNetwork = ({
         console.log('📊 Phase 2: Resistance clustering stats:', resistanceStats);
       }
 
+      // Phase 2: Apply Northwestern Coverage Wheel transformation if in coverage mode
+      if (customLayout === 'fcose' && result.elements) {
+        console.log('🎯 Phase 2: Applying Northwestern Coverage Wheel transformation');
+        result.elements = applyNorthwesternCoverageTransform(result.elements);
+        result.metadata.northwesternCoverage = true;
+      }
+
       return result;
     } catch (err) {
       console.error('Data transformation error:', err);
       setError(err);
       return { elements: [], metadata: { pathogenCount: 0, antibioticCount: 0, relationshipCount: 0 } };
     }
-  }, [gramFilter, severityFilter, resistanceFilter, evidenceFilter, includeAntibiotics, clusterOptions.clusterByResistance]);;
+  }, [gramFilter, severityFilter, resistanceFilter, evidenceFilter, includeAntibiotics, clusterOptions.clusterByResistance, customLayout]);
 
   /**
    * Memoized layout configuration with clustering and performance optimizations
@@ -319,9 +333,19 @@ const EnhancedPathogenNetwork = ({
   }, [customLayout, currentLayout, clusterOptions, performanceProfile, transformedData]);;
 
   /**
-   * Memoized style configuration - fallback to default if no custom style provided
+   * Memoized style with Northwestern Coverage Wheel support
+   * Switches to Northwestern pie chart style when in coverage-wheel mode
    */
-  const memoizedStyle = useMemo(() => customStyle, [customStyle]);
+  const memoizedStyle = useMemo(() => {
+    // Use Northwestern Coverage Style when in coverage-wheel mode
+    if (customLayout === 'fcose') {
+      console.log('🎨 Phase 2: Using Northwestern Coverage Wheel styling');
+      return customStyle || NORTHWESTERN_COVERAGE_STYLE;
+    }
+    
+    // Use default or custom style for other modes
+    return customStyle;
+  }, [customStyle, customLayout]);
 
   /**
    * Layout change handler with recommendations

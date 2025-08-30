@@ -14,23 +14,24 @@ import {
   Microscope,
   TrendingUp,
   Grid,
-  Filter,
-  Download
+  Filter
 } from 'lucide-react';
-import LoadingSpinner from './LoadingSpinner';
 import ErrorBoundary from './ErrorBoundary';
 
 // Import sophisticated network visualization
 import PathogenNetworkVisualization from './PathogenNetworkVisualization';
 
+// Import Phase 2: Enhanced Cytoscape Network (Northwestern Coverage Wheels)
+import EnhancedPathogenNetwork from './networks/EnhancedPathogenNetwork';
+import { FeatureFlag } from '../utils/featureFlags';
+
 // Import Northwestern pie chart components
 import AnimatedNorthwesternPieChart from './AnimatedNorthwesternPieChart';
-import NorthwesternPieChart from './NorthwesternPieChart';
 
 // Import Northwestern spatial layout system
 import NorthwesternSpatialLayout from './NorthwesternSpatialLayout';
 
-// Import Northwestern animation system - the crown jewel (875 lines)
+// Import Northwestern animation system - the crown jewel (875 lines) - disabled for positioning fix
 import { useNorthwesternAnimations } from '../animations/NorthwesternAnimations';
 
 const VisualizationsTab = ({ 
@@ -51,16 +52,9 @@ const VisualizationsTab = ({
   const [animationEnabled, setAnimationEnabled] = useState(true);
   const visualizationRef = useRef(null);
   
-  // Initialize Northwestern Animation System
+  // Initialize Northwestern Animation System (disabled to prevent positioning issues)
   const {
-    animationManager,
-    createCoverageRevealAnimation,
-    createHoverAnimation,
-    createSelectionAnimation,
-    createLearningProgressAnimation,
-    createScenarioTransitionAnimation,
-    CLINICAL_TIMING,
-    MEDICAL_EASING
+    animationManager
   } = useNorthwesternAnimations({
     emergencyMode,
     performanceMode: 'standard'
@@ -120,64 +114,34 @@ const VisualizationsTab = ({
     }
   ];
 
-  // Northwestern Animation Effects
+  // Northwestern Animation Effects - disabled to prevent content shift issues
   useEffect(() => {
-    if (!animationEnabled || !visualizationRef.current) return;
-    
-    // Animate visualization transition with clinical timing
-    const transitionAnimation = createScenarioTransitionAnimation(
-      visualizationRef.current,
-      activeVisualization,
-      {
-        educationLevel: 'resident',
-        emergencyMode
-      }
-    );
-    
-    if (animationManager && transitionAnimation) {
-      animationManager.animate(
-        transitionAnimation.element,
-        transitionAnimation.config
-      ).catch(console.warn);
+    // Reset any previous transforms that may have been applied by animations
+    const currentRef = visualizationRef.current;
+    if (currentRef) {
+      currentRef.style.transform = '';
+      currentRef.style.opacity = '';
     }
     
     return () => {
       if (animationManager) {
         animationManager.cleanup();
       }
+      // Cleanup handled by currentRef captured above
     };
-  }, [activeVisualization, animationManager, animationEnabled, emergencyMode, createScenarioTransitionAnimation]);
+  }, [activeVisualization, animationManager]);
 
   // Enhanced visualization selection with animation
   const handleVisualizationChange = async (visualizationId) => {
-    if (!animationEnabled) {
-      setActiveVisualization(visualizationId);
-      return;
-    }
-    
-    // Create selection animation using Northwestern system
-    const selectionElement = document.querySelector(`[data-visualization="${visualizationId}"]`);
-    if (selectionElement && animationManager) {
-      const selectionAnimation = createSelectionAnimation(
-        selectionElement,
-        'visualization',
-        {
-          educationLevel: 'resident',
-          emergencyMode
-        }
-      );
-      
-      try {
-        await animationManager.animate(
-          selectionAnimation.element,
-          selectionAnimation.config
-        );
-      } catch (error) {
-        console.warn('Animation failed:', error);
-      }
-    }
-    
+    // Disable Northwestern animations that cause content positioning issues
+    // Simply change visualization without transforms that shift content
     setActiveVisualization(visualizationId);
+    
+    // Reset any transforms on the visualization container
+    if (visualizationRef.current) {
+      visualizationRef.current.style.transform = '';
+      visualizationRef.current.style.opacity = '';
+    }
   };
 
   // Emergency mode toggle for clinical workflows
@@ -477,6 +441,7 @@ const VisualizationsTab = ({
               className="px-3 py-1 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="force-directed">Force-Directed</option>
+              <option value="coverage-wheel">Northwestern Coverage Wheels</option>
               <option value="spatial">Northwestern Spatial</option>
             </select>
           </div>
@@ -499,7 +464,42 @@ const VisualizationsTab = ({
       </div>
       
       <ErrorBoundary>
-        {networkLayoutMode === 'force-directed' ? (
+        {networkLayoutMode === 'coverage-wheel' ? (
+          <FeatureFlag flagName="ENABLE_CYTOSCAPE_NETWORK" fallback={
+            <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-lg">
+              <Network size={48} className="mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium mb-2">Northwestern Coverage Wheels</p>
+              <p className="text-sm">Advanced network visualization requires feature flag activation</p>
+              <small className="text-xs text-gray-400 mt-2 block">
+                Enable REACT_APP_ENABLE_CYTOSCAPE_NETWORK in .env.local
+              </small>
+            </div>
+          }>
+            <EnhancedPathogenNetwork
+              width="100%"
+              height="600px"
+              className="enhanced-pathogen-network"
+              showControls={true}
+              showStatistics={true}
+              enableFilters={true}
+              onPathogenSelect={onSelectPathogen}
+              onAntibioticSelect={(antibiotic) => {
+                console.log('Selected antibiotic from coverage wheel:', antibiotic);
+                // Future: integrate with antibiotic explorer
+              }}
+              onNetworkReady={(cy) => {
+                console.log('Enhanced network ready:', cy);
+                // Future: performance monitoring integration
+              }}
+              customLayout={networkLayoutMode === 'coverage-wheel' ? 'fcose' : 'grid'}
+              emergencyMode={emergencyMode}
+              // Pass medical data for coverage wheel calculations
+              pathogenData={pathogenData}
+              antibioticData={antibioticData}
+              medicalConditions={medicalConditions}
+            />
+          </FeatureFlag>
+        ) : networkLayoutMode === 'force-directed' ? (
           <PathogenNetworkVisualization 
             selectedPathogen={null}
             onSelectPathogen={onSelectPathogen}
@@ -515,43 +515,16 @@ const VisualizationsTab = ({
             onAntibioticSelect={(antibiotic) => {
               console.log('Selected antibiotic from spatial layout:', antibiotic);
               
-              // Northwestern Animation: Selection feedback
-              if (animationEnabled && animationManager) {
-                const selectionAnimation = createSelectionAnimation(
-                  document.querySelector(`[data-antibiotic-id="${antibiotic.id}"]`),
-                  'antibiotic',
-                  { educationLevel: 'resident', emergencyMode }
-                );
-                
-                if (selectionAnimation) {
-                  animationManager.animate(
-                    selectionAnimation.element,
-                    selectionAnimation.config
-                  ).catch(console.warn);
-                }
-              }
+              // Northwestern Animation: Selection feedback disabled to prevent positioning issues
+              // Animation system was causing content to shift due to transform properties
+              console.log('Selected antibiotic from spatial layout (animation disabled):', antibiotic);
             }}
             onGroupSelect={(groupKey, antibiotics) => {
               console.log('Selected group from spatial layout:', groupKey, antibiotics);
               
-              // Northwestern Animation: Group selection feedback
-              if (animationEnabled && animationManager) {
-                const groupElements = document.querySelectorAll(`[data-spatial-group="${groupKey}"]`);
-                groupElements.forEach(element => {
-                  const groupAnimation = createSelectionAnimation(
-                    element,
-                    'group',
-                    { educationLevel: 'resident', emergencyMode }
-                  );
-                  
-                  if (groupAnimation) {
-                    animationManager.animate(
-                      groupAnimation.element,
-                      groupAnimation.config
-                    ).catch(console.warn);
-                  }
-                });
-              }
+              // Northwestern Animation: Group selection feedback disabled to prevent positioning issues
+              // Animation system was causing content to shift due to transform properties
+              console.log('Selected group from spatial layout (animation disabled):', groupKey, antibiotics);
             }}
             emergencyMode={emergencyMode}
             clinicalContext="education"
@@ -562,7 +535,13 @@ const VisualizationsTab = ({
       {/* Layout Information */}
       <div className="mt-4 p-3 bg-gray-50 rounded-lg">
         <div className="text-sm text-gray-600">
-          {networkLayoutMode === 'force-directed' ? (
+          {networkLayoutMode === 'coverage-wheel' ? (
+            <span>
+              Northwestern Coverage Wheels: Interactive antibiotic spectrum visualization with 
+              pie chart nodes showing gram-positive (blue), gram-negative (red), and anaerobic (green) coverage patterns.
+              Built with Cytoscape.js for medical education.
+            </span>
+          ) : networkLayoutMode === 'force-directed' ? (
             <span>Force-directed layout showing pathogen relationships through dynamic positioning</span>
           ) : (
             <span>

@@ -227,9 +227,9 @@ describe('AntibioticExplorer Component', () => {
       
       expect(screen.getByText('Antibiotics')).toBeInTheDocument();
       expect(screen.getByText('3 found')).toBeInTheDocument();
-      expect(screen.getByText('Amoxicillin')).toBeInTheDocument();
-      expect(screen.getByText('Cephalexin')).toBeInTheDocument();
-      expect(screen.getByText('Azithromycin')).toBeInTheDocument();
+      expect(screen.getByTestId('antibiotic-name-amoxicillin')).toBeInTheDocument();
+      expect(screen.getByTestId('antibiotic-name-cephalexin')).toBeInTheDocument();
+      expect(screen.getByTestId('antibiotic-name-azithromycin')).toBeInTheDocument();
     });
   });
 
@@ -353,7 +353,7 @@ describe('AntibioticExplorer Component', () => {
     test('calls selectAntibiotic when antibiotic is clicked', () => {
       render(<AntibioticExplorer {...defaultProps} />);
       
-      const amoxicillinCard = screen.getByText('Amoxicillin').closest('div');
+      const amoxicillinCard = screen.getByTestId('antibiotic-name-amoxicillin').closest('[data-testid="antibiotic-card"]');
       fireEvent.click(amoxicillinCard);
       
       expect(mockAntibioticData.selectAntibiotic).toHaveBeenCalledWith(
@@ -364,7 +364,7 @@ describe('AntibioticExplorer Component', () => {
     test('calls selectAntibiotic when top antibiotic button is clicked', () => {
       render(<AntibioticExplorer {...defaultProps} />);
       
-      const topAntibioticButton = screen.getByText('Amoxicillin (15)');
+      const topAntibioticButton = screen.getByTestId('top-antibiotic-amoxicillin');
       fireEvent.click(topAntibioticButton);
       
       expect(mockAntibioticData.selectAntibiotic).toHaveBeenCalledWith(
@@ -383,11 +383,9 @@ describe('AntibioticExplorer Component', () => {
       
       render(<AntibioticExplorer {...selectedProps} />);
       
-      // Agent T4 Defensive Programming: Find the antibiotic card more specifically
-      const amoxicillinText = screen.getByText('Amoxicillin');
-      const selectedCard = amoxicillinText.closest('[data-testid="antibiotic-card"]') || 
-                          amoxicillinText.closest('.cursor-pointer') ||
-                          amoxicillinText.closest('div[class*="border"]');
+      // Use specific data-testid to avoid ambiguity between different Amoxicillin elements
+      const amoxicillinName = screen.getByTestId('antibiotic-name-amoxicillin');
+      const selectedCard = amoxicillinName.closest('[data-testid="antibiotic-card"]');
       
       if (selectedCard) {
         expect(selectedCard).toHaveClass('border-blue-500');
@@ -414,7 +412,8 @@ describe('AntibioticExplorer Component', () => {
       
       render(<AntibioticExplorer {...selectedProps} />);
       
-      expect(screen.getByText('Amoxicillin')).toBeInTheDocument();
+      // Check that the selected antibiotic appears in the main list with selected styling
+      expect(screen.getByTestId('antibiotic-name-amoxicillin')).toBeInTheDocument();
       expect(screen.getByText('15 uses')).toBeInTheDocument();
       expect(screen.getByText('Clinical Applications (1)')).toBeInTheDocument();
       expect(screen.getByText('Alternative Options')).toBeInTheDocument();

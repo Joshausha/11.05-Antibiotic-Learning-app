@@ -12,8 +12,8 @@
  * @evidence-based All relationships validated against AAP/IDSA guidelines
  */
 
-import { SimplePathogenData } from '../../data/SimplePathogenData';
-import { pathogenAntibioticMap } from '../../data/pathogenAntibioticMap';
+import SimplePathogenData from '../../data/SimplePathogenData';
+import pathogenAntibioticMap from '../../data/pathogenAntibioticMap';
 
 /**
  * Phase 2: Enhanced Clinical Severity to Visual Size Mapping

@@ -486,7 +486,9 @@ export class ClinicalAnimationManager {
     const optimized = { ...config };
     
     // High contrast mode detection (common in clinical environments)
-    if (window.matchMedia && window.matchMedia('(prefers-contrast: high)').matches) {
+    // Defensive check for test environments where matchMedia might not return .matches
+    const contrastQuery = window.matchMedia && window.matchMedia('(prefers-contrast: high)');
+    if (contrastQuery && contrastQuery.matches) {
       // Simplify animations for high contrast displays
       optimized.duration *= 0.8;
       if (optimized.keyframes) {

@@ -14,11 +14,11 @@ import SimpleNetworkView from './SimpleNetworkView';
 import simplePathogens, { searchPathogens } from '../data/SimplePathogenData';
 
 const ConsolidatedPathogenExplorer = ({ 
-  pathogenData, 
-  onPathogenSelect, 
-  onSelectCondition,
-  onSelectPathogen,
-  selectedPathogen: propSelectedPathogen, 
+  pathogenData = null, 
+  onPathogenSelect = () => {}, 
+  onSelectCondition = () => {},
+  onSelectPathogen = () => {},
+  selectedPathogen: propSelectedPathogen = undefined, 
   className = '' 
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -467,14 +467,6 @@ ConsolidatedPathogenExplorer.propTypes = {
   className: PropTypes.string
 };
 
-// Default props for safety and backwards compatibility
-ConsolidatedPathogenExplorer.defaultProps = {
-  pathogenData: null,
-  onPathogenSelect: () => {},
-  onSelectCondition: () => {},
-  onSelectPathogen: () => {},
-  selectedPathogen: undefined,
-  className: ''
-};
+// Default props moved to function parameters above
 
 export default ConsolidatedPathogenExplorer;
