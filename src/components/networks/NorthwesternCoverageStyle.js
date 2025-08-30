@@ -12,6 +12,10 @@
  * @medical-validation Clinical color scheme verified with AAP guidelines
  */
 
+// Import medical data for real coverage calculations
+import { getPathogensForAntibiotic } from '../../data/pathogenAntibioticMap';
+import simplePathogens from '../../data/SimplePathogenData';
+
 /**
  * Northwestern-inspired pie chart style for antibiotic coverage visualization
  * Based on the Northwestern Antibiotic Wheel design principles
@@ -269,11 +273,11 @@ export const NORTHWESTERN_COVERAGE_STYLE = [
 ];
 
 /**
- * Calculate pie chart segments based on antibiotic effectiveness against different pathogen types
- * Analyzes pathogen-antibiotic relationships to determine coverage spectrum
+ * Calculate pie chart segments based on real medical data from pathogen-antibiotic relationships
+ * Analyzes actual effectiveness data to determine accurate coverage spectrum
  * @param {Object} antibiotic - Antibiotic node data from network transformation
- * @param {Array} pathogenData - All pathogen data for coverage analysis
- * @returns {Object} Pie chart data for Cytoscape.js
+ * @param {Array} pathogenData - All pathogen data for coverage analysis (optional - uses imported data)
+ * @returns {Object} Pie chart data for Cytoscape.js with medically accurate coverage
  */
 export const calculateCoverageSegments = (antibiotic, pathogenData = []) => {
   if (!antibiotic) {
@@ -285,71 +289,209 @@ export const calculateCoverageSegments = (antibiotic, pathogenData = []) => {
     };
   }
 
-  // For now, create a simplified mock coverage based on antibiotic properties
-  // This will be enhanced when pathogen relationship data is fully integrated
-  
-  let gramPositive = 0;
-  let gramNegative = 0;
-  let anaerobic = 0;
+  // Phase 2: Replace heuristics with real medical data
+  return calculateRealMedicalCoverage(antibiotic, pathogenData);
+};
 
-  // Simple heuristic based on antibiotic name and known spectrum
-  const name = antibiotic.label || antibiotic.name || '';
-  const lowerName = name.toLowerCase();
+/**
+ * Phase 2: Calculate real medical coverage using pathogenAntibioticMap data
+ * This replaces the heuristic approach with actual clinical effectiveness data
+ * @param {Object} antibiotic - Antibiotic node data
+ * @param {Array} pathogenData - Optional pathogen data array 
+ * @returns {Object} Accurate coverage data for pie chart visualization
+ */
+export const calculateRealMedicalCoverage = (antibiotic, pathogenData = []) => {
+  // Get antibiotic ID from the node data
+  const antibioticId = antibiotic.antibioticId || antibiotic.id;
   
-  // Gram-positive coverage heuristics
-  if (lowerName.includes('vancomycin') || lowerName.includes('linezolid') || 
-      lowerName.includes('clindamycin') || lowerName.includes('penicillin')) {
-    gramPositive = 3; // Strong gram-positive coverage
-  } else if (lowerName.includes('ceftriaxone') || lowerName.includes('ampicillin')) {
-    gramPositive = 2; // Moderate gram-positive coverage
-  } else {
-    gramPositive = 1; // Some gram-positive coverage
+  if (!antibioticId) {
+    console.warn('No antibiotic ID found for coverage calculation:', antibiotic);
+    return getFallbackCoverage(antibiotic);
   }
 
-  // Gram-negative coverage heuristics  
-  if (lowerName.includes('meropenem') || lowerName.includes('ciprofloxacin') || 
-      lowerName.includes('ceftriaxone') || lowerName.includes('gentamicin')) {
-    gramNegative = 3; // Strong gram-negative coverage
-  } else if (lowerName.includes('ampicillin') || lowerName.includes('azithromycin')) {
-    gramNegative = 2; // Moderate gram-negative coverage  
-  } else if (lowerName.includes('vancomycin') || lowerName.includes('clindamycin')) {
-    gramNegative = 0; // No gram-negative coverage
-  } else {
-    gramNegative = 1; // Some gram-negative coverage
-  }
-
-  // Anaerobic coverage heuristics
-  if (lowerName.includes('metronidazole')) {
-    anaerobic = 4; // Excellent anaerobic coverage
-  } else if (lowerName.includes('clindamycin') || lowerName.includes('meropenem')) {
-    anaerobic = 3; // Strong anaerobic coverage
-  } else if (lowerName.includes('ampicillin')) {
-    anaerobic = 2; // Moderate anaerobic coverage
-  } else if (lowerName.includes('vancomycin') || lowerName.includes('ciprofloxacin')) {
-    anaerobic = 1; // Limited anaerobic coverage
-  } else {
-    anaerobic = 0; // No anaerobic coverage
-  }
-
-  const total = gramPositive + gramNegative + anaerobic;
+  // Get all pathogens this antibiotic is effective against
+  const effectivePathogens = getPathogensForAntibiotic(antibioticId);
   
-  // Calculate percentages for pie chart segments
-  const gramPositivePercent = total > 0 ? Math.round((gramPositive / total) * 100) : 33;
-  const gramNegativePercent = total > 0 ? Math.round((gramNegative / total) * 100) : 33;  
-  const anaerobicPercent = total > 0 ? Math.round((anaerobic / total) * 100) : 34;
+  if (!effectivePathogens || effectivePathogens.length === 0) {
+    console.warn(`No effectiveness data found for antibiotic ID ${antibioticId}`);
+    return getFallbackCoverage(antibiotic);
+  }
 
-  // Dynamic sizing based on spectrum breadth (Northwestern feature)
-  const spectrumBreadth = total;
-  const baseSize = 45;
-  const pieSize = Math.max(baseSize, Math.min(baseSize + (spectrumBreadth * 3), 70));
+  // Create pathogen lookup for gram status - simplePathogens is already an array
+  const pathogenLookup = {};
+  if (simplePathogens && Array.isArray(simplePathogens)) {
+    simplePathogens.forEach(pathogen => {
+      pathogenLookup[pathogen.id] = pathogen;
+    });
+  }
+
+    // Count coverage by pathogen category and effectiveness level
+    let gramPositiveCoverage = 0;
+    let gramNegativeCoverage = 0;
+    let anaerobicCoverage = 0;
+    let totalEffectivePathogens = 0;
+
+    effectivePathogens.forEach(({ pathogenId, effectiveness, pathogenName }) => {
+      // Only count pathogens with meaningful effectiveness (not resistant)
+      if (effectiveness === 'resistant') return;
+      
+      const pathogen = pathogenLookup[pathogenId];
+      const effectivenessWeight = getEffectivenessWeight(effectiveness);
+      
+      if (pathogen) {
+        totalEffectivePathogens += effectivenessWeight;
+        
+        // Categorize by gram status
+        if (pathogen.gramStatus === 'positive') {
+          gramPositiveCoverage += effectivenessWeight;
+        } else if (pathogen.gramStatus === 'negative') {
+          gramNegativeCoverage += effectivenessWeight;
+        }
+        
+        // Check for anaerobic activity based on pathogen name or notes
+        if (isAnaerobicPathogen(pathogenName) || pathogen.oxygenRequirement === 'anaerobic') {
+          anaerobicCoverage += effectivenessWeight;
+        }
+      } else {
+        // Fallback: try to categorize by pathogen name if data structure differs
+        const gramStatus = inferGramStatusFromName(pathogenName);
+        if (gramStatus) {
+          totalEffectivePathogens += effectivenessWeight;
+          if (gramStatus === 'positive') {
+            gramPositiveCoverage += effectivenessWeight;
+          } else if (gramStatus === 'negative') {
+            gramNegativeCoverage += effectivenessWeight;
+          }
+        }
+      }
+    });
+
+    // Calculate percentages with medical accuracy
+    let gramPositivePercent = 0;
+    let gramNegativePercent = 0;
+    let anaerobicPercent = 0;
+
+    if (totalEffectivePathogens > 0) {
+      gramPositivePercent = Math.round((gramPositiveCoverage / totalEffectivePathogens) * 100);
+      gramNegativePercent = Math.round((gramNegativeCoverage / totalEffectivePathogens) * 100);
+      anaerobicPercent = Math.round((anaerobicCoverage / totalEffectivePathogens) * 100);
+    }
+
+    // Ensure percentages add up to 100% (handle rounding)
+    const total = gramPositivePercent + gramNegativePercent + anaerobicPercent;
+    if (total > 0 && total !== 100) {
+      const adjustment = 100 - total;
+      if (gramPositivePercent >= gramNegativePercent && gramPositivePercent >= anaerobicPercent) {
+        gramPositivePercent += adjustment;
+      } else if (gramNegativePercent >= anaerobicPercent) {
+        gramNegativePercent += adjustment;
+      } else {
+        anaerobicPercent += adjustment;
+      }
+    }
+
+    // Dynamic sizing based on spectrum breadth
+    const spectrumBreadth = effectivePathogens.length;
+    const baseSize = 45;
+    const pieSize = Math.max(baseSize, Math.min(baseSize + (spectrumBreadth * 2), 75));
 
   return {
     gramPositivePercent,
     gramNegativePercent,
     anaerobicPercent,
     pieSize,
-    coverageData: true, // Flag to enable pie chart styling
-    totalCoverage: total
+    coverageData: true,
+    totalCoverage: totalEffectivePathogens,
+    effectivePathogens: effectivePathogens.length,
+    medicallyAccurate: true // Flag indicating real data was used
+  };
+};
+
+/**
+ * Get effectiveness weight for pie chart calculation
+ * Higher weights for more clinically significant effectiveness levels
+ */
+const getEffectivenessWeight = (effectiveness) => {
+  switch (effectiveness) {
+    case 'high': return 3;
+    case 'medium': return 2; 
+    case 'low': return 1;
+    case 'resistant': return 0;
+    default: return 1;
+  }
+};
+
+/**
+ * Check if pathogen is anaerobic based on name
+ */
+const isAnaerobicPathogen = (pathogenName) => {
+  const anaerobicPathogens = [
+    'clostridium', 'bacteroides', 'fusobacterium', 'peptostreptococcus',
+    'prevotella', 'porphyromonas', 'veillonella'
+  ];
+  const lowerName = pathogenName.toLowerCase();
+  return anaerobicPathogens.some(anaerobe => lowerName.includes(anaerobe));
+};
+
+/**
+ * Infer gram status from pathogen name as fallback
+ */
+const inferGramStatusFromName = (pathogenName) => {
+  const lowerName = pathogenName.toLowerCase();
+  
+  // Common gram-positive patterns
+  if (lowerName.includes('streptococcus') || lowerName.includes('staphylococcus') || 
+      lowerName.includes('enterococcus') || lowerName.includes('clostridium') ||
+      lowerName.includes('bacillus')) {
+    return 'positive';
+  }
+  
+  // Common gram-negative patterns
+  if (lowerName.includes('escherichia') || lowerName.includes('pseudomonas') ||
+      lowerName.includes('klebsiella') || lowerName.includes('acinetobacter') ||
+      lowerName.includes('haemophilus') || lowerName.includes('salmonella') ||
+      lowerName.includes('shigella')) {
+    return 'negative';
+  }
+  
+  return null;
+};
+
+/**
+ * Fallback coverage calculation when real data is unavailable
+ * Uses the original heuristic method as backup
+ */
+const getFallbackCoverage = (antibiotic) => {
+  const name = antibiotic.label || antibiotic.name || '';
+  const lowerName = name.toLowerCase();
+  
+  let gramPositive = 1;
+  let gramNegative = 1;
+  let anaerobic = 0;
+  
+  // Simplified heuristics for fallback
+  if (lowerName.includes('vancomycin') || lowerName.includes('linezolid')) {
+    gramPositive = 3;
+    gramNegative = 0;
+  } else if (lowerName.includes('ciprofloxacin') || lowerName.includes('meropenem')) {
+    gramNegative = 3;
+    gramPositive = 1;
+  } else if (lowerName.includes('metronidazole')) {
+    anaerobic = 4;
+    gramPositive = 1;
+    gramNegative = 1;
+  }
+
+  const total = gramPositive + gramNegative + anaerobic;
+  
+  return {
+    gramPositivePercent: total > 0 ? Math.round((gramPositive / total) * 100) : 50,
+    gramNegativePercent: total > 0 ? Math.round((gramNegative / total) * 100) : 50,
+    anaerobicPercent: total > 0 ? Math.round((anaerobic / total) * 100) : 0,
+    pieSize: 45,
+    coverageData: true,
+    totalCoverage: total,
+    medicallyAccurate: false // Flag indicating fallback was used
   };
 };
 

@@ -135,8 +135,8 @@ const EnhancedPathogenNetwork = ({
     try {
       setError(null);
       
-      // Apply pathogen filters
-      let filteredPathogens = SimplePathogenData.pathogens;
+      // Apply pathogen filters - SimplePathogenData is directly an array (with defensive check)
+      let filteredPathogens = Array.isArray(SimplePathogenData) ? SimplePathogenData : [];
       
       if (gramFilter !== 'all') {
         filteredPathogens = filteredPathogens.filter(p => 

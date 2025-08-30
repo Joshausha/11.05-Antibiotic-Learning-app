@@ -12,6 +12,12 @@
  * @algorithms FCOSE (preferred), Cola, Dagre, COSE-Bilkent
  */
 
+// Phase 2: Import antibiotic class data for clustering
+import { 
+  ANTIBIOTIC_CLASSES, 
+  getAntibioticClass 
+} from '../../data/AntibioticClassData';
+
 /**
  * FCOSE Layout - Force-directed layout with compound graph support
  * Optimized for pathogen-antibiotic clustering and relationship visualization
@@ -185,7 +191,6 @@ export const COSE_BILKENT_MEDICAL_LAYOUT = {
   minTemp: 1.0,                // Convergence threshold
   
   // Clinical workflow optimization
-  randomize: false,            // Deterministic layouts for teaching consistency
   componentSpacing: 40,        // Space between disconnected pathogen groups
   nodeOverlap: 20,             // Minimum overlap prevention
   refresh: 30,                 // Refresh rate during animation
@@ -383,12 +388,318 @@ export const validateMedicalLayout = (layout) => {
   };
 };
 
-export default {
+/**
+ * Phase 2: Class-Based Node Clustering Algorithm
+ * Clusters antibiotic nodes by pharmacological class for Northwestern Coverage Wheel visualization
+ * Integrates with AntibioticClassData.js for medically accurate groupings
+ */
+
+/**
+ * Create class-based clustered layout for antibiotic visualization
+ * Groups antibiotics by pharmacological class and mechanism of action
+ * @param {string} baseLayout - Base layout algorithm to enhance
+ * @param {Object} clusterOptions - Clustering configuration options
+ * @returns {Object} Enhanced layout configuration with class clustering
+ */
+export const createClassClusteredLayout = (baseLayout = 'fcose', clusterOptions = {}) => {
+  const {
+    clusterByClass = true,           // Group by specific antibiotic class
+    clusterByMechanism = false,      // Group by broader mechanism of action
+    showClassBoundaries = true,      // Visual boundaries around classes
+    classSpacing = 150,              // Distance between different classes
+    mechanismSpacing = 200,          // Distance between mechanism groups
+    classPadding = 30,               // Internal padding within class clusters
+    connectionStrength = 0.3,        // Attraction between same-class nodes
+    separationStrength = 2.0         // Repulsion between different classes
+  } = clusterOptions;
+
+  const clusteredLayout = { ...MEDICAL_LAYOUTS[baseLayout] };
+  
+  // Enhance layout with class-based clustering parameters
+  clusteredLayout.classBasedClustering = {
+    enabled: true,
+    clusterByClass,
+    clusterByMechanism,
+    showClassBoundaries,
+    classSpacing,
+    mechanismSpacing,
+    classPadding,
+    connectionStrength,
+    separationStrength
+  };
+
+  // Adjust base layout parameters for class clustering
+  if (baseLayout === 'fcose') {
+    // Enhanced FCOSE parameters for class visualization
+    clusteredLayout.idealEdgeLength = 120;
+    clusteredLayout.nodeRepulsion = 6000;        // Increased to separate classes
+    clusteredLayout.edgeElasticity = 0.3;        // Reduced for tighter class grouping
+    clusteredLayout.nestingFactor = 0.25;        // Stronger compound grouping
+    clusteredLayout.gravity = 0.15;              // Reduced central attraction
+    clusteredLayout.numIter = 3000;              // More iterations for stability
+    
+    // Class-specific force modifications
+    clusteredLayout.nodeNodeRepulsion = function(node1, node2) {
+      const class1 = getAntibioticClass(node1.data('antibioticId'));
+      const class2 = getAntibioticClass(node2.data('antibioticId'));
+      
+      if (class1 && class2) {
+        if (class1.id === class2.id) {
+          // Nodes in same class attract slightly
+          return -connectionStrength * 1000;
+        } else if (class1.parentClass === class2.parentClass) {
+          // Related classes have moderate repulsion
+          return separationStrength * 3000;
+        } else {
+          // Different mechanisms have strong repulsion
+          return separationStrength * 5000;
+        }
+      }
+      
+      // Default repulsion for non-antibiotic nodes
+      return clusteredLayout.nodeRepulsion;
+    };
+  }
+
+  return clusteredLayout;
+};
+
+/**
+ * Calculate cluster positions for antibiotic classes
+ * Creates a circular or grid arrangement of class clusters
+ * @param {Array} elements - Network elements (nodes and edges)
+ * @param {Object} options - Positioning options
+ * @returns {Object} Class positioning data
+ */
+export const calculateClassClusterPositions = (elements = [], options = {}) => {
+  const {
+    layoutPattern = 'circular',     // 'circular' or 'grid' arrangement of classes
+    centerX = 400,                  // Center X coordinate
+    centerY = 300,                  // Center Y coordinate
+    clusterRadius = 250,            // Radius for circular arrangement
+    gridColumns = 3,                // Columns for grid arrangement
+    mechanismSeparation = 400       // Distance between mechanism groups
+  } = options;
+
+  // Identify unique classes and mechanisms in the network
+  const classesInNetwork = new Set();
+  const mechanismsInNetwork = new Set();
+  
+  elements.forEach(element => {
+    if (element.data && element.data.type === 'antibiotic' && element.data.antibioticId) {
+      const classData = getAntibioticClass(element.data.antibioticId);
+      if (classData) {
+        classesInNetwork.add(classData.id);
+        mechanismsInNetwork.add(classData.mechanismOfAction);
+      }
+    }
+  });
+
+  const classes = Array.from(classesInNetwork);
+  const mechanisms = Array.from(mechanismsInNetwork);
+  const clusterPositions = {};
+
+  if (layoutPattern === 'circular') {
+    // Circular arrangement of classes
+    classes.forEach((classId, index) => {
+      const angle = (index * 2 * Math.PI) / classes.length;
+      const x = centerX + clusterRadius * Math.cos(angle);
+      const y = centerY + clusterRadius * Math.sin(angle);
+      
+      clusterPositions[classId] = { x, y };
+    });
+  } else if (layoutPattern === 'mechanism-based') {
+    // Arrange classes by mechanism groups
+    let mechanismIndex = 0;
+    
+    mechanisms.forEach(mechanismId => {
+      const mechanismClasses = classes.filter(classId => {
+        const classData = ANTIBIOTIC_CLASSES[classId];
+        return classData && classData.mechanismOfAction === mechanismId;
+      });
+      
+      const mechanismCenter = {
+        x: centerX + (mechanismIndex - mechanisms.length / 2) * mechanismSeparation,
+        y: centerY
+      };
+      
+      // Arrange classes within mechanism group
+      mechanismClasses.forEach((classId, classIndex) => {
+        const classData = ANTIBIOTIC_CLASSES[classId];
+        if (classData && classData.clusterPosition) {
+          clusterPositions[classId] = {
+            x: mechanismCenter.x + classData.clusterPosition.x,
+            y: mechanismCenter.y + classData.clusterPosition.y
+          };
+        } else {
+          // Fallback positioning
+          const angle = (classIndex * 2 * Math.PI) / mechanismClasses.length;
+          clusterPositions[classId] = {
+            x: mechanismCenter.x + 100 * Math.cos(angle),
+            y: mechanismCenter.y + 100 * Math.sin(angle)
+          };
+        }
+      });
+      
+      mechanismIndex++;
+    });
+  } else {
+    // Grid arrangement fallback
+    classes.forEach((classId, index) => {
+      const row = Math.floor(index / gridColumns);
+      const col = index % gridColumns;
+      
+      clusterPositions[classId] = {
+        x: centerX + (col - gridColumns / 2) * 200,
+        y: centerY + (row - Math.ceil(classes.length / gridColumns) / 2) * 150
+      };
+    });
+  }
+
+  return {
+    clusterPositions,
+    classesInNetwork: Array.from(classesInNetwork),
+    mechanismsInNetwork: Array.from(mechanismsInNetwork)
+  };
+};
+
+/**
+ * Apply class-based positioning to network elements
+ * Modifies node positions to create class-based clusters
+ * @param {Array} elements - Network elements to modify
+ * @param {Object} clusterData - Class cluster positioning data
+ * @returns {Array} Modified elements with cluster positioning
+ */
+export const applyClassBasedPositioning = (elements, clusterData) => {
+  const { clusterPositions } = clusterData;
+  
+  return elements.map(element => {
+    if (element.data && element.data.type === 'antibiotic' && element.data.antibioticId) {
+      const classData = getAntibioticClass(element.data.antibioticId);
+      
+      if (classData && clusterPositions[classData.id]) {
+        const clusterCenter = clusterPositions[classData.id];
+        
+        // Add some randomization within the cluster for natural appearance
+        const jitter = 30; // Max jitter distance
+        const jitterX = (Math.random() - 0.5) * jitter;
+        const jitterY = (Math.random() - 0.5) * jitter;
+        
+        return {
+          ...element,
+          position: {
+            x: clusterCenter.x + jitterX,
+            y: clusterCenter.y + jitterY
+          },
+          data: {
+            ...element.data,
+            classCluster: classData.id,
+            mechanismCluster: classData.mechanismOfAction,
+            className: classData.name
+          }
+        };
+      }
+    }
+    
+    return element;
+  });
+};
+
+/**
+ * Create visual boundaries for antibiotic classes
+ * Generates background shapes to highlight class groupings
+ * @param {Object} clusterData - Class cluster data
+ * @param {Object} options - Visual styling options
+ * @returns {Array} Background elements for class visualization
+ */
+export const createClassBoundaryElements = (clusterData, options = {}) => {
+  const {
+    boundaryOpacity = 0.1,
+    boundaryColor = '#3B82F6',
+    boundaryRadius = 80,
+    showLabels = true
+  } = options;
+  
+  const { clusterPositions, classesInNetwork } = clusterData;
+  const boundaryElements = [];
+  
+  classesInNetwork.forEach(classId => {
+    const classData = ANTIBIOTIC_CLASSES[classId];
+    const position = clusterPositions[classId];
+    
+    if (classData && position) {
+      // Create boundary circle element
+      boundaryElements.push({
+        group: 'nodes',
+        data: {
+          id: `class-boundary-${classId}`,
+          type: 'class-boundary',
+          className: classData.name,
+          classId: classId
+        },
+        position: position,
+        style: {
+          'width': boundaryRadius * 2,
+          'height': boundaryRadius * 2,
+          'shape': 'ellipse',
+          'background-color': classData.color || boundaryColor,
+          'background-opacity': boundaryOpacity,
+          'border-width': 2,
+          'border-color': classData.color || boundaryColor,
+          'border-opacity': 0.3,
+          'z-index': -1, // Behind other nodes
+          'events': 'no' // Non-interactive
+        }
+      });
+      
+      // Create class label if requested
+      if (showLabels) {
+        boundaryElements.push({
+          group: 'nodes',
+          data: {
+            id: `class-label-${classId}`,
+            type: 'class-label',
+            label: classData.name
+          },
+          position: {
+            x: position.x,
+            y: position.y - boundaryRadius - 15
+          },
+          style: {
+            'width': 20,
+            'height': 20,
+            'shape': 'rectangle',
+            'background-opacity': 0,
+            'border-width': 0,
+            'label': classData.name,
+            'text-valign': 'center',
+            'text-halign': 'center',
+            'font-size': '12px',
+            'font-weight': 'bold',
+            'color': classData.color || '#374151',
+            'z-index': -1,
+            'events': 'no'
+          }
+        });
+      }
+    }
+  });
+  
+  return boundaryElements;
+};
+
+const NetworkLayoutModule = {
   MEDICAL_LAYOUTS,
   getRecommendedLayout,
   createMedicalClusteredLayout,
   applyPerformanceProfile,
   validateMedicalLayout,
+  
+  // Phase 2: Class-based clustering functions
+  createClassClusteredLayout,
+  calculateClassClusterPositions,
+  applyClassBasedPositioning,
+  createClassBoundaryElements,
   
   // Individual layouts for direct import
   FCOSE_MEDICAL_LAYOUT,
@@ -398,3 +709,5 @@ export default {
   GRID_MEDICAL_LAYOUT,
   CIRCLE_MEDICAL_LAYOUT
 };
+
+export default NetworkLayoutModule;
