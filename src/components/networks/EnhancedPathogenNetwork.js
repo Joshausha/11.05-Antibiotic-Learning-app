@@ -45,6 +45,34 @@ import {
   calculateCoverageSegments 
 } from './NorthwesternCoverageStyle';
 
+// Northwestern Coverage Wheel - Day 6-7: Complete Integration System
+import { 
+  applyClassClustering, 
+  updateClusterPositions, 
+  getClusterInfo,
+  CLASS_CLUSTER_POSITIONS 
+} from './AntibioticClassClustering';
+import { 
+  renderClassBoundaries, 
+  updateBoundaryPositions, 
+  removeClassBoundaries 
+} from './ClassBoundaryRenderer';
+import { 
+  applyMechanismBias, 
+  removeMechanismBias,
+  highlightMechanismGroup,
+  clearMechanismHighlight,
+  MECHANISM_GROUPS 
+} from './MechanismClustering';
+import InteractiveCoverageWheel from './InteractiveCoverageWheel';
+import { 
+  applyConstellationPatterns, 
+  removeConstellationPatterns,
+  highlightConstellationPattern,
+  clearConstellationHighlight,
+  CONSTELLATION_PATTERNS 
+} from './ConstellationPatterns';
+
 /**
  * Filter options for network visualization
  */
@@ -127,6 +155,9 @@ const EnhancedPathogenNetwork = ({
 
   // Refs
   const cytoscapeRef = useRef(null);
+
+  // Northwestern Coverage Wheel state
+  const shouldApplyClustering = customLayout === 'fcose' || includeAntibiotics;
 
   /**
    * Transform and filter medical data based on current filter settings
@@ -410,6 +441,95 @@ const EnhancedPathogenNetwork = ({
   }, [transformedData, onNetworkReady]);
 
   /**
+   * Northwestern Coverage Wheel - Day 6-7: Complete Integration
+   * Applies full Northwestern Coverage Wheel visualization system
+   */
+  useEffect(() => {
+    if (!cytoscapeRef.current || !networkData?.elements?.length) return;
+
+    const cy = cytoscapeRef.current.getCytoscape();
+    if (!cy) return;
+
+    // Northwestern Coverage Wheel is enabled based on component state
+    
+    if (shouldApplyClustering) {
+      // Small delay to ensure layout is ready
+      const timeoutId = setTimeout(() => {
+        try {
+          console.log('🎯 Northwestern Coverage Wheel: Applying complete visualization system');
+          
+          // Phase 1: Apply antibiotic class clustering
+          const clusteringResult = applyClassClustering(cy);
+          if (clusteringResult.success) {
+            console.log('✅ Class clustering applied:', clusteringResult.stats);
+            
+            // Phase 2: Render class boundaries
+            const boundaryResult = renderClassBoundaries(cy, {
+              showLabels: true,
+              interactive: true,
+              fadeUnselected: false
+            });
+            
+            if (boundaryResult.success) {
+              console.log('✅ Class boundaries rendered:', boundaryResult.stats);
+            } else {
+              console.warn('⚠️ Class boundary rendering failed:', boundaryResult.error);
+            }
+
+            // Phase 3: Apply mechanism-based positioning bias
+            const mechanismResult = applyMechanismBias(cy, {
+              biasStrength: 0.2, // Subtle bias to preserve class clustering
+              preserveClassClusters: true,
+              highlightMechanisms: true,
+              educationalMode: true
+            });
+            
+            if (mechanismResult.success) {
+              console.log('✅ Mechanism bias applied:', mechanismResult.stats);
+            } else {
+              console.warn('⚠️ Mechanism bias failed:', mechanismResult.error);
+            }
+
+            // Phase 4: Apply constellation patterns for clinical relationships
+            const constellationResult = applyConstellationPatterns(cy, {
+              enableFirstLine: true,
+              enableAlternatives: true,
+              enableResistanceNetworks: true,
+              enableSynergies: false, // Keep it simple initially
+              enableSpectrumBridges: false,
+              animationDuration: 800,
+              educationalMode: true
+            });
+            
+            if (constellationResult.success) {
+              console.log('✅ Constellation patterns applied:', constellationResult.stats);
+            } else {
+              console.warn('⚠️ Constellation patterns failed:', constellationResult.error);
+            }
+
+          } else {
+            console.warn('⚠️ Class clustering failed:', clusteringResult.error);
+          }
+          
+        } catch (error) {
+          console.error('❌ Northwestern Coverage Wheel integration error:', error);
+        }
+      }, 1000); // 1 second delay to ensure layout completion
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      // Remove all Northwestern Coverage Wheel components if not needed
+      try {
+        removeClassBoundaries(cy);
+        removeMechanismBias(cy);
+        removeConstellationPatterns(cy);
+      } catch (error) {
+        console.warn('Northwestern Coverage Wheel removal error:', error);
+      }
+    }
+  }, [cytoscapeRef.current, networkData, customLayout, includeAntibiotics]);
+
+  /**
    * Handle node selection with medical data extraction
    */
   const handleNodeSelect = useCallback((nodeData, event) => {
@@ -635,6 +755,21 @@ const EnhancedPathogenNetwork = ({
         loadingComponent={loadingComponent}
         {...props}
       />
+
+      {/* Interactive Coverage Wheel Layer - Only enabled when clustering is active */}
+      {shouldApplyClustering && (
+        <InteractiveCoverageWheel
+          cytoscapeRef={cytoscapeRef}
+          networkData={networkData}
+          onElementSelect={handleNodeSelect}
+          onCoverageAnalysis={(analysisData) => {
+            console.log('📊 Coverage Analysis:', analysisData);
+            // Could integrate with info panel or other UI components
+          }}
+          clinicalMode={true}
+          educationalLevel="resident"
+        />
+      )}
 
       {/* Selected Node Information Panel */}
       {isInfoPanelOpen && selectedNode && (

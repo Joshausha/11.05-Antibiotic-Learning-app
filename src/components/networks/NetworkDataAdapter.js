@@ -14,6 +14,8 @@
 
 import SimplePathogenData from '../../data/SimplePathogenData';
 import pathogenAntibioticMap from '../../data/pathogenAntibioticMap';
+import { getAntibioticClass, getAntibioticsInClass } from '../../data/AntibioticClassData';
+import { CLASS_CLUSTER_POSITIONS } from './AntibioticClassClustering';
 
 /**
  * Phase 2: Enhanced Clinical Severity to Visual Size Mapping
@@ -587,6 +589,69 @@ export const transformRelationshipToEdge = (pathogenId, antibiotic, pathogenName
 };
 
 /**
+ * Enhanced antibiotic transformation with class clustering support
+ * Northwestern Coverage Wheel - Day 6 Morning Session 2
+ * 
+ * @param {Object} antibiotic - Antibiotic data object
+ * @param {boolean} includeClassData - Whether to include class clustering information
+ * @returns {Object} Enhanced Cytoscape antibiotic node with class metadata
+ */
+export const transformAntibioticWithClass = (antibiotic, includeClassData = true) => {
+  // Get antibiotic class information
+  const classData = includeClassData ? getAntibioticClass(antibiotic.id || antibiotic.name) : null;
+  const className = classData?.className || 'unknown';
+  const clusterPosition = CLASS_CLUSTER_POSITIONS[className];
+  
+  // Base transformation
+  const baseNode = {
+    data: {
+      id: `antibiotic-${antibiotic.id}`,
+      label: antibiotic.name,
+      type: 'antibiotic',
+      size: 40,
+      color: clusterPosition?.color || '#10B981',
+      ariaLabel: `${antibiotic.name} antibiotic`
+    }
+  };
+
+  // Add class information if available
+  if (includeClassData && classData) {
+    baseNode.data = {
+      ...baseNode.data,
+      // Northwestern Coverage Wheel data
+      antibioticClass: className,
+      mechanismOfAction: classData.mechanismOfAction,
+      relatedAntibiotics: getAntibioticsInClass(className) || [],
+      
+      // Visual clustering properties
+      clusterColor: clusterPosition?.color,
+      clusterLabel: clusterPosition?.label,
+      
+      // Educational metadata
+      educationalNote: clusterPosition?.educationalNote,
+      mechanismDescription: clusterPosition?.mechanism
+    };
+    
+    // Add CSS classes for styling
+    baseNode.classes = [
+      'antibiotic',
+      `class-${className}`,
+      `mechanism-${classData.mechanismOfAction?.split('-')[0] || 'unknown'}`
+    ];
+    
+    // Store cluster information in scratch data for positioning
+    baseNode.scratch = {
+      _classCluster: className,
+      _mechanism: classData.mechanismOfAction,
+      _initialPosition: clusterPosition ? { x: clusterPosition.x, y: clusterPosition.y } : null,
+      _clusterRadius: clusterPosition?.radius || 100
+    };
+  }
+
+  return baseNode;
+};
+
+/**
  * Main transformation function: converts medical data to Cytoscape elements
  * @param {Object} options - Transformation options
  * @param {Object} options.pathogenData - Pathogen data from SimplePathogenData
@@ -669,19 +734,10 @@ export const transformMedicalDataToCytoscape = (options = {}) => {
         });
       });
 
-      // Add antibiotic nodes
+      // Add antibiotic nodes with class clustering support
       const antibioticNodes = Array.from(antibioticSet).map(antibioticStr => {
         const antibiotic = JSON.parse(antibioticStr);
-        return {
-          data: {
-            id: `antibiotic-${antibiotic.id}`,
-            label: antibiotic.name,
-            type: 'antibiotic',
-            size: 40,
-            color: '#10B981',
-            ariaLabel: `${antibiotic.name} antibiotic`
-          }
-        };
+        return transformAntibioticWithClass(antibiotic, options.includeClassData !== false);
       });
 
       result.elements.push(...antibioticNodes);
@@ -774,6 +830,7 @@ export default {
   transformPathogenToNode,
   transformRelationshipToEdge,
   transformMedicalDataToCytoscape,
+  transformAntibioticWithClass, // Northwestern Coverage Wheel - Class clustering
   getNetworkStatistics,
   
   // Phase 2: Enhanced clinical severity functions
