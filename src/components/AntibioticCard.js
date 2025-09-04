@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import NorthwesternPieChart from './NorthwesternPieChart';
 import { getAntibioticById } from '../data/EnhancedAntibioticData';
+import MedicalSafetyBanner from './MedicalSafetyBanner';
+import { useMedicalSafety } from '../hooks/useMedicalSafety';
 
 const AntibioticCard = ({ 
   antibiotic, 
@@ -35,6 +37,9 @@ const AntibioticCard = ({
 }) => {
   const [selectedSegment, setSelectedSegment] = useState(null);
   const [showDetailedView, setShowDetailedView] = useState(false);
+
+  // Medical safety monitoring
+  const { shouldShowBanner, getBannerProps } = useMedicalSafety('AntibioticCard');
 
   // Get enhanced antibiotic data with Northwestern information
   const enhancedAntibiotic = useMemo(() => {
@@ -82,20 +87,27 @@ const AntibioticCard = ({
       route = route.join(', ');
     }
     
-    if (route.toLowerCase().includes('iv') && route.toLowerCase().includes('oral')) {
+    if (route?.toLowerCase().includes('iv') && route?.toLowerCase().includes('oral')) {
       return { icon: Navigation, color: 'text-purple-600', label: 'IV/Oral' };
-    } else if (route.toLowerCase().includes('iv')) {
+    } else if (route?.toLowerCase().includes('iv')) {
       return { icon: Droplets, color: 'text-blue-600', label: 'IV' };
     } else {
       return { icon: Pill, color: 'text-red-600', label: 'Oral' };
     }
   };
 
-  const routeInfo = getRouteIcon(antibiotic.route);
+  const routeInfo = getRouteIcon(antibiotic?.route);
   const RouteIcon = routeInfo.icon;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      {/* Medical Safety Banner */}
+      {shouldShowBanner && (
+        <div className="border-b">
+          <MedicalSafetyBanner {...getBannerProps()} />
+        </div>
+      )}
+
       {/* Header */}
       <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
         <div className="flex items-center justify-between">

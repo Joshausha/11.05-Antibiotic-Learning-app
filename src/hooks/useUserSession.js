@@ -39,7 +39,7 @@ const useUserSession = (indexes) => {
       newStats.averageTimePerPathogen = totalTime / newStats.totalViewed;
 
       // Update category preferences
-      if (pathogen && pathogen.conditions && indexes && indexes.conditions) {
+      if (pathogen?.conditions && indexes?.conditions) {
         pathogen.conditions.forEach(conditionId => {
           const condition = indexes.conditions.find(c => c.id === conditionId);
           if (condition) {

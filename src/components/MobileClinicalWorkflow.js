@@ -46,6 +46,8 @@ import NorthwesternFilteringSystem from './NorthwesternFilteringSystem.js';
 import NorthwesternGroupOrganization from './NorthwesternGroupOrganization.js';
 import { NorthwesternPerformanceOptimizer } from '../utils/northwesternPerformanceOptimizer.js';
 import { useResponsive } from '../hooks/useResponsive.js';
+import MedicalSafetyBanner from './MedicalSafetyBanner';
+import { useMedicalSafety } from '../hooks/useMedicalSafety';
 
 /**
  * Touch gesture configuration for clinical workflow
@@ -138,6 +140,9 @@ const MobileClinicalWorkflow = ({
     isPinching: false, 
     swipeDirection: null 
   });
+
+  // Medical safety monitoring
+  const { shouldShowBanner, getBannerProps } = useMedicalSafety('MobileClinicalWorkflow');
 
   // State management
   const [viewMode, setViewMode] = useState(emergencyMode ? 'emergency' : 'clinical');
@@ -649,6 +654,13 @@ const MobileClinicalWorkflow = ({
       onTouchEnd={handleTouchEnd}
       {...accessibilityProps}
     >
+      {/* Medical Safety Banner */}
+      {shouldShowBanner && (
+        <div className="mobile-safety-banner-container">
+          <MedicalSafetyBanner {...getBannerProps()} />
+        </div>
+      )}
+
       {/* Hidden instructions for screen readers */}
       {screenReaderMode && (
         <div id="clinical-instructions" className="sr-only">

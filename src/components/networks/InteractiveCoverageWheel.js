@@ -19,7 +19,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 /**
  * Coverage analysis categories with clinical significance
  */
-export const COVERAGE_CATEGORIES = {
+export const const COVERAGE_CATEGORIES = {
   'gram-positive': {
     name: 'Gram-Positive',
     shortName: 'G+',
@@ -56,7 +56,7 @@ export const COVERAGE_CATEGORIES = {
     commonPathogens: ['Mycoplasma pneumoniae', 'Chlamydia', 'Legionella'],
     resistancePatterns: ['Macrolide resistance', 'Fluoroquinolone resistance']
   }
-};
+};;
 
 /**
  * Interactive wheel state management
