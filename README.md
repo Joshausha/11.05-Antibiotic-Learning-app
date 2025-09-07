@@ -2,7 +2,7 @@
 type: documentation
 title: Antibiotic Learning App - README Documentation
 created: 2025-07-15
-modified: 2025-08-27 12:00:00
+modified: 2025-09-04 12:00:00
 tags: [medical-education, antibiotic-learning, react-app, network-visualization, quiz-system, pathogen-database, clinical-education, pediatric-medicine, northwestern-animations, test-infrastructure, cytoscape-integration, feature-flags]
 category: Projects
 purpose: project-overview-documentation
@@ -17,11 +17,11 @@ version: 1.5.0
 breakthrough_achievement: complete-network-visualization-system-with-feature-flag-integration
 ---
 
-# Antibiotic Learning App - Clinical Decision Education Platform
+# Antibiotic Learning App - Network Visualization Learning Platform
 
-**Interactive clinical decision education platform** featuring evidence-based decision trees, guideline comparisons, and case-based learning for mastering antibiotic selection, pathogen identification, and clinical reasoning skills.
+**Interactive network visualization learning platform** featuring pathogen-antibiotic relationship exploration, coverage pattern analysis, and visual discovery learning for mastering antimicrobial spectrum understanding through pattern recognition and network exploration.
 
-🎯 **Refined Focus (August 2025)**: Evolved from quiz-based assessment to comprehensive clinical decision support education while preserving all quiz functionality.
+🎯 **Transformed Focus (September 2025)**: Evolved from clinical decision trees to comprehensive network visualization platform that reveals hidden connections between pathogens and antibiotics through interactive exploration.
 
 ## 📋 Quick Navigation
 - [Overview](#-overview)
@@ -53,20 +53,21 @@ breakthrough_achievement: complete-network-visualization-system-with-feature-fla
 
 ## 🎯 Overview
 
-The Antibiotic Learning App is a **clinical decision support education platform** designed for healthcare professionals, medical students, and anyone interested in mastering antibiotic selection through evidence-based learning. The application provides comprehensive learning experiences through interactive decision trees, guideline comparisons, case-based scenarios, and preserved quiz functionality.
+The Antibiotic Learning App is a **network visualization learning platform** designed for healthcare professionals, medical students, and anyone interested in mastering antibiotic coverage patterns through visual relationship exploration. The application provides comprehensive learning experiences through interactive network graphs, coverage heat maps, pattern recognition challenges, and preserved quiz functionality for assessment.
 
 ### Key Features
 
-- **👑 Northwestern Animations (Crown Jewel)**: 876-line sophisticated medical animation system for clinical decision visualization
-- **🌳 Clinical Decision Trees**: Interactive pathways for evidence-based antibiotic selection
-- **📊 Guideline Comparison Tools**: Side-by-side visualization of AAP, IDSA, and clinical protocols
-- **📈 Educational Progress Tracking**: Competency mapping and knowledge gap identification
-- **⚙️ Interactive Quiz System (Preserved)**: 79+ validated quiz questions accessible through feature flags
-- **🧬 Pathogen Explorer**: Detailed information on 29 clinically relevant pathogens with visualization enhancements
-- **💊 Antibiotic Database**: Comprehensive data on 30 antibiotics with clinical guidance and selection criteria
-- **🏥 Medical Conditions**: 20 medical conditions with clinical decision pathways and treatment algorithms
-- **🎯 Case-Based Learning**: Interactive clinical scenarios with guided decision points and immediate feedback
-- **📱 Responsive Design**: Optimized clinical decision support across all devices for bedside use
+- **🌐 Interactive Network Graph Explorer**: Force-directed visualizations of pathogen-antibiotic relationships with 50+ pathogen nodes and 40+ antibiotic nodes
+- **🥧 Northwestern Coverage Wheels**: Pie chart antibiotic visualization with clinical color coding (blue=gram-positive, red=gram-negative, green=anaerobic)
+- **📊 Coverage Heat Maps**: Visual effectiveness matrices showing pathogen-antibiotic relationships with color-coded resistance patterns
+- **🔍 Pattern Recognition Challenges**: Interactive learning modes including exploration, challenges, and coverage gap analysis
+- **👑 Northwestern Animations (Crown Jewel)**: 876-line sophisticated animation system optimized for smooth network transitions
+- **🎯 Visual Spectrum Analysis**: Northwestern wheels and overlay visualizations showing antibiotic coverage breadth and overlaps
+- **🧬 Pathogen Network Nodes**: 29 clinically relevant pathogens with detailed metadata and relationship visualizations
+- **💊 Antibiotic Network Nodes**: 30 antibiotics with mechanism, spectrum, and resistance data in interactive format
+- **⚙️ Interactive Quiz System (Preserved)**: 79+ validated quiz questions accessible through feature flags for assessment
+- **🏥 Medical Conditions Integration**: Clinical context preserved within network relationship data
+- **📱 Touch-Optimized Network Interface**: Mobile-friendly network exploration for bedside clinical education
 
 ## 🚀 Quick Start
 

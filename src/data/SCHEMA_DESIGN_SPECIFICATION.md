@@ -1,60 +1,180 @@
-# Northwestern 8-Segment Data Schema Design Specification
+# Network Graph Data Schema Design Specification
 
-**Agent 1.1: Data Schema Designer**  
-**Phase**: 1.1 - Northwestern Schema Foundation  
-**Date**: 2025-01-18  
+**Network Visualization Data Architecture**  
+**Phase**: 2.0 - Network Graph Foundation  
+**Date**: 2025-09-04  
 **Medical Accuracy**: Validated against current antimicrobial literature
 
 ## Executive Summary
 
-This specification defines the complete Northwestern 8-segment data schema with full backward compatibility for the Antibiotic Learning App. The schema enables pie chart visualizations while preserving all existing functionality and maintaining medical accuracy.
+This specification defines the complete network graph data schema for pathogen-antibiotic relationship visualization in the Antibiotic Learning App. The schema enables interactive network exploration, coverage heat maps, and pattern recognition while maintaining medical accuracy and supporting advanced graph visualization technologies (D3.js, Cytoscape.js).
 
-## Northwestern 8-Segment Model Overview
+## Network Graph Model Overview
 
-### Categories
-1. **MRSA** - Methicillin-resistant Staphylococcus aureus
-2. **VRE faecium** - Vancomycin-resistant Enterococcus faecium  
-3. **Anaerobes** - Bacteroides, C. difficile, mixed anaerobes
-4. **Atypicals** - Legionella, Mycoplasma, Chlamydophila
-5. **P. aeruginosa** - Pseudomonas aeruginosa
-6. **Gram(-)** - Gram-negative organisms
-7. **MSSA** - Methicillin-sensitive Staphylococcus aureus
-8. **E. faecalis** - Enterococcus faecalis
+### Node Types
+1. **Pathogen Nodes** - Bacterial, fungal, and parasitic organisms (50+ entities)
+   - **Gram-Positive Bacteria**: S. aureus (MSSA/MRSA), Streptococcus species, Enterococcus species
+   - **Gram-Negative Bacteria**: E. coli, Klebsiella, Pseudomonas, Enterobacter, Acinetobacter
+   - **Atypical Pathogens**: Mycoplasma, Chlamydia, Legionella
+   - **Anaerobic Pathogens**: Bacteroides, C. difficile, mixed anaerobes
+   - **Specialized Pathogens**: Mycobacteria, fungi, parasites
 
-### Coverage Scale
-- **0** = No coverage (white wedge)
-- **1** = Poor/OK coverage (light wedge)  
-- **2** = Good coverage (dark wedge)
+2. **Antibiotic Nodes** - Antimicrobial agents organized by class (40+ entities)
+   - **Beta-Lactams**: Penicillins, Cephalosporins, Carbapenems, Monobactams
+   - **Protein Synthesis Inhibitors**: Macrolides, Tetracyclines, Aminoglycosides
+   - **DNA/RNA Inhibitors**: Quinolones, Metronidazole
+   - **Cell Wall Inhibitors**: Vancomycin, Linezolid
+   - **Specialized Agents**: Antifungals, Antiparasitics, Anti-TB drugs
+
+### Edge Relationship Types
+- **Effectiveness Weight**: 0.0 (no coverage) → 1.0 (excellent coverage)
+- **Resistance Level**: Susceptible, Intermediate, Resistant
+- **Clinical Context**: First-line, Second-line, Reserved
+- **Evidence Strength**: High (A-1), Moderate (B-2), Low (C-3)
 
 ## Schema Architecture
 
-### Enhanced Antibiotic Data Structure
+### Network Graph Data Structures
 
+#### Pathogen Node Schema
 ```javascript
 {
-  // EXISTING FIELDS (preserved for backward compatibility)
-  id: number,
-  name: string,
-  category: string,
-  class: string,
-  description: string,
-  mechanism: string,
-  route: string,
-  commonUses: array,
-  resistance: string,
-  sideEffects: array,
+  // Node Identification
+  id: string,              // Unique identifier (e.g., "staph_aureus_mrsa")
+  type: "pathogen",        // Node type for graph categorization
+  name: string,            // Display name (e.g., "Staphylococcus aureus (MRSA)")
+  category: string,        // Primary classification (gram_positive, gram_negative, atypical, etc.)
+  
+  // Medical Properties
+  gramStain: string,       // "positive" | "negative" | "variable" | "n/a"
+  morphology: string,      // "cocci" | "bacilli" | "spiral" | "other"
+  oxygenRequirement: string, // "aerobic" | "anaerobic" | "facultative"
+  clinicalSignificance: array, // ["pneumonia", "bloodstream_infection", "uti"]
+  
+  // Visual Properties
+  color: string,           // Hex color for node visualization
+  size: number,            // Relative size (1-10) based on clinical importance
+  shape: string,           // "circle" | "square" | "triangle" for pathogen categories
+  
+  // Metadata
+  resistance: {
+    mechanisms: array,     // ["beta_lactamase", "efflux_pump", "target_modification"]
+    prevalence: number,    // 0.0-1.0 resistance rate
+    geography: array       // ["north_america", "europe", "global"]
+  }
+}
+```
 
-  // NEW: Northwestern 8-segment coverage
-  northwesternSpectrum: {
-    MRSA: 0-2,              // Methicillin-resistant S. aureus
-    VRE_faecium: 0-2,       // Vancomycin-resistant E. faecium
-    anaerobes: 0-2,         // Anaerobic bacteria
-    atypicals: 0-2,         // Atypical pathogens
-    pseudomonas: 0-2,       // P. aeruginosa
-    gramNegative: 0-2,      // Gram-negative organisms
-    MSSA: 0-2,              // Methicillin-sensitive S. aureus
-    enterococcus_faecalis: 0-2  // E. faecalis
-  },
+#### Antibiotic Node Schema
+```javascript
+{
+  // Node Identification
+  id: string,              // Unique identifier (e.g., "vancomycin")
+  type: "antibiotic",      // Node type for graph categorization
+  name: string,            // Display name (e.g., "Vancomycin")
+  class: string,           // Antibiotic class (e.g., "glycopeptide")
+  
+  // Medical Properties
+  mechanism: string,       // "cell_wall" | "protein_synthesis" | "dna_rna" | "cell_membrane"
+  spectrum: string,        // "narrow" | "broad" | "extended"
+  route: array,            // ["IV", "PO", "IM", "topical"]
+  generation: number,      // For beta-lactams (1-4)
+  
+  // Clinical Context
+  indication: array,       // ["serious_infection", "mrsa", "vre", "prophylaxis"]
+  restrictions: array,     // ["reserve", "id_consult", "stewardship"]
+  sideEffects: array,      // ["nephrotoxicity", "ototoxicity", "cdiff_risk"]
+  
+  // Visual Properties
+  color: string,           // Hex color for antibiotic class
+  size: number,            // Relative size based on spectrum breadth
+  shape: string,           // "diamond" for antibiotics
+}
+```
+
+#### Edge Relationship Schema
+```javascript
+{
+  // Edge Identification
+  source: string,          // Source node ID (pathogen or antibiotic)
+  target: string,          // Target node ID (pathogen or antibiotic)
+  type: "effectiveness",   // Edge type for graph categorization
+  
+  // Effectiveness Metrics
+  weight: number,          // 0.0-1.0 effectiveness strength
+  resistance_rate: number, // 0.0-1.0 resistance prevalence
+  clinical_outcome: string, // "excellent" | "good" | "moderate" | "poor"
+  
+  // Clinical Context
+  line_therapy: string,    // "first" | "second" | "third" | "reserved"
+  indication: array,       // ["empiric", "directed", "prophylaxis"]
+  evidence_level: string,  // "A1" | "A2" | "B1" | "B2" | "C1" | "C2"
+  guideline_source: array, // ["AAP", "IDSA", "CDC", "PIDS"]
+  
+  // Visual Properties
+  color: string,           // Color based on effectiveness (green=good, red=poor)
+  thickness: number,       // Line thickness based on weight
+  style: string,           // "solid" | "dashed" | "dotted" for different evidence levels
+}
+```
+
+### Network Graph Implementation
+
+#### Cytoscape.js Format Transformation
+```javascript
+// Convert medical data to Cytoscape format
+const transformToNetworkElements = (pathogens, antibiotics, relationships) => ({
+  nodes: [
+    // Pathogen nodes
+    ...pathogens.map(pathogen => ({
+      data: {
+        id: pathogen.id,
+        label: pathogen.name,
+        type: 'pathogen',
+        ...pathogen
+      },
+      classes: `pathogen ${pathogen.category}`,
+      style: {
+        'background-color': pathogen.color,
+        'shape': pathogen.shape,
+        'width': pathogen.size * 10,
+        'height': pathogen.size * 10
+      }
+    })),
+    // Antibiotic nodes
+    ...antibiotics.map(antibiotic => ({
+      data: {
+        id: antibiotic.id,
+        label: antibiotic.name,
+        type: 'antibiotic',
+        ...antibiotic
+      },
+      classes: `antibiotic ${antibiotic.class}`,
+      style: {
+        'background-color': antibiotic.color,
+        'shape': 'diamond',
+        'width': antibiotic.size * 12,
+        'height': antibiotic.size * 12
+      }
+    }))
+  ],
+  edges: relationships.map(edge => ({
+    data: {
+      id: `${edge.source}-${edge.target}`,
+      source: edge.source,
+      target: edge.target,
+      weight: edge.weight,
+      ...edge
+    },
+    classes: `effectiveness ${edge.clinical_outcome}`,
+    style: {
+      'line-color': edge.color,
+      'width': edge.thickness,
+      'line-style': edge.style
+    }
+  }))
+});
+```
 
   // NEW: Northwestern visualization properties
   cellWallActive: boolean,    // For dotted box grouping

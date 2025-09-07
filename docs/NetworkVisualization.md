@@ -1,17 +1,30 @@
 # Network Visualization Documentation
-**Pathogen-Antibiotic Network Visualization System**  
-*Version 1.0.0 - Generated: 2025-08-27*
+**PRIMARY TECHNICAL REFERENCE - Pathogen-Antibiotic Network Learning Platform**  
+*Version 2.0.0 - Updated: 2025-09-04*
 
-## 📋 Overview
+## 📋 Executive Summary
 
-The Network Visualization system provides interactive visual representations of pathogen-antibiotic relationships for medical education. Built with clinical accuracy and performance requirements in mind, it enables healthcare providers and medical students to explore complex antimicrobial relationships through intuitive network graphs.
+The Network Visualization system is the **core architectural foundation** of the Antibiotic Learning Platform, providing interactive visual representations of pathogen-antibiotic relationships through advanced graph technologies. This system transforms abstract antibiotic coverage concepts into intuitive network explorations that reveal patterns, overlaps, and gaps in antimicrobial spectrum coverage.
+
+**Key Technologies**: D3.js v7, Cytoscape.js, Three.js (3D), GSAP animations, Northwestern Animation Framework integration.
+
+**Performance Standards**: <1 second rendering for 100+ nodes, 60fps interactions, <5 seconds pathogen-to-antibiotic discovery.
 
 ### 🎯 Clinical Applications
 
-- **Medical Education**: Visual learning of pathogen-antibiotic relationships
-- **Clinical Decision Support**: Quick reference for antimicrobial effectiveness
-- **Resistance Pattern Analysis**: Understanding antibiotic resistance mechanisms
-- **Evidence-Based Learning**: Integration of clinical guideline evidence levels
+#### Primary Use Cases
+- **Pattern Recognition Learning**: Visual discovery of broad-spectrum vs narrow-spectrum antibiotic patterns
+- **Coverage Gap Analysis**: Multi-pathogen scenario optimization for empiric therapy selection
+- **Resistance Visualization**: Interactive exploration of resistance patterns and mechanisms
+- **Spectrum Comparison**: Side-by-side antibiotic coverage analysis with heat map visualizations
+- **Medical Student Education**: Intuitive learning of complex pathogen-antibiotic relationships
+- **Clinical Reference**: Rapid bedside access to antimicrobial effectiveness data
+
+#### Learning Workflows
+1. **Pathogen-First Discovery**: Click pathogen → explore coverage options
+2. **Antibiotic-Centered Analysis**: Select antibiotic → view complete spectrum
+3. **Challenge Mode**: Given pathogens, identify optimal coverage
+4. **Pattern Recognition**: Classify antibiotics by connection density analysis
 
 ## ⚡ Quick Start
 
@@ -44,30 +57,101 @@ REACT_APP_ENABLE_NETWORK_CLUSTERING=true
 REACT_APP_ENABLE_ADVANCED_LAYOUTS=true
 ```
 
-## 🏗️ Architecture
+## 🏗️ Comprehensive Architecture
+
+### System Architecture Overview
+
+```
+Network Visualization Platform Architecture
+┌─────────────────────────────────────────────────────────────┐
+│                   Learning Interface Layer                   │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐  │
+│  │ Exploration Mode│  │ Challenge Mode  │  │ Heat Maps    │  │
+│  │ (Free Discovery)│  │ (Goal-Oriented) │  │ (Analysis)   │  │
+│  └─────────────────┘  └─────────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                 Visualization Engine Layer                   │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐  │
+│  │    D3.js        │  │   Cytoscape.js  │  │   Three.js   │  │
+│  │ (Custom Graphs) │  │ (Pre-built)     │  │ (3D Optional)│  │
+│  └─────────────────┘  └─────────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    Data Processing Layer                     │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐  │
+│  │ NetworkData     │  │ Graph           │  │ Performance  │  │
+│  │ Adapter         │  │ Algorithms      │  │ Optimization │  │
+│  └─────────────────┘  └─────────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                   Medical Content Layer                      │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐  │
+│  │ Pathogen Data   │  │ Antibiotic Data │  │ Effectiveness│  │
+│  │ (50+ organisms) │  │ (40+ antibiotics│  │ Relationships│  │
+│  └─────────────────┘  └─────────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ### Component Hierarchy
 
 ```
-PathogenNetworkVisualization (Main Integration Component)
-├── NetworkErrorBoundary (Safety wrapper)
-├── FeatureFlag (Feature flag controls)
-├── CytoscapeWrapper (Cytoscape.js integration)
-├── NetworkDataAdapter (Data transformation utilities)
-└── Performance monitoring hooks
+PathogenNetworkVisualization (Primary Integration Component)
+├── NetworkErrorBoundary (Medical safety wrapper)
+├── FeatureFlag (A/B testing and progressive rollout)
+├── LearningModeController (Exploration, Challenge, Analysis modes)
+│   ├── ExplorationMode (Free network navigation)
+│   ├── ChallengeMode (Goal-oriented pathogen coverage tasks)  
+│   └── AnalysisMode (Heat maps and spectrum comparison)
+├── VisualizationEngine (Technology abstraction layer)
+│   ├── D3NetworkRenderer (Custom force-directed layouts)
+│   ├── CytoscapeWrapper (Pre-built graph algorithms)
+│   └── ThreeJSRenderer (3D network visualization - optional)
+├── NetworkDataProcessor
+│   ├── NetworkDataAdapter (Medical data → graph format)
+│   ├── PerformanceOptimizer (Large graph handling)
+│   └── AccessibilityEnhancer (Screen reader, keyboard navigation)
+├── NorthwesternAnimations (875-line animation system integration)
+└── PerformanceMonitor (Real-time metrics and optimization)
 ```
 
-### Data Flow
+### Data Flow Architecture
 
 ```
-Medical Data Sources → NetworkDataAdapter → Cytoscape Elements → CytoscapeWrapper → Visual Network
+Medical Content Sources
+        ↓
+┌─────────────────────────────────────────────┐
+│         Data Ingestion & Validation         │
+│ • Pathogen clinical data (50+ organisms)    │
+│ • Antibiotic spectrum data (40+ drugs)      │
+│ • Effectiveness relationships (resistance)  │
+│ • Clinical guideline integration (AAP/IDSA) │
+└─────────────────────────────────────────────┘
+        ↓
+┌─────────────────────────────────────────────┐
+│        Network Data Transformation          │
+│ • Nodes: pathogen & antibiotic entities     │
+│ • Edges: effectiveness with weights         │
+│ • Metadata: resistance patterns, mechanisms │  
+│ • Layout: force-directed positioning        │
+└─────────────────────────────────────────────┘
+        ↓
+┌─────────────────────────────────────────────┐
+│         Visualization Rendering             │
+│ • Cytoscape.js: Standard graph layouts      │
+│ • D3.js: Custom animations & interactions   │
+│ • Three.js: 3D immersive exploration        │
+│ • Performance: <1s render, 60fps updates    │
+└─────────────────────────────────────────────┘
+        ↓
+┌─────────────────────────────────────────────┐
+│         User Interaction Layer              │
+│ • Pattern Recognition: Visual analysis      │
+│ • Coverage Analysis: Multi-pathogen tasks   │
+│ • Learning Assessment: Progress tracking    │
+│ • Accessibility: WCAG 2.1 AA compliance     │
+└─────────────────────────────────────────────┘
 ```
-
-1. **Input**: Medical pathogen and antibiotic data
-2. **Transform**: Convert to Cytoscape-compatible format
-3. **Validate**: Ensure medical accuracy and safety
-4. **Render**: Display interactive network visualization
-5. **Monitor**: Track performance and user interactions
 
 ## 🔧 Component Reference
 

@@ -21,9 +21,9 @@ redirect: PROJECT_STATUS.md for comprehensive project information
 
 ## 🎯 Project Overview
 
-**Antibiotic Learning App** - Production-ready clinical decision education platform with 88.3% test suite pass rate (53/60 suites).
+**Antibiotic Learning App** - Production-ready network visualization learning platform with 88.3% test suite pass rate (53/60 suites).
 
-**Current Focus**: Core medical education features (evidence integration paused for maintenance).
+**Current Focus**: Interactive pathogen-antibiotic network exploration with D3.js/Cytoscape.js integration.
 
 🚨 **Critical Status**: See [`EVIDENCE_INTEGRATION_STATUS.md`](EVIDENCE_INTEGRATION_STATUS.md) for honest implementation assessment.
 
@@ -35,12 +35,17 @@ redirect: PROJECT_STATUS.md for comprehensive project information
 
 ```bash
 # Core Development
-npm start          # Start development server with hot reload
-npm test           # Run all tests (mixed: evidence backend 26/26✅, network UI 4/11❌)
-npm run build      # Build production bundle
-npm run test:watch # Run tests in watch mode
-npm run lint       # Check code quality  
+npm start          # Start development server with network visualization hot reload
+npm test           # Run all tests (including network component test suites)
+npm run build      # Build production bundle with D3.js/Cytoscape.js optimization
+npm run test:watch # Run tests in watch mode with network graph testing
+npm run lint       # Check code quality for network components
 npm run lint:fix   # Auto-fix linting issues
+
+# Network Visualization Development
+REACT_APP_ENABLE_CYTOSCAPE_NETWORK=true npm start  # Enable network features
+npm test -- --testNamePattern="Network"            # Run network-specific tests
+npm test -- --testPathPattern="network"            # Test network components
 
 # Navigation
 cd "/Users/joshpankin/My Drive/10-19 Projects/11 Medical Education Projects/11.05 Antibiotic Learning app"
@@ -52,20 +57,25 @@ cd "/Users/joshpankin/My Drive/10-19 Projects/11 Medical Education Projects/11.0
 
 ### Core Stack
 - **React 18.2.0** - Modern functional components with hooks
-- **Webpack 5.64.4** - Custom build configuration
-- **Tailwind CSS** - Local installation (not CDN)
-- **Jest + React Testing Library** - Testing framework
+- **D3.js v7** - Custom network graph layouts and force-directed positioning
+- **Cytoscape.js** - Pre-built network components and graph algorithms
+- **Three.js (Optional)** - 3D network visualization capabilities
+- **Webpack 5.64.4** - Custom build with network visualization optimization
+- **Tailwind CSS + Custom CSS** - Responsive design with graph styling
+- **Jest + React Testing Library** - Testing framework with D3/Cytoscape testing utilities
 
 ### Key Components
-- **Northwestern Animations** (875 lines) - Crown jewel visualization system
-- **UserContext** - Global state management with localStorage persistence
-- **Custom Hooks** - 10 specialized hooks for medical workflows
+- **Northwestern Animations** (875 lines) - Crown jewel system optimized for network transitions
+- **PathogenNetworkVisualization** - Primary network graph explorer component
+- **CoverageHeatMap** - Pathogen-antibiotic effectiveness matrices
+- **NetworkDataAdapter** - Graph data transformation utilities
+- **UserContext** - Global state management with network interaction persistence
 
 ### Directory Structure
-- `src/components/` - React components
-- `src/data/` - Medical content (79 questions, 29 pathogens, 30 antibiotics)
-- `src/hooks/` - Custom hooks
-- `src/tests/` - Test suites (88.3% suite pass rate)
+- `src/components/networks/` - Network visualization components
+- `src/data/` - Medical content optimized for graph relationships (50+ pathogens, 40+ antibiotics, network edges)
+- `src/hooks/` - Custom hooks including network interaction hooks
+- `src/tests/` - Test suites (88.3% suite pass rate) with network component coverage
 
 ---
 
@@ -85,30 +95,53 @@ cd "/Users/joshpankin/My Drive/10-19 Projects/11 Medical Education Projects/11.0
 
 ---
 
-## 🔧 Proven Patterns (From Test Recovery Success)
+## 🔧 Proven Patterns (Network Visualization Focus)
 
-### Component Architecture
+### Network Component Architecture
 ```javascript
-// Hybrid controlled/uncontrolled pattern
-const Component = ({ data, onSelect }) => {
-  // Use prop data if provided, fallback to imports
-  const effectiveData = data || importedData;
+// Network visualization component pattern
+const NetworkComponent = ({ pathogenData, onNodeSelect, layout = "fcose" }) => {
+  // Safe data transformation for graph format
+  const networkElements = useMemo(() => 
+    transformToNetworkData(pathogenData || defaultData), [pathogenData]);
   
-  // Enable both test mocks and production usage
-  return <div>{/* implementation */}</div>;
+  // Performance optimization for large graphs
+  const debouncedLayout = useDebounce(layout, 300);
+  
+  return (
+    <CytoscapeWrapper
+      elements={networkElements}
+      layout={debouncedLayout}
+      onSelect={onNodeSelect}
+      style={{ width: '100%', height: '600px' }}
+    />
+  );
 };
 ```
 
+### Graph Data Patterns
+```javascript
+// Network data transformation
+const transformToNetworkData = (pathogens, antibiotics) => ({
+  nodes: [
+    ...pathogens.map(p => ({ data: { id: p.id, type: 'pathogen', ...p } })),
+    ...antibiotics.map(a => ({ data: { id: a.id, type: 'antibiotic', ...a } }))
+  ],
+  edges: generateEffectivenessEdges(pathogens, antibiotics)
+});
+```
+
 ### Test Infrastructure
-- **Mock Infrastructure**: `mockClear()` removes implementations - restore after clearing
-- **localStorage Integration**: Timing issues require careful mock patterns
-- **Defensive Programming**: Prevent undefined array access crashes
+- **Network Component Testing**: Mock Cytoscape instances with `jest.mock('cytoscape')`
+- **Graph Interaction Testing**: Simulate node clicks and edge selections
+- **Performance Testing**: Validate <1 second rendering for 100+ nodes
+- **Defensive Programming**: Prevent undefined graph data crashes
 
 ### Error Handling
 ```javascript
-// Safe array operations
-const safeArray = items?.slice() || [];
-const count = pathogens?.length || 0;
+// Safe network operations
+const safeNodes = networkData?.nodes || [];
+const edges = networkData?.edges?.filter(edge => edge.source && edge.target) || [];
 ```
 
 ---
@@ -116,12 +149,14 @@ const count = pathogens?.length || 0;
 ## ✅ Success Criteria for Tasks
 
 **All development tasks must meet**:
-- Tests pass (maintain 88.3%+ suite pass rate with hook API compatibility)
-- Code follows established patterns
-- Medical accuracy preserved
-- Northwestern animations integrity maintained
-- Production build succeeds
+- Tests pass (maintain 88.3%+ suite pass rate with network component coverage)
+- Network performance requirements (<1s rendering, 60fps interactions)
+- Code follows established network visualization patterns
+- Medical accuracy preserved in pathogen-antibiotic relationships
+- Northwestern animations integrity maintained with network transitions
+- Production build succeeds with D3.js/Cytoscape.js optimization
 - Linting issues addressed
+- Graph accessibility standards (WCAG 2.1 compliant network interactions)
 
 ---
 

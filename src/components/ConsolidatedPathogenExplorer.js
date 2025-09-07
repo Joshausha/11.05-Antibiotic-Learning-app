@@ -308,10 +308,13 @@ const ConsolidatedPathogenExplorer = ({
                 pathogens={filteredPathogens}
                 selectedPathogen={selectedPathogen}
                 onPathogenSelect={(pathogen) => {
+                  // Always update internal state when in uncontrolled mode
+                  if (propSelectedPathogen === undefined) {
+                    setInternalSelectedPathogen(pathogen);
+                  }
+                  // Also call the callback if provided
                   if (hasCallback) {
                     unifiedOnSelectPathogen(pathogen);
-                  } else {
-                    setInternalSelectedPathogen(pathogen);
                   }
                   setSelectedAntibiotic(null);
                 }}
@@ -323,10 +326,13 @@ const ConsolidatedPathogenExplorer = ({
                 pathogens={filteredPathogens}
                 selectedPathogen={selectedPathogen}
                 onPathogenSelect={(pathogen) => {
+                  // Always update internal state when in uncontrolled mode
+                  if (propSelectedPathogen === undefined) {
+                    setInternalSelectedPathogen(pathogen);
+                  }
+                  // Also call the callback if provided
                   if (hasCallback) {
                     unifiedOnSelectPathogen(pathogen);
-                  } else {
-                    setInternalSelectedPathogen(pathogen);
                   }
                   setSelectedAntibiotic(null);
                 }}
@@ -346,14 +352,17 @@ const ConsolidatedPathogenExplorer = ({
             {!selectedPathogen ? (
               <div data-testid="pathogen-card-empty">No pathogen selected</div>
             ) : (
-              <div data-testid="pathogen-card">
+              <div>
                 <PathogenCard 
                   pathogen={selectedPathogen} 
                   onClose={() => {
+                    // Always update internal state when in uncontrolled mode
+                    if (propSelectedPathogen === undefined) {
+                      setInternalSelectedPathogen(null);
+                    }
+                    // Also call the callback if provided
                     if (hasCallback) {
                       unifiedOnSelectPathogen(null);
-                    } else {
-                      setInternalSelectedPathogen(null);
                     }
                     setSelectedAntibiotic(null);
                   }}
@@ -361,10 +370,13 @@ const ConsolidatedPathogenExplorer = ({
                 <div className="mt-2 flex gap-2">
                   <button
                     onClick={() => {
+                      // Always update internal state when in uncontrolled mode
+                      if (propSelectedPathogen === undefined) {
+                        setInternalSelectedPathogen(null);
+                      }
+                      // Also call the callback if provided
                       if (onPathogenSelect) {
                         onPathogenSelect(null);
-                      } else {
-                        setInternalSelectedPathogen(null);
                       }
                       setSelectedAntibiotic(null);
                     }}
@@ -375,10 +387,13 @@ const ConsolidatedPathogenExplorer = ({
                   </button>
                   <button
                     onClick={() => {
+                      // Always update internal state when in uncontrolled mode
+                      if (propSelectedPathogen === undefined) {
+                        setInternalSelectedPathogen(null);
+                      }
+                      // Also call the callback if provided
                       if (onPathogenSelect) {
                         onPathogenSelect(null);
-                      } else {
-                        setInternalSelectedPathogen(null);
                       }
                       setSelectedAntibiotic(null);
                     }}
@@ -408,7 +423,7 @@ const ConsolidatedPathogenExplorer = ({
             {!selectedPathogen ? (
               <div data-testid="antibiotic-list-empty">No pathogen selected</div>
             ) : (
-              <div data-testid="antibiotic-list">
+              <div>
                 <h3>Antibiotics for {selectedPathogen.name}</h3>
                 <AntibioticList
                   pathogen={selectedPathogen}
