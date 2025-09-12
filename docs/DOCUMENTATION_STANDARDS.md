@@ -27,23 +27,27 @@ This document establishes standards to prevent documentation quality issues and 
 **Test Suite Pass Rate**: File-level test results (e.g., how many test files pass)
 **Individual Test Pass Rate**: Individual test case results (e.g., how many individual assertions pass)
 
-### **Standard Reporting Format**
+### **Standard Reporting Format - UPDATED AFTER REALITY AUDIT**
 ```markdown
-✅ CORRECT: "88.3% test suite pass rate (53/60 suites), 95.2% individual test pass rate (1,538/1,616 tests)"
+🚨 CURRENT REALITY: Build fails, multiple test failures requiring systematic debugging
 
-❌ INCORRECT: "97.7% test success rate" (ambiguous - which metric?)
-❌ INCORRECT: "96.9% pass rate" (ambiguous - suites or tests?)
+✅ CORRECT HONEST REPORTING: "Build Status: FAILS (syntax error), Test Status: Multiple failures requiring debugging"
+✅ VERIFIED DATA: "30 antibiotics, ~29 pathogens, 7/7 functional tabs, excellent medical content"
+
+❌ INCORRECT: Any specific test pass rates without verification
+❌ INCORRECT: "Production ready" claims when build fails
 ```
 
-### **Approved Variations**
-- "Test suite pass rate: 88.3% (53/60)"
-- "Individual test pass rate: 95.2% (1,538/1,616)"  
-- "88.3% suite / 95.2% individual test pass rate"
+### **Approved Current Status Reporting**
+- "Build Status: FAILS - InteractiveCoverageWheel.js:22:13 syntax error"
+- "Test Status: Multiple failures requiring systematic debugging"  
+- "Educational Content: Excellent - 30 verified antibiotics, clinically accurate"
 
-### **Metadata Standards**
+### **Metadata Standards - Updated**
 ```yaml
-test_status: 88.3-percent-suite-pass-rate
-individual_test_status: 95.2-percent-individual-pass-rate
+build_status: fails-syntax-error
+test_status: multiple-failures-require-debugging
+educational_content: excellent-verified-medical-data
 ```
 
 ---
