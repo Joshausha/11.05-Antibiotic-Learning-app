@@ -181,7 +181,7 @@ export const calculateEnhancedClinicalSeverity = (baseSeverity, resistanceInfo) 
 
 /**
  * Phase 2: Calculate Clinical Risk Score
- * Quantitative risk assessment for clinical decision support
+ * Quantitative risk assessment for educational learning support
  * @param {string} severity - Enhanced clinical severity
  * @param {number} warningCount - Number of warning indicators  
  * @param {Object} resistanceInfo - Resistance analysis data
@@ -406,7 +406,7 @@ export const validateMedicalData = (pathogenData, antibioticMap) => {
     }
     
     if (validation.stats.relationshipCount < 50) {
-      validation.warnings.push('Low relationship count may limit clinical decision support');
+      validation.warnings.push('Low relationship count may limit educational learning support');
     }
 
   } catch (error) {
@@ -1515,7 +1515,7 @@ const getEvidenceQualityDescription = (evidenceLevel) => {
 };
 
 /**
- * Get recommendation strength for clinical decision-making
+ * Get recommendation strength for educational learning
  * @param {string} evidenceLevel - Evidence grade
  * @returns {string} Recommendation strength
  */

@@ -357,7 +357,7 @@ describe('SimplePathogenExplorer - Medical Education Pathogen Browsing', () => {
     });
   });
 
-  describe('Antibiotic Selection & Clinical Decision Support', () => {
+  describe('Antibiotic Selection & Educational Learning Support', () => {
     test('handles antibiotic selection for detailed drug information', async () => {
       const user = userEvent.setup();
       render(<SimplePathogenExplorer />);
@@ -665,7 +665,7 @@ describe('SimplePathogenExplorer - Medical Education Pathogen Browsing', () => {
  * ✅ Component initialization with medical context
  * ✅ Pathogen search and clinical filtering functionality
  * ✅ Pathogen selection and medical workflow integration
- * ✅ Antibiotic selection and clinical decision support
+ * ✅ Antibiotic selection and educational learning support
  * ✅ View mode flexibility for different learning styles
  * ✅ State management during clinical workflows
  * ✅ Performance optimization for emergency access

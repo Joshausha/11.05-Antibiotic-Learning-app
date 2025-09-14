@@ -2,7 +2,7 @@
  * NetworkLayout.js - Biological Layout Algorithm Configurations
  * 
  * Specialized layout algorithms optimized for pathogen-antibiotic relationship networks.
- * Each layout is tuned for medical education and clinical decision support visualization.
+ * Each layout is tuned for medical education and educational learning visualization.
  * 
  * @module NetworkLayout
  * @version 1.0.0

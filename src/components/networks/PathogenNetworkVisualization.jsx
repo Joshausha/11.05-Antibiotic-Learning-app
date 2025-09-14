@@ -68,7 +68,7 @@ class NetworkErrorBoundary extends React.Component {
           <div className="bg-white rounded border-l-4 border-red-400 p-4 mb-4">
             <p className="text-sm text-gray-700 mb-2">
               <strong>Medical Safety Note:</strong> This error does not affect core antibiotic learning functionality. 
-              All clinical decision support data remains available through other app sections.
+              All educational learning data remains available through other app sections.
             </p>
             <p className="text-sm text-gray-600">
               Error occurred at: {new Date().toLocaleString()}

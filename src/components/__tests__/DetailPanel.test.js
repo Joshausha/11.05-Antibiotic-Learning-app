@@ -376,7 +376,7 @@ describe('DetailPanel', () => {
     test('provides appropriate clinical context', () => {
       render(<DetailPanel {...mockProps} />);
       
-      // Should provide context for clinical decision making
+      // Should provide context for educational learning
       expect(screen.getByTestId('detail-panel')).toBeInTheDocument();
     });
   });

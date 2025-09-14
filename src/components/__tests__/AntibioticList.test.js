@@ -1,6 +1,6 @@
 /**
  * AntibioticList Component Tests
- * Critical antibiotic drug listing validation and clinical decision support testing
+ * Critical antibiotic drug listing validation and educational learning support testing
  * Ensures accurate drug information display, effectiveness indicators, and dosing safety
  */
 
@@ -508,7 +508,7 @@ describe('AntibioticList - Drug Listing Validation & Clinical Safety', () => {
       });
     });
 
-    test('provides infection-specific context for clinical decision-making', () => {
+    test('provides infection-specific context for educational learning', () => {
       render(<AntibioticList {...defaultProps} />);
       
       // Should show infection types each antibiotic is used for

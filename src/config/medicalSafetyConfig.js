@@ -23,41 +23,8 @@ export const MEDICAL_SAFETY_CONFIG = {
       'Resistance pattern inaccuracies affecting treatment decisions',
       'Missing contraindication information'
     ],
-    clinicalImpact: 'Direct antibiotic prescribing information display',
+    educationalImpact: 'Educational antibiotic information display for learning',
     emergencyAccess: true,
-    phase: 1
-  },
-
-  'MobileClinicalWorkflow': {
-    currentCoverage: 0,
-    targetCoverage: 60,
-    riskLevel: 'critical',
-    hasTestFile: false,
-    medicalRisks: [
-      'Emergency protocol failures in mobile environments',
-      'Clinical workflow disruption during patient care',
-      'Point-of-care decision support system failures',
-      'Touch interface problems in clinical settings',
-      'Patient safety compromised under time pressure'
-    ],
-    clinicalImpact: 'Mobile clinical decision support',
-    emergencyAccess: true,
-    phase: 2
-  },
-
-  'ClinicalTooltip': {
-    currentCoverage: 0,
-    targetCoverage: 80,
-    riskLevel: 'high',
-    hasTestFile: false,
-    medicalRisks: [
-      'Misunderstanding of clinical significance',
-      'Incorrect treatment recommendations',
-      'Educational level inappropriate explanations',
-      'Medical accuracy not validated'
-    ],
-    clinicalImpact: 'Clinical context and guidance display',
-    emergencyAccess: false,
     phase: 1
   },
 

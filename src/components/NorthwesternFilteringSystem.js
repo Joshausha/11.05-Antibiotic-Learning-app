@@ -2,7 +2,7 @@
  * Northwestern Filtering System Component
  * 
  * Primary interactive filtering interface for Northwestern 8-segment antibiotic 
- * methodology with real-time visual feedback and clinical decision support.
+ * methodology with real-time visual feedback and educational learning support.
  * 
  * Created by: Agent 3.3 - Interactive Filtering Specialist
  * Phase: 3 - Spatial Organization System
@@ -10,13 +10,13 @@
  * 
  * Features:
  * - Real-time Northwestern category filtering with visual feedback
- * - Clinical scenario filtering for workflow optimization
+ * - Educational scenario exploration for learning optimization
  * - Integration with Agent 3.1's spatial layout for highlighting
  * - Integration with Agent 3.2's group organization for contextual filtering
  * - Multi-category combination filtering with logical operators
- * - Filter state persistence and clinical workflow memory
- * - Emergency mode optimization for <30 second clinical access
- * - Mobile-optimized touch controls for clinical tablets
+ * - Filter state persistence and educational workflow memory
+ * - Focus mode optimization for rapid educational access
+ * - Mobile-optimized touch controls for educational devices
  * - Accessibility compliance with keyboard navigation and screen readers
  * 
  * @component
@@ -286,7 +286,7 @@ const NorthwesternFilteringSystem = ({
 
   // Handle clinical scenario application
   const handleScenarioApply = useCallback((scenarioKey) => {
-    // Generate clinical decision support
+    // Generate educational learning support
     if (filteredResults?.matchingAntibiotics) {
       const scenarioResults = applyClinicalScenario(
         antibiotics, 
@@ -517,7 +517,7 @@ const NorthwesternFilteringSystem = ({
       {/* Emergency Mode Indicator */}
       {emergencyMode && (
         <div className="emergency-mode-banner" role="alert">
-          🚨 Emergency Mode Active - Streamlined interface for urgent clinical decisions
+          🎓 Focus Mode Active - Streamlined interface for concentrated learning
         </div>
       )}
     </div>

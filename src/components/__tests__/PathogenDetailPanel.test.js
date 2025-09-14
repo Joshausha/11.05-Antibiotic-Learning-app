@@ -1,7 +1,7 @@
 /**
  * PathogenDetailPanel Component Tests
- * Critical medical education component tests focusing on patient safety and clinical accuracy
- * Tests pathogen display, medical data validation, and clinical decision support features
+ * Critical medical education component tests focusing on learning safety and educational accuracy
+ * Tests pathogen display, medical data validation, and educational learning support features
  */
 
 import React from 'react';

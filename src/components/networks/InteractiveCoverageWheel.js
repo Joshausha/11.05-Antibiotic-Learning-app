@@ -7,7 +7,7 @@
  * Educational Focus:
  * - Interactive pathogen-antibiotic relationship exploration
  * - Coverage pie charts with Gram staining visualization
- * - Clinical decision support with resistance patterns
+ * - Educational learning support with resistance patterns
  * - Real-time coverage analysis and recommendations
  * 
  * Medical Accuracy: Uses coverage data from existing pathogen-antibiotic relationships
@@ -673,7 +673,7 @@ const clearAllHighlights = (cy) => {
 
 /**
  * Analyzes susceptibility patterns for a pathogen against connected antibiotics
- * Core medical education function for clinical decision support learning
+ * Core medical education function for educational learning support
  * 
  * @param {Array} connectedAntibiotics - Cytoscape nodes representing antibiotics
  * @returns {Object} Susceptibility analysis with clinical context

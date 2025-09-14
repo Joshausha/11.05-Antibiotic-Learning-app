@@ -359,7 +359,7 @@ export const CONTRAINDICATED_STATE = {
     showWarningIcon: true,      // Display warning icon
     preventSelection: false,    // Allow selection for educational purposes
     showTooltip: true,          // Show contraindication explanation
-    logClinicalWarning: true    // Log clinical decision support warning
+    logClinicalWarning: true    // Log educational learning support warning
   },
   
   // Educational context

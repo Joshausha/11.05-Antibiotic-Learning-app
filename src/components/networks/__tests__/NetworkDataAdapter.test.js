@@ -434,13 +434,13 @@ describe('NetworkDataAdapter - Medical Data Transformation', () => {
       expect(mockEmergencyData.id).toBe(emergencyPathogen);
     });
 
-    test('should provide clinical decision support data format', () => {
+    test('should provide educational learning support data format', () => {
       const mockPathogen = createMockPathogen({
         name: 'Staphylococcus aureus',
         resistancePattern: 'MRSA'
       });
 
-      // Test clinical decision support data structure
+      // Test educational learning support data structure
       expect(mockPathogen.name).toBe('Staphylococcus aureus');
       expect(mockPathogen.resistancePattern).toBe('MRSA');
       
