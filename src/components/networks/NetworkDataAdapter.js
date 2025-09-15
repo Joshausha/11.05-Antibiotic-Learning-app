@@ -651,6 +651,26 @@ export const transformAntibioticWithClass = (antibiotic, includeClassData = true
   return baseNode;
 };
 
+// Unicode-safe string sanitization helper function
+const sanitizeString = (str) => {
+  if (typeof str !== 'string') return 'Unknown';
+
+  // Replace potentially problematic Unicode characters and normalize
+  return str
+    .normalize('NFC') // Normalize Unicode composition
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+    .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, (match) => {
+      // Handle valid surrogate pairs, replace invalid ones
+      try {
+        return match;
+      } catch (e) {
+        return '';
+      }
+    })
+    .replace(/[\uD800-\uDFFF]/g, '') // Remove lone surrogates
+    .trim() || 'Unknown';
+};
+
 /**
  * Main transformation function: converts medical data to Cytoscape elements
  * @param {Object} options - Transformation options
@@ -704,8 +724,8 @@ export const transformMedicalDataToCytoscape = (options = {}) => {
     result.elements.push(...pathogenNodes);
     result.metadata.pathogenCount = pathogenNodes.length;
 
-    // Create antibiotic nodes and relationship edges
-    const antibioticSet = new Set();
+    // Create antibiotic nodes and relationship edges using Map for Unicode safety
+    const antibioticMap_safe = new Map(); // Use Map instead of Set with JSON.stringify/parse
     const edges = [];
 
     if (includeAntibiotics && antibioticMap) {
@@ -719,13 +739,15 @@ export const transformMedicalDataToCytoscape = (options = {}) => {
         if (!Array.isArray(antibiotics)) return;
 
         antibiotics.forEach(antibiotic => {
-          // Collect unique antibiotics
+          // Collect unique antibiotics using Map for Unicode safety
           const antibioticId = antibiotic.antibioticId || antibiotic.id || antibiotic.name?.toLowerCase().replace(/\s+/g, '-');
           if (antibioticId) {
-            antibioticSet.add(JSON.stringify({
+            // Store antibiotic data directly in Map to avoid JSON serialization issues
+            const antibioticData = {
               id: antibioticId,
-              name: antibiotic.name || antibiotic.antibiotic || 'Unknown'
-            }));
+              name: sanitizeString(antibiotic.name || antibiotic.antibiotic || 'Unknown')
+            };
+            antibioticMap_safe.set(antibioticId, antibioticData);
           }
 
           // Create relationship edge with pathogen name for evidence analysis
@@ -735,8 +757,7 @@ export const transformMedicalDataToCytoscape = (options = {}) => {
       });
 
       // Add antibiotic nodes with class clustering support
-      const antibioticNodes = Array.from(antibioticSet).map(antibioticStr => {
-        const antibiotic = JSON.parse(antibioticStr);
+      const antibioticNodes = Array.from(antibioticMap_safe.values()).map(antibiotic => {
         return transformAntibioticWithClass(antibiotic, options.includeClassData !== false);
       });
 

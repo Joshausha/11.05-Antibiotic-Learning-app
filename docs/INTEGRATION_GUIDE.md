@@ -1,6 +1,6 @@
 # Network Visualization Integration Guide
 **Developer Guide for Integrating Network Visualization Components**  
-*Version 1.0.0 - Generated: 2025-08-27*
+*Version 0.9.0-dev - Updated: 2025-09-15*
 
 ## 🚀 Quick Integration
 
@@ -58,8 +58,8 @@ src/
 │       ├── CytoscapeWrapper.jsx              # Cytoscape.js wrapper
 │       ├── NetworkDataAdapter.js             # Data transformation
 │       └── __tests__/
-│           ├── CytoscapeWrapper.test.js      # 16 tests (100% passing)
-│           └── NetworkDataAdapter.test.js    # 24 tests (100% passing)
+│           ├── CytoscapeWrapper.test.js      # Network component tests (dev phase)
+│           └── NetworkDataAdapter.test.js    # Data adapter tests (dev phase)
 ├── utils/
 │   └── featureFlags.js                       # Feature flag system
 ├── data/
@@ -749,7 +749,7 @@ console.log(getFeatureFlagStatus());
 
 ### Support Resources
 
-- **Component Tests**: 40/40 tests passing (run `npm test`)
+- **Component Tests**: ⚠️ Medical validation test failures requiring resolution (run `npm test`)
 - **Documentation**: `/docs/NetworkVisualization.md`
 - **Medical Validation**: All content clinically reviewed
 - **Performance**: Optimized for <2 second clinical access
@@ -774,7 +774,7 @@ Before deploying network visualization integration:
 - [ ] Styling applied
 
 ### Testing
-- [ ] All 40 network tests passing
+- [ ] Medical validation test failures resolved
 - [ ] Custom integration tests written
 - [ ] Performance requirements validated
 - [ ] Medical accuracy verified
