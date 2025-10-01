@@ -1,10 +1,11 @@
 ---
 type: product-requirements-document
-title: Antibiotic Learning Platform - Clinical Decision Education PRD
+title: Antibiotic Learning Platform - Network Visualization Explorer PRD
 created: 2025-08-22 20:06:30
-version: 1.0.0
+modified: 2025-09-30
+version: 2.0.0
 status: approved
-tags: [prd, medical-education, clinical-decision-support, antibiotic-education, interactive-learning]
+tags: [prd, medical-education, network-visualization, antibiotic-education, interactive-learning, learner-exploration]
 category: Projects
 purpose: product-specification
 structure: para-methodology
@@ -14,9 +15,9 @@ medical_validation: clinical-accuracy-verified
 target_audience: medical-students-residents-professionals
 ---
 
-# Antibiotic Learning Platform - Clinical Decision Education PRD
-**Product Requirements Document v1.0.0**  
-*Created: August 22, 2025*
+# Antibiotic Learning Platform - Network Visualization Explorer PRD
+**Product Requirements Document v2.0.0**
+*Created: August 22, 2025 | Updated: September 30, 2025*
 
 ## 🎯 Executive Summary
 
@@ -24,16 +25,17 @@ target_audience: medical-students-residents-professionals
 Create an **interactive network visualization platform** that teaches healthcare professionals antibiotic coverage patterns through dynamic pathogen-antibiotic relationship maps, spectrum exploration, and visual pattern recognition.
 
 ### What This Platform IS
-- ✅ **Network relationship explorer** - Visualizes pathogen-antibiotic connections
-- ✅ **Coverage pattern learning tool** - Interactive spectrum and resistance visualizations
-- ✅ **Visual knowledge discovery system** - Learn through exploring network relationships
-- ✅ **Pattern recognition educator** - Builds intuitive understanding of antibiotic coverage
+- ✅ **PRIMARY: Interactive Network Explorer** - Full-screen Cytoscape visualization for discovery learning
+- ✅ **Visual Relationship Discovery** - Click to explore pathogen-antibiotic connections
+- ✅ **Coverage Pattern Learning** - See antibiotic spectrum through network interactions
+- ✅ **Med Student Focused** - Foundational learning through visual exploration
+- ✅ **95% Reuse Strategy** - Leverages existing production-ready components
 
 ### What This Platform is NOT
-- ❌ **Clinical decision tree software** - Focuses on relationships, not prescription pathways
-- ❌ **Guideline reference tool** - Emphasizes understanding over rule memorization
-- ❌ **Clinical practice software** - Educational tool for learning coverage patterns
-- ❌ **Diagnostic aid** - Focuses on antibiotic-pathogen relationships, not diagnosis
+- ❌ **Clinical Decision Support** - Exploration for learning, not clinical practice
+- ❌ **Guideline Reference Tool** - Understanding patterns, not memorizing rules
+- ❌ **Prescriptive Pathways** - Learner-driven discovery, not predetermined flows
+- ❌ **Diagnostic Aid** - Educational exploration only, not patient care
 
 ### Core Value Proposition
 **"See the hidden network of connections between pathogens and antibiotics"**
@@ -85,29 +87,31 @@ User Flow:
 6. Identify patterns: cell wall vs protein synthesis targeting
 ```
 
-#### Use Case 2: Coverage Gap Analysis
-**Scenario**: Resident designing empiric therapy for multi-pathogen infection
+#### Use Case 2: Antibiotic-First Exploration
+**Scenario**: Student wants to understand what "Vancomycin" covers
 ```
-User Flow:
-1. Multi-select suspected pathogens: E. coli, Klebsiella, Pseudomonas
-2. System generates coverage overlap visualization showing antibiotic options
-3. Heat map displays effectiveness matrix for each pathogen-antibiotic pair
-4. Identify optimal single agent (Piperacillin-tazobactam) or combination therapy
-5. Explore resistance patterns and local antibiogram considerations
-6. Visualize coverage gaps and backup options
+User Flow (MVP):
+1. Open Network Explorer tab → see full network graph
+2. Click "Vancomycin" antibiotic node
+3. Northwestern animation plays showing mechanism of action
+4. Info panel displays: MOA, coverage list (MRSA, etc.), common uses, side effects
+5. Network highlights all connected pathogen nodes
+6. Click any pathogen to learn more about it
 ```
 
-#### Use Case 3: Pattern Recognition Challenge
-**Scenario**: Student learning to recognize broad-spectrum vs narrow-spectrum antibiotics
+#### Use Case 3: Visual Pattern Discovery (V1 MVP Focus)
+**Scenario**: Student notices some antibiotics connect to many pathogens
 ```
-User Flow:
-1. Enter "Pattern Hunt" mode with hidden antibiotic identities
-2. Analyze connection density and pathogen diversity for each node
-3. Categorize antibiotics as broad-spectrum, narrow-spectrum, or specialized
-4. Receive immediate feedback on pattern recognition accuracy
-5. Explore mechanisms behind spectrum differences
-6. Practice with spaced repetition focusing on commonly confused pairs
+User Flow (MVP):
+1. Explore network visually - notice Ceftriaxone has many connections
+2. Click Ceftriaxone → see it covers both gram-positive AND gram-negative
+3. Compare with Penicillin → see it primarily covers gram-positive
+4. Use Gram stain filter to understand coverage patterns visually
+5. Discover "broad-spectrum" concept through exploration, not memorization
 ```
+
+#### Use Case 4: Coverage Gap Analysis (Deferred to V2)
+**Future Feature**: Multi-pathogen selection for optimal therapy identification
 
 ## ⭐ Core Features
 

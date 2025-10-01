@@ -14,21 +14,22 @@ This is an **interactive learning platform** designed to help medical students u
 - **Medical Educators**: Teaching antibiotic-pathogen relationships in curriculum
 
 ### **Educational Objectives**
-- **Concept Understanding**: Learn how antibiotics work against different pathogens
-- **Visual Learning**: Explore antibiotic spectrum coverage through interactive networks
+- **Interactive Network Exploration**: Discover antibiotic-pathogen relationships through full-screen visual exploration
+- **Concept Understanding**: Learn how antibiotics work against different pathogens through mechanism animations
+- **Visual Learning**: Explore antibiotic spectrum coverage through interactive Cytoscape networks
 - **Knowledge Assessment**: Test understanding through educational quizzes
-- **Pattern Recognition**: Identify broad-spectrum vs narrow-spectrum antibiotic patterns
+- **Pattern Recognition**: Identify broad-spectrum vs narrow-spectrum antibiotic patterns by clicking and exploring
 
 ---
 
 ## ✅ **WHAT THIS APPLICATION IS:**
 
-- 🎯 **Interactive Learning Tool** for antibiotic education concepts
-- 📊 **Visual Exploration Platform** for pathogen-antibiotic relationships
-- 🧠 **Educational Support System** for medical curriculum learning
-- 📝 **Knowledge Assessment Tool** for student learning evaluation
-- 🌐 **Network Visualization** for understanding coverage patterns
-- 📚 **Study Aid** for board preparation and concept review
+- 🎯 **Interactive Network Explorer** - Full-screen Cytoscape visualization as primary learning interface
+- 📊 **Visual Exploration Platform** - Click antibiotics/pathogens to discover relationships
+- 🧠 **Educational Support System** - Northwestern-style mechanism animations enhance learning
+- 📝 **Knowledge Assessment Tool** - Student learning evaluation through quizzes
+- 🌐 **Network Visualization** - Understanding coverage patterns through visual exploration
+- 📚 **Study Aid** - Board preparation and concept review for medical education
 
 ---
 
@@ -83,12 +84,14 @@ This is an **interactive learning platform** designed to help medical students u
 
 After using this application, medical students should be able to:
 
-1. **Identify** common antibiotic classes and their mechanisms of action
-2. **Understand** spectrum coverage patterns for different antibiotics
-3. **Recognize** pathogen-antibiotic susceptibility relationships
-4. **Analyze** broad-spectrum vs narrow-spectrum antibiotic choices
-5. **Apply** antibiotic knowledge in educational case scenarios
-6. **Assess** their own learning through interactive quiz features
+1. **Explore** antibiotic-pathogen networks visually through interactive full-screen visualization
+2. **Identify** common antibiotic classes and their mechanisms of action through Northwestern animations
+3. **Understand** spectrum coverage patterns by clicking antibiotics to see connected pathogens
+4. **Recognize** pathogen-antibiotic susceptibility relationships through network connections
+5. **Analyze** broad-spectrum vs narrow-spectrum antibiotic choices through visual network patterns
+6. **Discover** coverage gaps and overlaps through interactive network exploration
+7. **Apply** antibiotic knowledge in educational case scenarios
+8. **Assess** their own learning through interactive quiz features
 
 ---
 
@@ -122,8 +125,8 @@ After using this application, medical students should be able to:
 
 ---
 
-**Last Updated**: 2025-09-13
-**Next Review**: 2025-12-13 (Quarterly educational content review)
+**Last Updated**: 2025-09-30
+**Next Review**: 2025-12-30 (Quarterly educational content review)
 
 ---
 
