@@ -8,7 +8,7 @@
  */
 
 import React, { memo, useState, useMemo } from 'react';
-import { Search, Pill, Target, ArrowRight, TrendingUp, Shield, Users, Grid, List, PieChart } from 'lucide-react';
+import { Search, Pill, Target, ArrowRight, TrendingUp, Shield, Users, List, PieChart } from 'lucide-react';
 import NorthwesternPieChart from './NorthwesternPieChart';
 import { getAntibioticById } from '../data/EnhancedAntibioticData';
 
@@ -27,7 +27,6 @@ const AntibioticExplorer = ({
     drugClassStats = [],
     availableDrugClasses = [],
     antibioticStats = null,
-    filteredStats = null,
     searchQuery = '',
     drugClassFilter = 'all',
     sortBy = 'name',

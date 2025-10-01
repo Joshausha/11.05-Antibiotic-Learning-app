@@ -20,7 +20,7 @@
  * @date 2025-08-18
  */
 
-import { generateStateCSS } from '../styles/NorthwesternVisualStates.js';
+// Removed unused import: generateStateCSS
 
 // =============================================================================
 // CLINICAL ANIMATION CONFIGURATION
@@ -348,6 +348,9 @@ export class ClinicalAnimationManager {
       case 'battery':
         adapted.duration *= 0.5; // Much faster animations
         adapted.keyframes = this.simplifyKeyframes(config.keyframes);
+        break;
+      default:
+        // Standard performance - no modifications needed
         break;
     }
     
@@ -771,7 +774,6 @@ export const createSelectionAnimation = (segment, isSelected, options = {}) => {
  */
 export const createLearningProgressAnimation = (progressElement, progress, options = {}) => {
   const {
-    educationLevel = 'resident',
     milestoneReached = false
   } = options;
   
@@ -1136,11 +1138,11 @@ export const NORTHWESTERN_ANIMATION_CONFIG = {
   }
 };
 
-export default {
+const NorthwesternAnimations = {
   ClinicalAnimationManager,
   GPUAccelerationOptimizer,
   AnimationPerformanceMonitor,
-  
+
   // Animation creators
   createLoadingAnimation,
   createCoverageRevealAnimation,
@@ -1149,17 +1151,19 @@ export default {
   createLearningProgressAnimation,
   createScenarioTransitionAnimation,
   createSpacedRepetitionAnimation,
-  
+
   // Configuration
   CLINICAL_TIMING,
   MEDICAL_EASING,
   NORTHWESTERN_ANIMATION_CONFIG,
-  
+
   // Default instances
   defaultAnimationManager,
   defaultGPUOptimizer,
   defaultPerformanceMonitor,
-  
+
   // React hook
   useNorthwesternAnimations
 };
+
+export default NorthwesternAnimations;

@@ -6,7 +6,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { Clock, Timer, AlarmClock, Calendar, Info } from 'lucide-react';
+import { Clock, Timer, AlarmClock, Calendar } from 'lucide-react';
 import { 
   parseDurationString, 
   getDurationIcon, 
@@ -64,38 +64,6 @@ const DurationIndicator = ({
   };
 
   const config = sizeConfig[size] || sizeConfig.sm;
-
-  // Tooltip content for complex durations
-  const getTooltipContent = () => {
-    if (!parsedDuration.isComplex) {
-      return formatDurationDisplay(parsedDuration, 'tooltip');
-    }
-
-    if (parsedDuration.type === 'age-based' && parsedDuration.ageGroups) {
-      return (
-        <div className="space-y-1">
-          <div className="font-medium">Age-based duration:</div>
-          {parsedDuration.ageGroups.map((group, index) => (
-            <div key={index} className="text-xs">
-              <span className="font-medium">{group.ageRange}:</span> {group.duration}
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    if (parsedDuration.type === 'conditional' && parsedDuration.condition) {
-      return (
-        <div className="space-y-1">
-          <div className="font-medium">Conditional duration:</div>
-          <div className="text-xs">{parsedDuration.display}</div>
-          <div className="text-xs opacity-80">Condition: {parsedDuration.condition}</div>
-        </div>
-      );
-    }
-
-    return formatDurationDisplay(parsedDuration, 'tooltip');
-  };
 
   // Render different variants
   const renderBadge = () => (

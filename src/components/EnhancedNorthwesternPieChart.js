@@ -32,7 +32,7 @@ import PropTypes from 'prop-types';
 import NorthwesternPieChart from './NorthwesternPieChart.js';
 import { getSegmentColors, getRouteColors } from '../styles/NorthwesternColors.js';
 import { getSegmentTypography } from '../styles/NorthwesternTypography.js';
-import { combineStates, generateStateCSS } from '../styles/NorthwesternVisualStates.js';
+// Removed unused imports: combineStates, generateStateCSS
 
 /**
  * Enhanced Northwestern Pie Chart Component
@@ -80,8 +80,6 @@ const EnhancedNorthwesternPieChart = ({
 }) => {
   // State management
   const [visualStates, setVisualStates] = useState(new Map());
-  const [performanceMetrics, setPerformanceMetrics] = useState({});
-  const [accessibilityContext, setAccessibilityContext] = useState({});
   const chartRef = useRef(null);
   const renderStartTime = useRef(performance.now());
 
@@ -343,8 +341,8 @@ const EnhancedNorthwesternPieChart = ({
         emergencyMode: emergencyMode,
         reducedMotion: reducedMotion
       };
-      
-      setAccessibilityContext(a11yContext);
+
+      // Accessibility context tracking removed (unused state)
       onAccessibilityEvent({
         type: 'context_update',
         context: a11yContext,

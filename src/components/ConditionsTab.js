@@ -9,7 +9,7 @@
  * - setSearchTerm: function - function to update search term
  */
 
-import React, { memo, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search,
   Brain,
@@ -24,7 +24,7 @@ import {
   Baby,
   Ear
 } from 'lucide-react';
-import SkeletonLoader, { ConditionCardSkeleton } from './SkeletonLoader';
+import { ConditionCardSkeleton } from './SkeletonLoader';
 import ErrorMessage from './ErrorMessage';
 
 const ConditionsTab = ({ 
