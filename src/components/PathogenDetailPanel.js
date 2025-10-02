@@ -155,15 +155,15 @@ const PathogenDetailPanel = ({
         {/* Quick stats */}
         <div className="grid grid-cols-3 gap-4 mt-4">
           <div className="text-center p-3 bg-blue-50 rounded-lg">
-            <div className="text-lg font-bold text-blue-600">{associatedConditions.length}</div>
+            <div className="text-lg font-bold text-blue-600">{(associatedConditions || []).length}</div>
             <div className="text-sm text-gray-600">Conditions</div>
           </div>
           <div className="text-center p-3 bg-green-50 rounded-lg">
-            <div className="text-lg font-bold text-green-600">{treatmentOptions.length}</div>
+            <div className="text-lg font-bold text-green-600">{(treatmentOptions || []).length}</div>
             <div className="text-sm text-gray-600">Treatments</div>
           </div>
           <div className="text-center p-3 bg-purple-50 rounded-lg">
-            <div className="text-lg font-bold text-purple-600">{similarPathogens.length}</div>
+            <div className="text-lg font-bold text-purple-600">{(similarPathogens || []).length}</div>
             <div className="text-sm text-gray-600">Similar</div>
           </div>
         </div>
@@ -263,15 +263,15 @@ const PathogenDetailPanel = ({
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm">
                           <Target size={14} className="text-blue-600" />
-                          <span>Affects {associatedConditions.length} condition types</span>
+                          <span>Affects {(associatedConditions || []).length} condition types</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Pill size={14} className="text-green-600" />
-                          <span>{treatmentOptions.length} treatment options available</span>
+                          <span>{(treatmentOptions || []).length} treatment options available</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Network size={14} className="text-purple-600" />
-                          <span>Connected to {similarPathogens.length} similar pathogens</span>
+                          <span>Connected to {(similarPathogens || []).length} similar pathogens</span>
                         </div>
                       </div>
                     </div>
@@ -302,11 +302,11 @@ const PathogenDetailPanel = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">Associated Conditions</h3>
-              <span className="text-sm text-gray-500">{associatedConditions.length} conditions</span>
+              <span className="text-sm text-gray-500">{(associatedConditions || []).length} conditions</span>
             </div>
-            
+
             <div className="grid gap-3">
-              {associatedConditions.map((condition, index) => (
+              {(associatedConditions || []).map((condition, index) => (
                 <div
                   key={index}
                   onClick={() => onSelectCondition(condition)}
@@ -390,11 +390,11 @@ const PathogenDetailPanel = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">Similar Pathogens</h3>
-              <span className="text-sm text-gray-500">{similarPathogens.length} connections</span>
+              <span className="text-sm text-gray-500">{(similarPathogens || []).length} connections</span>
             </div>
-            
+
             <div className="grid gap-3">
-              {similarPathogens.map((similar, index) => (
+              {(similarPathogens || []).map((similar, index) => (
                 <div
                   key={index}
                   onClick={() => onSelectPathogen(similar.pathogen)}

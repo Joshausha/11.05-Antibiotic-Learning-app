@@ -26,7 +26,7 @@ const northwesternQuizQuestions = [
       "Ciprofloxacin"
     ],
     "correct": 0,
-    "explanation": "Vancomycin shows excellent (2/2) coverage for MRSA in the Northwestern spectrum analysis. This glycopeptide antibiotic is specifically effective against gram-positive organisms including methicillin-resistant Staphylococcus aureus, making it a first-line choice for MRSA infections.",
+    "explanation": "Vancomycin shows excellent (2/2) coverage for MRSA in the Northwestern spectrum analysis. This glycopeptide antibiotic is specifically effective against gram-positive organisms including methicillin-resistant Staphylococcus aureus, making it the preferred agent for MRSA infections.",
     "category": "Northwestern Coverage",
     "conditionId": "northwestern_mrsa",
     "difficulty": "intermediate",
