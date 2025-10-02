@@ -464,7 +464,7 @@ const AntibioticExplorer = ({
           {/* Resistance Information */}
           {(() => {
             const resistanceInfo = getResistanceInfo(selectedAntibiotic);
-            return resistanceInfo && (
+            return resistanceInfo && resistanceInfo.length > 0 && (
               <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                 <div className="flex items-center gap-2 mb-2">
                   <Shield size={16} className="text-yellow-600" />

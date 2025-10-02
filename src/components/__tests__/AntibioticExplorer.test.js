@@ -146,19 +146,19 @@ const mockSelectedAntibioticData = {
     }
   ],
   // Agent T4 Defensive Programming: Ensure functions work with selected antibiotic
-  findAlternativeAntibiotics: jest.fn((antibiotic) => {
+  findAlternativeAntibiotics: ((antibiotic) => {
     if (!antibiotic) return [];
     return [
       { name: 'Ampicillin', class: 'Penicillins', conditions: [{ name: 'UTI' }] }
     ];
   }),
-  findCombinationTherapies: jest.fn((antibiotic) => {
+  findCombinationTherapies: ((antibiotic) => {
     if (!antibiotic) return [];
     return [
       { antibiotic: { name: 'Gentamicin' }, contexts: ['Endocarditis'] }
     ];
   }),
-  getResistanceInfo: jest.fn((antibiotic) => {
+  getResistanceInfo: ((antibiotic) => {
     if (antibiotic && antibiotic.name === 'Amoxicillin') {
       return ['MRSA resistance common'];
     }
@@ -352,10 +352,12 @@ describe('AntibioticExplorer Component', () => {
   describe('Antibiotic Selection', () => {
     test('calls selectAntibiotic when antibiotic is clicked', () => {
       render(<AntibioticExplorer {...defaultProps} />);
-      
-      const amoxicillinCard = screen.getByText('Amoxicillin').closest('div');
+
+      // Use data-testid to find the antibiotic card specifically
+      const antibioticCards = screen.getAllByTestId('antibiotic-card');
+      const amoxicillinCard = antibioticCards.find(card => card.textContent.includes('Amoxicillin'));
       fireEvent.click(amoxicillinCard);
-      
+
       expect(mockAntibioticData.selectAntibiotic).toHaveBeenCalledWith(
         expect.objectContaining({ name: 'Amoxicillin' })
       );
@@ -380,20 +382,18 @@ describe('AntibioticExplorer Component', () => {
           selectedAntibiotic: { id: 'amoxicillin-001', name: 'Amoxicillin', class: 'Penicillins' }
         }
       };
-      
+
       render(<AntibioticExplorer {...selectedProps} />);
-      
-      // Agent T4 Defensive Programming: Find the antibiotic card more specifically
-      const amoxicillinText = screen.getByText('Amoxicillin');
-      const selectedCard = amoxicillinText.closest('[data-testid="antibiotic-card"]') || 
-                          amoxicillinText.closest('.cursor-pointer') ||
-                          amoxicillinText.closest('div[class*="border"]');
-      
-      if (selectedCard) {
-        expect(selectedCard).toHaveClass('border-blue-500');
+
+      // Agent T4 Defensive Programming: Use data-testid to find the specific antibiotic card
+      const antibioticCards = screen.getAllByTestId('antibiotic-card');
+      const amoxicillinCard = antibioticCards.find(card => card.textContent.includes('Amoxicillin'));
+
+      if (amoxicillinCard) {
+        expect(amoxicillinCard).toHaveClass('border-blue-500');
       } else {
-        // Test passes if element structure is different but antibiotic is rendered
-        expect(amoxicillinText).toBeInTheDocument();
+        // Fallback: verify Amoxicillin is rendered somewhere
+        expect(screen.getAllByText('Amoxicillin').length).toBeGreaterThan(0);
       }
     });
   });
@@ -413,8 +413,9 @@ describe('AntibioticExplorer Component', () => {
       };
       
       render(<AntibioticExplorer {...selectedProps} />);
-      
-      expect(screen.getByText('Amoxicillin')).toBeInTheDocument();
+
+      // Use getAllByText for text that appears multiple times
+      expect(screen.getAllByText('Amoxicillin').length).toBeGreaterThan(0);
       expect(screen.getByText('15 uses')).toBeInTheDocument();
       expect(screen.getByText('Clinical Applications (1)')).toBeInTheDocument();
       expect(screen.getByText('Alternative Options')).toBeInTheDocument();
@@ -425,11 +426,11 @@ describe('AntibioticExplorer Component', () => {
         ...defaultProps,
         antibioticData: mockSelectedAntibioticData
       };
-      
+
       render(<AntibioticExplorer {...selectedProps} />);
-      
+
       expect(screen.getByText('Resistance Considerations')).toBeInTheDocument();
-      expect(screen.getByText('MRSA resistance common')).toBeInTheDocument();
+      expect(screen.getByText(/MRSA resistance common/)).toBeInTheDocument();
     });
 
     test('shows combination therapies when available', () => {
@@ -527,18 +528,18 @@ describe('AntibioticExplorer Component', () => {
       const drugClassBadges = screen.getAllByText(/Penicillins|Cephalosporins|Macrolides/);
       expect(drugClassBadges.length).toBeGreaterThan(0);
       
-      // Check if any Penicillins badge has the expected color classes
-      const penicillinsBadges = drugClassBadges.filter(badge => badge.textContent.includes('Penicillins'));
+      // Check if any Penicillins badge has the expected color classes (filter for span badges, not option elements)
+      const penicillinsBadges = screen.getAllByText('Penicillins')
+        .filter(el => el.tagName === 'SPAN' && el.className.includes('rounded-full'));
       if (penicillinsBadges.length > 0) {
-        const penicillinsBadge = penicillinsBadges[0];
-        expect(penicillinsBadge).toHaveClass('text-blue-600');
+        expect(penicillinsBadges[0]).toHaveClass('text-blue-600');
       }
-      
-      // Check Cephalosporins
-      const cephalosporinsBadges = drugClassBadges.filter(badge => badge.textContent.includes('Cephalosporins'));
+
+      // Check Cephalosporins (filter for span badges, not option elements)
+      const cephalosporinsBadges = screen.getAllByText('Cephalosporins')
+        .filter(el => el.tagName === 'SPAN' && el.className.includes('rounded-full'));
       if (cephalosporinsBadges.length > 0) {
-        const cephalosporinsBadge = cephalosporinsBadges[0];
-        expect(cephalosporinsBadge).toHaveClass('text-green-600');
+        expect(cephalosporinsBadges[0]).toHaveClass('text-green-600');
       }
     });
   });
@@ -563,10 +564,16 @@ describe('AntibioticExplorer Component', () => {
 
     test('filter selects have proper labels', () => {
       render(<AntibioticExplorer {...defaultProps} />);
-      
-      // Agent T5 Accessibility Compliance: Check for label text and corresponding controls
-      expect(screen.getByText('Drug Class')).toBeInTheDocument();
-      expect(screen.getByText('Sort By')).toBeInTheDocument();
+
+      // Agent T5 Accessibility Compliance: Check for label text (handle multiple elements with same text)
+      const drugClassLabels = screen.getAllByText('Drug Class');
+      expect(drugClassLabels.length).toBeGreaterThan(0);
+      expect(drugClassLabels.some(el => el.tagName === 'LABEL')).toBe(true);
+
+      const sortByLabels = screen.getAllByText('Sort By');
+      expect(sortByLabels.length).toBeGreaterThan(0);
+      expect(sortByLabels.some(el => el.tagName === 'LABEL')).toBe(true);
+
       expect(screen.getByDisplayValue('All Classes')).toBeInTheDocument();
       expect(screen.getByDisplayValue('Name (A-Z)')).toBeInTheDocument();
     });
@@ -677,11 +684,11 @@ describe('AntibioticExplorer Component', () => {
   describe('Medical Content Validation', () => {
     test('displays clinically relevant antibiotic information', () => {
       render(<AntibioticExplorer {...defaultProps} />);
-      
-      // Check for proper medical terminology
-      expect(screen.getByText('Penicillins')).toBeInTheDocument();
-      expect(screen.getByText('Cephalosporins')).toBeInTheDocument();
-      expect(screen.getByText('conditions')).toBeInTheDocument();
+
+      // Check for proper medical terminology (handle multiple elements with same text)
+      expect(screen.getAllByText('Penicillins').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Cephalosporins').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('conditions').length).toBeGreaterThan(0);
     });
 
     test('resistance information is displayed with appropriate warning styling', () => {
@@ -689,10 +696,12 @@ describe('AntibioticExplorer Component', () => {
         ...defaultProps,
         antibioticData: mockSelectedAntibioticData
       };
-      
+
       render(<AntibioticExplorer {...selectedProps} />);
-      
-      const resistanceSection = screen.getByText('Resistance Considerations').closest('div');
+
+      // Find the resistance section by looking for the outer container with yellow styling
+      const resistanceHeading = screen.getByText('Resistance Considerations');
+      const resistanceSection = resistanceHeading.closest('.bg-yellow-50');
       expect(resistanceSection).toHaveClass('bg-yellow-50', 'border-yellow-200');
     });
 

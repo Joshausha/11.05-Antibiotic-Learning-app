@@ -123,24 +123,26 @@ const VisualizationsTab = ({
   // Northwestern Animation Effects
   useEffect(() => {
     if (!animationEnabled || !visualizationRef.current) return;
-    
+
     // Animate visualization transition with clinical timing
-    const transitionAnimation = createScenarioTransitionAnimation(
-      visualizationRef.current,
+    // createScenarioTransitionAnimation expects an array, so wrap single element
+    const transitionAnimations = createScenarioTransitionAnimation(
+      [visualizationRef.current],
       activeVisualization,
       {
         educationLevel: 'resident',
         emergencyMode
       }
     );
-    
-    if (animationManager && transitionAnimation) {
+
+    if (animationManager && transitionAnimations && transitionAnimations.length > 0) {
+      const firstAnimation = transitionAnimations[0];
       animationManager.animate(
-        transitionAnimation.element,
-        transitionAnimation.config
+        firstAnimation.element,
+        firstAnimation.config
       ).catch(console.warn);
     }
-    
+
     return () => {
       if (animationManager) {
         animationManager.cleanup();

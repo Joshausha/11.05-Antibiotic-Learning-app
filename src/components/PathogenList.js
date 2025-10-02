@@ -230,8 +230,16 @@ const PathogenList = ({
             {pathogens.map((pathogen) => (
               <div
                 key={pathogen.id}
+                role="button"
+                tabIndex={0}
                 data-testid={`pathogen-${pathogen.id}`}
                 onClick={() => onSelectPathogen(pathogen)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelectPathogen(pathogen);
+                  }
+                }}
                 className={`p-3 rounded-lg cursor-pointer transition-colors ${
                   selectedPathogen?.id === pathogen.id
                     ? 'bg-blue-50 border-2 border-blue-200 selected'
@@ -288,7 +296,8 @@ const PathogenList = ({
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-xs text-gray-400">Shape:</span>
                       <span className="text-xs text-gray-600">{pathogen.shape}</span>
-                      
+
+                      <span className="text-xs text-gray-400">Severity:</span>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityColor(pathogen.severity)}`}>
                         {pathogen.severity}
                       </span>

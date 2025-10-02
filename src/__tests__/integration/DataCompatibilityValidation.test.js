@@ -50,9 +50,9 @@ describe('Data Layer Compatibility Validation - Agent 1.3', () => {
         expect(enhanced.route).toBe(original.route);
         expect(enhanced.resistance).toBe(original.resistance);
         
-        // Test array fields with deep equality
+        // Test array and string fields with deep equality
         expect(enhanced.commonUses).toEqual(original.commonUses);
-        expect(enhanced.sideEffects).toEqual(original.sideEffects);
+        expect(enhanced.sideEffects).toEqual(original.sideEffects); // sideEffects is a string
       });
     });
 
@@ -119,13 +119,13 @@ describe('Data Layer Compatibility Validation - Agent 1.3', () => {
     });
 
     test('getAntibioticsByClass - unchanged behavior', () => {
-      const classes = ['Penicillin', 'Glycopeptide', 'Quinolone'];
-      
+      const classes = ['Penicillins', 'Glycopeptides', 'Fluoroquinolones'];
+
       classes.forEach(drugClass => {
         const results = getAntibioticsByClass(drugClass);
         expect(Array.isArray(results)).toBe(true);
         expect(results.length).toBeGreaterThan(0);
-        
+
         // All results should be from the specified class
         results.forEach(antibiotic => {
           expect(antibiotic.class).toBe(drugClass);
@@ -175,11 +175,11 @@ describe('Data Layer Compatibility Validation - Agent 1.3', () => {
       const classes = getAllDrugClasses();
       expect(Array.isArray(classes)).toBe(true);
       expect(classes.length).toBeGreaterThan(5);
-      
-      // Should include expected classes from actual data
-      expect(classes).toContain('Penicillin');
-      expect(classes).toContain('Glycopeptide');
-      expect(classes).toContain('Quinolone');
+
+      // Should include expected classes from actual data (plural forms)
+      expect(classes).toContain('Penicillins');
+      expect(classes).toContain('Glycopeptides');
+      expect(classes).toContain('Fluoroquinolones');
     });
 
     test('getAllCategories - unchanged behavior', () => {
@@ -422,8 +422,8 @@ describe('Data Layer Compatibility Validation - Agent 1.3', () => {
         expect(typeof antibiotic.route).toBe('string');
         expect(Array.isArray(antibiotic.commonUses)).toBe(true);
         expect(typeof antibiotic.resistance).toBe('string');
-        expect(Array.isArray(antibiotic.sideEffects)).toBe(true);
-        
+        expect(typeof antibiotic.sideEffects).toBe('string'); // sideEffects is a string, not an array
+
         // Northwestern enhancements
         expect(typeof antibiotic.northwesternSpectrum).toBe('object');
         expect(typeof antibiotic.cellWallActive).toBe('boolean');

@@ -78,8 +78,13 @@ const ConsolidatedPathogenExplorer = ({
     }
   }, [pathogenData]);
 
-  // Safe pathogen access
-  const safePathogens = useMemo(() => pathogenData || simplePathogens, [pathogenData]);
+  // Safe pathogen access - handle both array and object with pathogens property
+  const safePathogens = useMemo(() => {
+    if (!pathogenData) return simplePathogens;
+    if (Array.isArray(pathogenData)) return pathogenData;
+    if (pathogenData.pathogens && Array.isArray(pathogenData.pathogens)) return pathogenData.pathogens;
+    return simplePathogens;
+  }, [pathogenData]);
 
   // Apply all filters
   const filteredPathogens = useMemo(() => {

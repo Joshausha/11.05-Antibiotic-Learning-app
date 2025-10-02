@@ -206,10 +206,16 @@ const useQuizProgress = () => {
   }, [quizHistory]);
 
   // Get quiz by ID - look for both 'id' and 'quizId' fields for compatibility
+  // Use a ref to maintain referential stability when content doesn't change
+  const quizHistoryRef = useRef(quizHistory);
+  if (JSON.stringify(quizHistoryRef.current) !== JSON.stringify(quizHistory)) {
+    quizHistoryRef.current = quizHistory;
+  }
+
   const getQuizById = useCallback((quizId) => {
-    const quiz = quizHistory.find(quiz => quiz && (quiz.id === quizId || quiz.quizId === quizId));
+    const quiz = quizHistoryRef.current.find(quiz => quiz && (quiz.id === quizId || quiz.quizId === quizId));
     return quiz; // Return undefined if not found (default behavior)
-  }, [quizHistory]);
+  }, []);
 
   // Get quizzes by category - look for direct category field
   const getQuizzesByCategory = useCallback((category) => {

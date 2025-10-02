@@ -104,8 +104,9 @@ describe('useQuizProgress Hook', () => {
       });
 
       const startTime = result.current.currentSession.startTime;
-      expect(new Date(startTime).toISOString()).toBe(startTime);
-      expect(new Date(startTime).getTime()).toBeLessThanOrEqual(Date.now());
+      // startTime is a timestamp number, not an ISO string
+      expect(typeof startTime).toBe('number');
+      expect(startTime).toBeLessThanOrEqual(Date.now());
     });
 
     it('replaces existing session when starting new quiz', () => {
