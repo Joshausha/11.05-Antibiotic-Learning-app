@@ -484,9 +484,10 @@ export class ClinicalAnimationManager {
    */
   optimizeForClinicalAccessibility(element, config) {
     const optimized = { ...config };
-    
+
     // High contrast mode detection (common in clinical environments)
-    if (window.matchMedia && window.matchMedia('(prefers-contrast: high)').matches) {
+    const contrastQuery = window.matchMedia && window.matchMedia('(prefers-contrast: high)');
+    if (contrastQuery && contrastQuery.matches) {
       // Simplify animations for high contrast displays
       optimized.duration *= 0.8;
       if (optimized.keyframes) {
@@ -515,7 +516,7 @@ export class ClinicalAnimationManager {
     }
     
     // Focus management for clinical workflows
-    if (element.matches('[role="button"], button, [tabindex]')) {
+    if (element.matches && element.matches('[role="button"], button, [tabindex]')) {
       // Ensure focus indicators are visible during animations
       element.style.outline = 'none'; // We'll handle focus ourselves
       element.addEventListener('focus', () => {
