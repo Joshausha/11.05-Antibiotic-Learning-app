@@ -33,6 +33,10 @@ import NorthwesternSpatialLayout from './NorthwesternSpatialLayout';
 // Import Northwestern animation system - the crown jewel (875 lines)
 import { useNorthwesternAnimations } from '../animations/NorthwesternAnimations';
 
+// Import Phase 7: Northwestern Comparison components
+import NorthwesternComparisonView from './NorthwesternComparisonView';
+import ComparisonControlPanel from './ComparisonControlPanel';
+
 const VisualizationsTab = ({ 
   pathogenData,
   antibioticData,
@@ -45,11 +49,14 @@ const VisualizationsTab = ({
   // New state for spatial layout switching
   const [networkLayoutMode, setNetworkLayoutMode] = useState('force-directed');
   const [spatialViewMode, setSpatialViewMode] = useState('clustered');
-  
+
   // Northwestern Animation System integration
   const [emergencyMode, setEmergencyMode] = useState(false);
   const [animationEnabled, setAnimationEnabled] = useState(true);
   const visualizationRef = useRef(null);
+
+  // Phase 7: Comparison Mode State
+  const [selectedComparisonAntibiotics, setSelectedComparisonAntibiotics] = useState([]);
   
   // Initialize Northwestern Animation System
   const {
@@ -93,6 +100,12 @@ const VisualizationsTab = ({
       title: 'Overview Dashboard',
       icon: Grid,
       description: 'High-level statistics and key metrics'
+    },
+    {
+      id: 'antibiotic-comparison',
+      title: 'Antibiotic Comparison',
+      icon: PieChart,
+      description: 'Side-by-side Northwestern coverage comparison'
     },
     {
       id: 'pathogen-network',
@@ -577,10 +590,37 @@ const VisualizationsTab = ({
     </div>
   );
 
+  // Phase 7: Render Comparison View
+  const renderAntibioticComparison = () => (
+    <div className="space-y-6">
+      {/* Antibiotic Selection Control Panel */}
+      <ComparisonControlPanel
+        allAntibiotics={antibioticData?.antibiotics || []}
+        selectedAntibiotics={selectedComparisonAntibiotics}
+        onSelectionChange={setSelectedComparisonAntibiotics}
+        maxSelection={4}
+      />
+
+      {/* Northwestern Comparison View */}
+      <NorthwesternComparisonView
+        selectedAntibiotics={selectedComparisonAntibiotics}
+        onAntibioticDeselect={(id) => {
+          setSelectedComparisonAntibiotics(
+            selectedComparisonAntibiotics.filter(ab => ab.id !== id)
+          );
+        }}
+        emergencyMode={emergencyMode}
+        educationLevel="resident"
+      />
+    </div>
+  );
+
   const renderVisualizationContent = () => {
     switch (activeVisualization) {
       case 'overview':
         return renderOverviewDashboard();
+      case 'antibiotic-comparison':
+        return renderAntibioticComparison();
       case 'pathogen-network':
         return renderPathogenNetwork();
       case 'category-distribution':
