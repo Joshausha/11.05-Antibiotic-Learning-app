@@ -26,7 +26,7 @@
  * />
  */
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import {
   Search,
@@ -79,7 +79,6 @@ const ComparisonControlPanel = ({
 }) => {
   // State management
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [filterClass, setFilterClass] = useState('all');
   const [filterRoute, setFilterRoute] = useState('all');
   const [filterGeneration, setFilterGeneration] = useState('all');
@@ -276,8 +275,6 @@ const ComparisonControlPanel = ({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
             placeholder="Search antibiotics by name or class..."
             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
