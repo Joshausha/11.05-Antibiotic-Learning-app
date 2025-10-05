@@ -56,6 +56,12 @@ validation_*.txt
 comprehensive_test_report.txt
 *.test.log
 
+# Generated reports and test artifacts (added 2025-10-05)
+coverage-report.json
+lint-report.json
+test-inventory.json
+simple_test_results.json
+
 # Temporary and backup files
 *.tmp
 *.temp
