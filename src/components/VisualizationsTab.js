@@ -22,6 +22,7 @@ import ErrorBoundary from './ErrorBoundary';
 
 // Import sophisticated network visualization
 import PathogenNetworkVisualization from './PathogenNetworkVisualization';
+import PathogenNetworkVisualizationCytoscape from './PathogenNetworkVisualizationCytoscape';
 
 // Import Northwestern pie chart components
 import AnimatedNorthwesternPieChart from './AnimatedNorthwesternPieChart';
@@ -47,12 +48,12 @@ const VisualizationsTab = ({
   const [activeVisualization, setActiveVisualization] = useState('overview');
   const [selectedFilter, setSelectedFilter] = useState('all');
   // New state for spatial layout switching
-  const [networkLayoutMode, setNetworkLayoutMode] = useState('force-directed');
+  const [networkLayoutMode, setNetworkLayoutMode] = useState('d3');
   const [spatialViewMode, setSpatialViewMode] = useState('clustered');
 
   // Northwestern Animation System integration
   const [emergencyMode, setEmergencyMode] = useState(false);
-  const [animationEnabled, setAnimationEnabled] = useState(true);
+  const [animationEnabled, setAnimationEnabled] = useState(false); // TEMPORARILY DISABLED: Animations causing content to disappear
   const visualizationRef = useRef(null);
 
   // Phase 7: Comparison Mode State
@@ -491,7 +492,8 @@ const VisualizationsTab = ({
               onChange={(e) => setNetworkLayoutMode(e.target.value)}
               className="px-3 py-1 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-              <option value="force-directed">Force-Directed</option>
+              <option value="d3">D3 Force-Directed</option>
+              <option value="cytoscape">Cytoscape Network</option>
               <option value="spatial">Northwestern Spatial</option>
             </select>
           </div>
@@ -514,7 +516,7 @@ const VisualizationsTab = ({
       </div>
       
       <ErrorBoundary>
-        {networkLayoutMode === 'force-directed' ? (
+        {networkLayoutMode === 'd3' ? (
           <PathogenNetworkVisualization 
             selectedPathogen={null}
             onSelectPathogen={onSelectPathogen}
@@ -522,6 +524,8 @@ const VisualizationsTab = ({
               if (onSelectPathogen) onSelectPathogen(pathogen);
             }}
           />
+        ) : networkLayoutMode === 'cytoscape' ? (
+          <PathogenNetworkVisualizationCytoscape />
         ) : (
           <NorthwesternSpatialLayout
             antibiotics={antibioticData?.antibiotics || []}
@@ -577,8 +581,10 @@ const VisualizationsTab = ({
       {/* Layout Information */}
       <div className="mt-4 p-3 bg-gray-50 rounded-lg">
         <div className="text-sm text-gray-600">
-          {networkLayoutMode === 'force-directed' ? (
+          {networkLayoutMode === 'd3' ? (
             <span>Force-directed layout showing pathogen relationships through dynamic positioning</span>
+          ) : networkLayoutMode === 'cytoscape' ? (
+            <span>Cytoscape-powered network visualization.</span>
           ) : (
             <span>
               Northwestern spatial layout organizing {antibioticData?.antibiotics?.length || 0} antibiotics 
