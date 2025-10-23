@@ -17,39 +17,44 @@ export const cytoscapeStylesheet = [
     selector: 'node[type = "pathogen"]',
     style: {
       'label': 'data(label)',
-      'font-size': '12px',
+      'font-size': '10px',
+      'min-zoomed-font-size': '6px', // Minimum font size when zoomed out
       'color': '#fff', // White text for high contrast on dark nodes
       'text-halign': 'center',
       'text-valign': 'center',
       'text-wrap': 'wrap',
-      'text-max-width': '80px',
+      'text-max-width': '55px',
+      'text-justification': 'center', // Center-justify wrapped text lines
+      'line-height': 1.2, // Tighter line spacing for multi-line labels
       'background-color': '#888', // Default color
       'border-width': 2,
       'border-color': '#333',
-      'shape': 'ellipse' // Circular pathogen nodes
+      'shape': 'ellipse', // Circular pathogen nodes
+      'width': '60px',
+      'height': '60px'
     }
   },
 
-  // 2. Node Sizing based on Severity
+  // 2. Node Sizing based on Severity (override default size)
   {
     selector: 'node[severity = "low"]',
     style: {
-      'width': '40px',
-      'height': '40px'
+      'width': '55px',
+      'height': '55px'
     }
   },
   {
     selector: 'node[severity = "medium"]',
     style: {
-      'width': '50px',
-      'height': '50px'
+      'width': '65px',
+      'height': '65px'
     }
   },
   {
     selector: 'node[severity = "high"]',
     style: {
-      'width': '60px',
-      'height': '60px'
+      'width': '75px',
+      'height': '75px'
     }
   },
 
@@ -117,7 +122,8 @@ export const cytoscapeStylesheet = [
       'target-arrow-shape': 'triangle',
       'curve-style': 'bezier',
       'label': 'data(label)',
-      'font-size': '10px',
+      'font-size': '8px',
+      'min-zoomed-font-size': '4px', // Minimum font size when zoomed out
       'color': '#777'
     }
   },
@@ -220,18 +226,21 @@ export const cytoscapeStylesheet = [
     selector: 'node[type = "antibiotic"]',
     style: {
       'label': 'data(label)',
-      'font-size': '11px',
+      'font-size': '9px',
+      'min-zoomed-font-size': '5px', // Minimum font size when zoomed out
       'color': '#000', // Black text for antibiotics
       'text-halign': 'center',
       'text-valign': 'center',
       'text-wrap': 'wrap',
-      'text-max-width': '70px',
+      'text-max-width': '60px',
+      'text-justification': 'center', // Center-justify wrapped text lines
+      'line-height': 1.2, // Tighter line spacing for multi-line labels
       'background-color': '#3498db', // Bright blue for antibiotics
       'border-width': 2,
       'border-color': '#2980b9',
       'shape': 'roundrectangle', // Rectangular antibiotic nodes (distinct from pathogen circles)
-      'width': '45px',
-      'height': '45px'
+      'width': '65px',
+      'height': '50px'
     }
   },
 
@@ -358,14 +367,8 @@ export const cytoscapeStylesheet = [
     selector: 'node:selected',
     style: {
       'border-color': '#337ab7', // Blue
-      'border-width': 4
-    }
-  },
-  {
-    selector: 'node:hover',
-    style: {
-      'background-color': '#555',
-      'border-color': '#fff'
+      'border-width': 4,
+      'border-opacity': 1
     }
   }
 ];
