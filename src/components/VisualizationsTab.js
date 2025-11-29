@@ -23,6 +23,7 @@ import ErrorBoundary from './ErrorBoundary';
 // Import sophisticated network visualization
 import PathogenNetworkVisualization from './PathogenNetworkVisualization';
 import PathogenNetworkVisualizationCytoscape from './PathogenNetworkVisualizationCytoscape';
+import NetworkVisualizationD3 from './NetworkVisualizationD3';
 
 // Import Northwestern pie chart components
 import AnimatedNorthwesternPieChart from './AnimatedNorthwesternPieChart';
@@ -493,6 +494,7 @@ const VisualizationsTab = ({
               className="px-3 py-1 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="d3">D3 Force-Directed</option>
+              <option value="d3-pro">D3 Multi-Layout (New)</option>
               <option value="cytoscape">Cytoscape Network</option>
               <option value="spatial">Northwestern Spatial</option>
             </select>
@@ -517,12 +519,19 @@ const VisualizationsTab = ({
       
       <ErrorBoundary>
         {networkLayoutMode === 'd3' ? (
-          <PathogenNetworkVisualization 
+          <PathogenNetworkVisualization
             selectedPathogen={null}
             onSelectPathogen={onSelectPathogen}
             onShowPathDetails={(pathogen) => {
               if (onSelectPathogen) onSelectPathogen(pathogen);
             }}
+          />
+        ) : networkLayoutMode === 'd3-pro' ? (
+          <NetworkVisualizationD3
+            layoutType="force"
+            showMetrics={true}
+            width={1000}
+            height={600}
           />
         ) : networkLayoutMode === 'cytoscape' ? (
           <PathogenNetworkVisualizationCytoscape />
@@ -533,7 +542,7 @@ const VisualizationsTab = ({
             showConnections={true}
             onAntibioticSelect={(antibiotic) => {
               console.log('Selected antibiotic from spatial layout:', antibiotic);
-              
+
               // Northwestern Animation: Selection feedback
               if (animationEnabled && animationManager) {
                 const selectionAnimation = createSelectionAnimation(
@@ -541,7 +550,7 @@ const VisualizationsTab = ({
                   'antibiotic',
                   { educationLevel: 'resident', emergencyMode }
                 );
-                
+
                 if (selectionAnimation) {
                   animationManager.animate(
                     selectionAnimation.element,
@@ -552,7 +561,7 @@ const VisualizationsTab = ({
             }}
             onGroupSelect={(groupKey, antibiotics) => {
               console.log('Selected group from spatial layout:', groupKey, antibiotics);
-              
+
               // Northwestern Animation: Group selection feedback
               if (animationEnabled && animationManager) {
                 const groupElements = document.querySelectorAll(`[data-spatial-group="${groupKey}"]`);
@@ -562,7 +571,7 @@ const VisualizationsTab = ({
                     'group',
                     { educationLevel: 'resident', emergencyMode }
                   );
-                  
+
                   if (groupAnimation) {
                     animationManager.animate(
                       groupAnimation.element,
@@ -583,11 +592,13 @@ const VisualizationsTab = ({
         <div className="text-sm text-gray-600">
           {networkLayoutMode === 'd3' ? (
             <span>Force-directed layout showing pathogen relationships through dynamic positioning</span>
+          ) : networkLayoutMode === 'd3-pro' ? (
+            <span>Professional D3.js multi-layout visualization: Switch between Force-Directed (similarity clustering), Hierarchical (clinical severity), and Circular (Gram stain classification) layouts. Click nodes for details and zoom/pan with mouse.</span>
           ) : networkLayoutMode === 'cytoscape' ? (
             <span>Cytoscape-powered network visualization.</span>
           ) : (
             <span>
-              Northwestern spatial layout organizing {antibioticData?.antibiotics?.length || 0} antibiotics 
+              Northwestern spatial layout organizing {antibioticData?.antibiotics?.length || 0} antibiotics
               using {spatialViewMode} methodology with clinical workflow optimization
             </span>
           )}

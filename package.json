@@ -35,6 +35,7 @@
     "css-loader": "^6.5.1",
     "css-minimizer-webpack-plugin": "^3.2.0",
     "cytoscape": "^3.33.1",
+    "d3": "^7.8.5",
     "date-fns": "^4.1.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
@@ -122,7 +123,7 @@
       "^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
     },
     "transformIgnorePatterns": [
-      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$",
+      "[/\\\\]node_modules[/\\\\](?!(d3|d3-array|d3-force|d3-dispatch|d3-interpolate|d3-selection|d3-timer|d3-zoom|d3-scale|d3-shape|d3-path|d3-polygon|d3-quadtree|d3-color|d3-format|d3-hierarchy|d3-delaunay|delaunay-triangulate))[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$",
       "^.+\\.module\\.(css|sass|scss)$"
     ],
     "modulePaths": [],
