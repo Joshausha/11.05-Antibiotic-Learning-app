@@ -17,6 +17,7 @@
  */
 
 import { generatePathogenRelationships, getRelationshipStatistics } from '../utils/pathogenSimilarity';
+import { relationshipJustifications, getRelationshipJustification } from './PathogenRelationshipJustifications';
 
 /**
  * Generate all medically-validated pathogen relationships
@@ -66,6 +67,62 @@ export const getRelationshipsByType = (type) => {
  */
 export const getRelationshipsAboveThreshold = (threshold) => {
   return allRelationships.filter(r => r.similarity >= threshold);
+};
+
+/**
+ * Get relationship with medical justification merged
+ * @param {number} sourceId - Source pathogen ID
+ * @param {number} targetId - Target pathogen ID
+ * @returns {Object} Relationship object with justification merged
+ */
+export const getRelationshipWithJustification = (sourceId, targetId) => {
+  const relationship = allRelationships.find(r =>
+    r.sourceId === sourceId && r.targetId === targetId ||
+    r.sourceId === targetId && r.targetId === sourceId
+  );
+
+  if (!relationship) return null;
+
+  // Try both directions for justification lookup
+  let justification = getRelationshipJustification(sourceId, targetId);
+  if (!justification) {
+    justification = getRelationshipJustification(targetId, sourceId);
+  }
+
+  return {
+    ...relationship,
+    justification: justification || null
+  };
+};
+
+/**
+ * Get all relationships with justifications merged
+ * @returns {Array} All relationships with medical justifications included
+ */
+export const getRelationshipsWithJustifications = () => {
+  return allRelationships.map(relationship => {
+    const { sourceId, targetId } = relationship;
+
+    // Try both directions for justification lookup
+    let justification = getRelationshipJustification(sourceId, targetId);
+    if (!justification) {
+      justification = getRelationshipJustification(targetId, sourceId);
+    }
+
+    return {
+      ...relationship,
+      justification: justification || null
+    };
+  });
+};
+
+/**
+ * Get all relationships with high-priority justifications (teaching focus)
+ * @returns {Array} Relationships with high-importance justifications
+ */
+export const getHighPriorityRelationships = () => {
+  return getRelationshipsWithJustifications()
+    .filter(r => r.justification && r.justification.importance === 'high');
 };
 
 // ============================================================================

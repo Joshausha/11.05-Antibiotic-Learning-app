@@ -39,7 +39,25 @@ import { useNorthwesternAnimations } from '../animations/NorthwesternAnimations'
 import NorthwesternComparisonView from './NorthwesternComparisonView';
 import ComparisonControlPanel from './ComparisonControlPanel';
 
-const VisualizationsTab = ({ 
+// Import Clinical Decision Tree for pathogen context navigation
+import ClinicalDecisionTree from './ClinicalDecision/ClinicalDecisionTree';
+
+// Import Guideline Comparison Panel for evidence-based recommendations
+import GuidelineComparisonPanel from './ClinicalDecision/GuidelineComparisonPanel';
+
+// Import guideline data and helper functions (Priority 2.2)
+import {
+  getGuidelinesForCondition,
+  getGuidelinesForPathogen,
+  guidelineDisclaimer
+} from '../data/ClinicalGuidelineData';
+
+import {
+  getConditionsForPathogen,
+  getConditionKeys
+} from '../data/PathogenConditionMapping';
+
+const VisualizationsTab = ({
   pathogenData,
   antibioticData,
   medicalConditions,
@@ -52,6 +70,13 @@ const VisualizationsTab = ({
   const [networkLayoutMode, setNetworkLayoutMode] = useState('d3');
   const [spatialViewMode, setSpatialViewMode] = useState('clustered');
 
+  // State for pathogen context navigation (Priority 2.1: ClinicalDecisionTree integration)
+  const [selectedPathogen, setSelectedPathogen] = useState(null);
+
+  // State for guideline display (Priority 2.2: GuidelineComparisonPanel integration)
+  const [selectedConditionForGuidelines, setSelectedConditionForGuidelines] = useState('community-acquired-pneumonia');
+  const [displayedGuidelines, setDisplayedGuidelines] = useState([]);
+
   // Northwestern Animation System integration
   const [emergencyMode, setEmergencyMode] = useState(false);
   const [animationEnabled, setAnimationEnabled] = useState(false); // TEMPORARILY DISABLED: Animations causing content to disappear
@@ -59,7 +84,21 @@ const VisualizationsTab = ({
 
   // Phase 7: Comparison Mode State
   const [selectedComparisonAntibiotics, setSelectedComparisonAntibiotics] = useState([]);
-  
+
+  // Progressive Disclosure State (Phase 1.1: UI/UX Clutter Reduction)
+  const [expandedSections, setExpandedSections] = useState({
+    explore: false,
+    analyze: false,
+    settings: false
+  });
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   // Initialize Northwestern Animation System
   const {
     animationManager,
@@ -96,42 +135,53 @@ const VisualizationsTab = ({
     return acc;
   }, {}) || {};
 
-  const visualizationOptions = [
+  // Progressive Disclosure: Grouped visualization options (Phase 1.1: Clutter Reduction)
+  const overviewOption = {
+    id: 'overview',
+    title: 'Overview Dashboard',
+    icon: Grid,
+    description: 'High-level statistics and key metrics',
+    group: 'default'
+  };
+
+  const exploreOptions = [
     {
-      id: 'overview',
-      title: 'Overview Dashboard',
-      icon: Grid,
-      description: 'High-level statistics and key metrics'
+      id: 'pathogen-network',
+      title: 'Pathogen Network',
+      icon: Network,
+      description: 'Interactive network of pathogen relationships',
+      group: 'explore'
     },
     {
       id: 'antibiotic-comparison',
       title: 'Antibiotic Comparison',
       icon: PieChart,
-      description: 'Side-by-side Northwestern coverage comparison'
-    },
-    {
-      id: 'pathogen-network',
-      title: 'Pathogen Network',
-      icon: Network,
-      description: 'Interactive network of pathogen relationships'
-    },
+      description: 'Side-by-side Northwestern coverage comparison',
+      group: 'explore'
+    }
+  ];
+
+  const analyzeOptions = [
     {
       id: 'category-distribution',
       title: 'Category Distribution',
       icon: PieChart,
-      description: 'Distribution of medical conditions by category'
+      description: 'Distribution of medical conditions by category',
+      group: 'analyze'
     },
     {
       id: 'antibiotic-analysis',
       title: 'Antibiotic Analysis',
       icon: Activity,
-      description: 'Drug class distribution and usage patterns'
+      description: 'Drug class distribution and usage patterns',
+      group: 'analyze'
     },
     {
       id: 'pathogen-analysis',
       title: 'Pathogen Analysis',
       icon: Microscope,
-      description: 'Gram status and morphology analysis'
+      description: 'Gram status and morphology analysis',
+      group: 'analyze'
     }
   ];
 
@@ -201,10 +251,18 @@ const VisualizationsTab = ({
   const toggleEmergencyMode = () => {
     const newEmergencyMode = !emergencyMode;
     setEmergencyMode(newEmergencyMode);
-    
+
     if (animationManager) {
       animationManager.setEmergencyMode(newEmergencyMode);
     }
+  };
+
+  // Priority 2.1: Handle network node click for ClinicalDecisionTree navigation
+  const handleNetworkNodeClick = (pathogenNode) => {
+    // Store pathogen context for ClinicalDecisionTree
+    setSelectedPathogen(pathogenNode);
+    // Switch to Clinical Decision Tree view
+    setActiveVisualization('clinical-decision-tree');
   };
 
   const renderOverviewDashboard = () => (
@@ -532,6 +590,7 @@ const VisualizationsTab = ({
             showMetrics={true}
             width={1000}
             height={600}
+            onNodeClick={handleNetworkNodeClick}
           />
         ) : networkLayoutMode === 'cytoscape' ? (
           <PathogenNetworkVisualizationCytoscape />
@@ -632,6 +691,112 @@ const VisualizationsTab = ({
     </div>
   );
 
+  // Priority 2.2: Handle guideline display request from network node
+  const handleShowGuidelinesForPathogen = (pathogenName, condition = null) => {
+    const effectiveCondition = condition || selectedConditionForGuidelines;
+
+    // Get guidelines for this pathogen and condition combination
+    const guidelinesForPathogen = getGuidelinesForPathogen(pathogenName, effectiveCondition);
+    const guidelinesForCondition = guidelinesForPathogen.length > 0
+      ? guidelinesForPathogen
+      : getGuidelinesForCondition(effectiveCondition);
+
+    setSelectedConditionForGuidelines(effectiveCondition);
+    setDisplayedGuidelines(guidelinesForCondition);
+    setActiveVisualization('guidelines');
+  };
+
+  // Priority 2.2: Render guidelines panel
+  const renderGuidelinesPanel = () => (
+    <div className="space-y-6">
+      {/* Back to Network Navigation */}
+      <div className="bg-white rounded-xl shadow-sm border p-4">
+        <button
+          onClick={() => {
+            setActiveVisualization('pathogen-network');
+            setDisplayedGuidelines([]);
+          }}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+        >
+          ← Back to Network
+        </button>
+      </div>
+
+      {/* Medical Disclaimer */}
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="text-sm text-red-800 font-semibold">⚠️ Educational Use Only</p>
+        <p className="text-xs text-red-700 mt-2">{guidelineDisclaimer}</p>
+      </div>
+
+      {/* Guidelines Display */}
+      {displayedGuidelines.length > 0 ? (
+        <ErrorBoundary>
+          <GuidelineComparisonPanel
+            condition={selectedConditionForGuidelines}
+            guidelines={displayedGuidelines}
+            emergencyMode={emergencyMode}
+            onGuidelineSelect={(guideline) => {
+              console.log('Guideline selected:', guideline);
+            }}
+            onExpandDetails={(guidelineId) => {
+              console.log('Guideline expanded:', guidelineId);
+            }}
+          />
+        </ErrorBoundary>
+      ) : (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+          <p className="text-blue-800">
+            Loading guidelines for {selectedConditionForGuidelines.replace(/-/g, ' ')}...
+          </p>
+        </div>
+      )}
+    </div>
+  );
+
+  // Priority 2.1: Render Clinical Decision Tree with pathogen context
+  const renderClinicalDecisionTree = () => (
+    <div className="space-y-6">
+      {/* Back to Network Navigation */}
+      <div className="bg-white rounded-xl shadow-sm border p-4">
+        <button
+          onClick={() => {
+            setActiveVisualization('pathogen-network');
+            setSelectedPathogen(null);
+          }}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+        >
+          ← Back to Network
+        </button>
+      </div>
+
+      {/* Clinical Decision Tree Component */}
+      {selectedPathogen ? (
+        <ErrorBoundary>
+          <ClinicalDecisionTree
+            condition="community-acquired-pneumonia"
+            patientAge={null}
+            emergencyMode={emergencyMode}
+            selectedPathogen={selectedPathogen}
+            onDecisionPathChange={(path) => {
+              console.log('Decision path changed:', path);
+            }}
+            onRecommendationComplete={(recommendation) => {
+              console.log('Recommendation completed:', recommendation);
+            }}
+            antibioticData={antibioticData}
+            pathogenData={pathogenData}
+          />
+        </ErrorBoundary>
+      ) : (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+          <p className="text-yellow-800">
+            Please select a pathogen from the network visualization to view its clinical decision tree.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+
   const renderVisualizationContent = () => {
     switch (activeVisualization) {
       case 'overview':
@@ -646,6 +811,10 @@ const VisualizationsTab = ({
         return renderAntibioticAnalysis();
       case 'pathogen-analysis':
         return renderPathogenAnalysis();
+      case 'clinical-decision-tree':
+        return renderClinicalDecisionTree();
+      case 'guidelines':
+        return renderGuidelinesPanel();
       default:
         return renderOverviewDashboard();
     }
@@ -664,75 +833,166 @@ const VisualizationsTab = ({
         </p>
       </div>
 
-      {/* Visualization Selector */}
+      {/* Visualization Selector with Progressive Disclosure (Phase 1.1: 60% Clutter Reduction) */}
       <div className="bg-white rounded-xl shadow-sm border p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Visualization Type</h2>
-          <div className="flex items-center gap-4">
-            {/* Northwestern Animation Controls */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={toggleEmergencyMode}
-                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                  emergencyMode
-                    ? 'bg-red-100 text-red-800 border border-red-200'
-                    : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                }`}
-                title="Emergency Mode: Disables animations for critical clinical workflows"
-              >
-                {emergencyMode ? '🚨 Emergency' : '⚡ Normal'}
-              </button>
-              
-              <button
-                onClick={() => setAnimationEnabled(!animationEnabled)}
-                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                  animationEnabled
-                    ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                    : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                }`}
-                title="Toggle Northwestern animations on/off"
-              >
-                {animationEnabled ? '🎬 Animated' : '📊 Static'}
-              </button>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Filter size={16} className="text-gray-400" />
-              <select
-                value={selectedFilter}
-                onChange={(e) => setSelectedFilter(e.target.value)}
-                className="px-3 py-1 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="all">All Data</option>
-                <option value="gram-positive">Gram-Positive Only</option>
-                <option value="gram-negative">Gram-Negative Only</option>
-              </select>
-            </div>
+        <h2 className="text-lg font-semibold mb-6">📊 Data Visualizations</h2>
+
+        {/* Default: Overview Dashboard (always visible) */}
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Default View</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <button
+              key={overviewOption.id}
+              data-visualization={overviewOption.id}
+              onClick={() => handleVisualizationChange(overviewOption.id)}
+              className={`p-4 border rounded-lg text-left transition-colors ${
+                activeVisualization === overviewOption.id
+                  ? 'border-indigo-500 bg-indigo-50 text-indigo-900'
+                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              <Grid size={20} className={`mb-2 ${
+                activeVisualization === overviewOption.id ? 'text-indigo-600' : 'text-gray-600'
+              }`} />
+              <div className="text-sm font-medium">{overviewOption.title}</div>
+              <div className="text-xs text-gray-500 mt-1">{overviewOption.description}</div>
+            </button>
           </div>
         </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {visualizationOptions.map((option) => {
-            const Icon = option.icon;
-            return (
-              <button
-                key={option.id}
-                data-visualization={option.id}
-                onClick={() => handleVisualizationChange(option.id)}
-                className={`p-4 border rounded-lg text-left transition-colors ${
-                  activeVisualization === option.id
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-900'
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                <Icon size={20} className={`mb-2 ${
-                  activeVisualization === option.id ? 'text-indigo-600' : 'text-gray-600'
-                }`} />
-                <div className="text-sm font-medium">{option.title}</div>
-                <div className="text-xs text-gray-500 mt-1">{option.description}</div>
-              </button>
-            );
-          })}
+
+        {/* Collapsible Section: Explore Relationships */}
+        <div className="mb-6">
+          <button
+            onClick={() => toggleSection('explore')}
+            className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors mb-3"
+          >
+            <span className={`transition-transform ${expandedSections.explore ? 'rotate-90' : ''}`}>▶</span>
+            <Network size={16} />
+            Explore Relationships {expandedSections.explore ? '(show less)' : '(show more)'}
+          </button>
+          {expandedSections.explore && (
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-3 ml-6 pl-4 border-l-2 border-indigo-200">
+              {exploreOptions.map((option) => {
+                const Icon = option.icon;
+                return (
+                  <button
+                    key={option.id}
+                    data-visualization={option.id}
+                    onClick={() => handleVisualizationChange(option.id)}
+                    className={`p-4 border rounded-lg text-left transition-colors ${
+                      activeVisualization === option.id
+                        ? 'border-indigo-500 bg-indigo-50 text-indigo-900'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Icon size={20} className={`mb-2 ${
+                      activeVisualization === option.id ? 'text-indigo-600' : 'text-gray-600'
+                    }`} />
+                    <div className="text-sm font-medium">{option.title}</div>
+                    <div className="text-xs text-gray-500 mt-1">{option.description}</div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Collapsible Section: Analyze Patterns */}
+        <div className="mb-6">
+          <button
+            onClick={() => toggleSection('analyze')}
+            className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors mb-3"
+          >
+            <span className={`transition-transform ${expandedSections.analyze ? 'rotate-90' : ''}`}>▶</span>
+            <TrendingUp size={16} />
+            Analyze Patterns {expandedSections.analyze ? '(show less)' : '(show more)'}
+          </button>
+          {expandedSections.analyze && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 ml-6 pl-4 border-l-2 border-indigo-200">
+              {analyzeOptions.map((option) => {
+                const Icon = option.icon;
+                return (
+                  <button
+                    key={option.id}
+                    data-visualization={option.id}
+                    onClick={() => handleVisualizationChange(option.id)}
+                    className={`p-4 border rounded-lg text-left transition-colors ${
+                      activeVisualization === option.id
+                        ? 'border-indigo-500 bg-indigo-50 text-indigo-900'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Icon size={20} className={`mb-2 ${
+                      activeVisualization === option.id ? 'text-indigo-600' : 'text-gray-600'
+                    }`} />
+                    <div className="text-sm font-medium">{option.title}</div>
+                    <div className="text-xs text-gray-500 mt-1">{option.description}</div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Collapsible Section: Settings */}
+        <div>
+          <button
+            onClick={() => toggleSection('settings')}
+            className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors mb-3"
+          >
+            <span className={`transition-transform ${expandedSections.settings ? 'rotate-90' : ''}`}>▶</span>
+            <span className="text-base">⚙️</span>
+            Display Settings {expandedSections.settings ? '(hide)' : '(show)'}
+          </button>
+          {expandedSections.settings && (
+            <div className="ml-6 pl-4 border-l-2 border-gray-200 space-y-4">
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase">Animation & Display</h4>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={toggleEmergencyMode}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      emergencyMode
+                        ? 'bg-red-100 text-red-800 border border-red-200'
+                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                    }`}
+                    title="Emergency Mode: Disables animations for critical clinical workflows"
+                  >
+                    {emergencyMode ? '🚨 Emergency Mode' : '⚡ Normal Mode'}
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setAnimationEnabled(!animationEnabled)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      animationEnabled
+                        ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                        : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                    }`}
+                    title="Toggle Northwestern animations on/off"
+                  >
+                    {animationEnabled ? '🎬 Animations On' : '📊 Animations Off'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase">Data Filters</h4>
+                <div className="flex items-center gap-2">
+                  <Filter size={16} className="text-gray-400" />
+                  <select
+                    value={selectedFilter}
+                    onChange={(e) => setSelectedFilter(e.target.value)}
+                    className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="all">All Data</option>
+                    <option value="gram-positive">Gram-Positive Only</option>
+                    <option value="gram-negative">Gram-Negative Only</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

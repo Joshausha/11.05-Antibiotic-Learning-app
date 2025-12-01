@@ -6,11 +6,23 @@
  * - setActiveTab: function - function to change the active tab
  */
 
-import React, { memo } from 'react';
-import { BookOpen, Target, Brain, TrendingUp, Award, Microscope, Pill, Shield } from 'lucide-react';
+import React, { memo, useState } from 'react';
+import { BookOpen, Target, Brain, TrendingUp, Award, Microscope, Pill, Shield, ChevronDown } from 'lucide-react';
 import { ProgressBar, CircularProgress, LearningProgress, MedicalTopicProgress } from './ProgressIndicator';
 
 const HomeTab = ({ setActiveTab = () => {} }) => {
+  // Progressive Disclosure State (Phase 1.2: HomeTab Simplification)
+  const [expandedSections, setExpandedSections] = useState({
+    moreTools: false,
+    detailedProgress: false
+  });
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
   // Mock user progress data for demonstration
   const userProgress = {
     totalQuizzes: 3,
@@ -137,10 +149,10 @@ const HomeTab = ({ setActiveTab = () => {} }) => {
         </section>
       )}
 
-      {/* Quick Actions Section */}
-      <section className="bg-white rounded-xl shadow-sm border p-8 mb-12" aria-labelledby="quick-actions-heading">
-        <h3 id="quick-actions-heading" className="text-2xl font-bold text-gray-900 mb-6 text-center">Quick Actions</h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" role="group" aria-labelledby="quick-actions-heading">
+      {/* Primary Actions Section (Phase 1.2: Simplified to 2 main CTAs) */}
+      <section className="bg-white rounded-xl shadow-sm border p-8 mb-12" aria-labelledby="primary-actions-heading">
+        <h2 id="primary-actions-heading" className="text-2xl font-bold text-gray-900 mb-6 text-center">Get Started Learning</h2>
+        <div className="grid sm:grid-cols-2 gap-6 mb-6" role="group" aria-labelledby="primary-actions-heading">
           <button
             type="button"
             className="flex flex-col items-center gap-3 p-6 border-2 border-blue-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 touch-manipulation"
@@ -154,7 +166,7 @@ const HomeTab = ({ setActiveTab = () => {} }) => {
             <h3 className="font-semibold text-gray-900">Take a Quiz</h3>
             <p className="text-sm text-gray-600 text-center">Test your knowledge with clinical cases</p>
           </button>
-          
+
           <button
             type="button"
             className="flex flex-col items-center gap-3 p-6 border-2 border-green-200 rounded-lg hover:border-green-400 hover:bg-green-50 transition-all duration-200 touch-manipulation"
@@ -168,129 +180,115 @@ const HomeTab = ({ setActiveTab = () => {} }) => {
             <h3 className="font-semibold text-gray-900">Browse Conditions</h3>
             <p className="text-sm text-gray-600 text-center">Explore medical conditions and treatments</p>
           </button>
+        </div>
 
+        {/* Collapsible: More Learning Tools (Phase 1.2: Progressive Disclosure) */}
+        <div className="border-t pt-6">
           <button
-            type="button"
-            className="flex flex-col items-center gap-3 p-6 border-2 border-purple-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 touch-manipulation"
-            onClick={() => handleNavigation('pathogen-explorer')}
-            onKeyDown={(e) => handleKeyDown(e, 'pathogen-explorer')}
-            aria-label="Explore Pathogens - Study bacterial characteristics and identification"
+            onClick={() => toggleSection('moreTools')}
+            className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors"
           >
-            <div className="p-3 bg-purple-100 rounded-full">
-              <Microscope size={24} className="text-purple-600" aria-hidden="true" />
-            </div>
-            <h3 className="font-semibold text-gray-900">Explore Pathogens</h3>
-            <p className="text-sm text-gray-600 text-center">Study bacterial characteristics and identification</p>
-          </button>
-
-          <button
-            type="button"
-            className="flex flex-col items-center gap-3 p-6 border-2 border-green-200 rounded-lg hover:border-green-400 hover:bg-green-50 transition-all duration-200 touch-manipulation"
-            onClick={() => handleNavigation('antibiotic-explorer')}
-            onKeyDown={(e) => handleKeyDown(e, 'antibiotic-explorer')}
-            aria-label="Antibiotic Database - Browse drug mechanisms and clinical uses"
-          >
-            <div className="p-3 bg-green-100 rounded-full">
-              <Pill size={24} className="text-green-600" aria-hidden="true" />
-            </div>
-            <h3 className="font-semibold text-gray-900">Antibiotic Database</h3>
-            <p className="text-sm text-gray-600 text-center">Browse drug mechanisms and clinical uses</p>
+            <span className={`transition-transform ${expandedSections.moreTools ? 'rotate-180' : ''}`}>
+              <ChevronDown size={16} />
+            </span>
+            {expandedSections.moreTools ? 'Show fewer tools' : 'Explore more learning tools'}
           </button>
 
-          <button
-            type="button"
-            className="flex flex-col items-center gap-3 p-6 border-2 border-red-200 rounded-lg hover:border-red-400 hover:bg-red-50 transition-all duration-200 touch-manipulation"
-            onClick={() => handleNavigation('resistance')}
-            onKeyDown={(e) => handleKeyDown(e, 'resistance')}
-            aria-label="Resistance Patterns - Learn about antimicrobial resistance mechanisms"
-          >
-            <div className="p-3 bg-red-100 rounded-full">
-              <Shield size={24} className="text-red-600" aria-hidden="true" />
-            </div>
-            <h3 className="font-semibold text-gray-900">Resistance Patterns</h3>
-            <p className="text-sm text-gray-600 text-center">Learn about antimicrobial resistance mechanisms</p>
-          </button>
+          {expandedSections.moreTools && (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6" role="group">
+              <button
+                type="button"
+                className="flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 touch-manipulation text-sm"
+                onClick={() => handleNavigation('pathogen-explorer')}
+                onKeyDown={(e) => handleKeyDown(e, 'pathogen-explorer')}
+                aria-label="Explore Pathogens - Study bacterial characteristics"
+              >
+                <Microscope size={20} className="text-purple-600" aria-hidden="true" />
+                <h4 className="font-semibold text-gray-900">Explore Pathogens</h4>
+                <p className="text-xs text-gray-600 text-center">Bacterial characteristics</p>
+              </button>
 
-          <button
-            type="button"
-            className="flex flex-col items-center gap-3 p-6 border-2 border-yellow-200 rounded-lg hover:border-yellow-400 hover:bg-yellow-50 transition-all duration-200 touch-manipulation"
-            onClick={() => handleNavigation('analytics')}
-            onKeyDown={(e) => handleKeyDown(e, 'analytics')}
-            aria-label="Learning Analytics - Track your progress and performance trends"
-          >
-            <div className="p-3 bg-yellow-100 rounded-full">
-              <TrendingUp size={24} className="text-yellow-600" aria-hidden="true" />
+              <button
+                type="button"
+                className="flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-all duration-200 touch-manipulation text-sm"
+                onClick={() => handleNavigation('antibiotic-explorer')}
+                onKeyDown={(e) => handleKeyDown(e, 'antibiotic-explorer')}
+                aria-label="Antibiotic Database - Browse drug mechanisms"
+              >
+                <Pill size={20} className="text-green-600" aria-hidden="true" />
+                <h4 className="font-semibold text-gray-900">Antibiotic Database</h4>
+                <p className="text-xs text-gray-600 text-center">Drug mechanisms</p>
+              </button>
+
+              <button
+                type="button"
+                className="flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-all duration-200 touch-manipulation text-sm"
+                onClick={() => handleNavigation('resistance')}
+                onKeyDown={(e) => handleKeyDown(e, 'resistance')}
+                aria-label="Resistance Patterns - Antimicrobial resistance"
+              >
+                <Shield size={20} className="text-red-600" aria-hidden="true" />
+                <h4 className="font-semibold text-gray-900">Resistance Patterns</h4>
+                <p className="text-xs text-gray-600 text-center">Resistance mechanisms</p>
+              </button>
+
+              <button
+                type="button"
+                className="flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:border-yellow-300 hover:bg-yellow-50 transition-all duration-200 touch-manipulation text-sm"
+                onClick={() => handleNavigation('analytics')}
+                onKeyDown={(e) => handleKeyDown(e, 'analytics')}
+                aria-label="Learning Analytics - Track progress"
+              >
+                <TrendingUp size={20} className="text-yellow-600" aria-hidden="true" />
+                <h4 className="font-semibold text-gray-900">Learning Analytics</h4>
+                <p className="text-xs text-gray-600 text-center">Track your progress</p>
+              </button>
+
+              <button
+                type="button"
+                className="flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-200 touch-manipulation text-sm"
+                onClick={() => handleNavigation('reference')}
+                onKeyDown={(e) => handleKeyDown(e, 'reference')}
+                aria-label="Pathogen Explorer - Discover relationships"
+              >
+                <Target size={20} className="text-indigo-600" aria-hidden="true" />
+                <h4 className="font-semibold text-gray-900">Pathogen Explorer</h4>
+                <p className="text-xs text-gray-600 text-center">Discover relationships</p>
+              </button>
             </div>
-            <h3 className="font-semibold text-gray-900">Learning Analytics</h3>
-            <p className="text-sm text-gray-600 text-center">Track your progress and performance trends</p>
-          </button>
-          
-          <button
-            type="button"
-            className="flex flex-col items-center gap-3 p-6 border-2 border-purple-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 touch-manipulation"
-            onClick={() => handleNavigation('reference')}
-            onKeyDown={(e) => handleKeyDown(e, 'reference')}
-            aria-label="Pathogen Explorer - Discover pathogens and antibiotics"
-          >
-            <div className="p-3 bg-purple-100 rounded-full">
-              <Target size={24} className="text-purple-600" aria-hidden="true" />
-            </div>
-            <h3 className="font-semibold text-gray-900">Pathogen Explorer</h3>
-            <p className="text-sm text-gray-600 text-center">Discover pathogens and antibiotics</p>
-          </button>
+          )}
         </div>
       </section>
 
-      {/* Feature Cards */}
-      <section className="grid md:grid-cols-3 gap-8" aria-labelledby="features-heading">
-        <h2 id="features-heading" className="sr-only">Key Features</h2>
-        
-        <div className="text-center p-8 bg-white rounded-xl shadow-sm border" role="region" aria-labelledby="clinical-guidelines-heading">
-          <div className="mx-auto mb-4 p-4 bg-blue-100 rounded-full w-fit">
-            <BookOpen size={24} className="text-blue-600" aria-hidden="true" />
-          </div>
-          <h2 id="clinical-guidelines-heading" className="text-xl font-semibold mb-2">Clinical Guidelines</h2>
-          <p className="text-gray-600">
-            Evidence-based treatment protocols from leading medical societies and pediatric infectious disease experts.
-          </p>
-        </div>
-        
-        <div className="text-center p-8 bg-white rounded-xl shadow-sm border" role="region" aria-labelledby="targeted-learning-heading">
-          <div className="mx-auto mb-4 p-4 bg-blue-100 rounded-full w-fit">
-            <Target size={24} className="text-blue-600" aria-hidden="true" />
-          </div>
-          <h2 id="targeted-learning-heading" className="text-xl font-semibold mb-2">Targeted Learning</h2>
-          <p className="text-gray-600">
-            Focus on high-yield infectious disease conditions commonly encountered in clinical practice.
-          </p>
-        </div>
-        
-        <div className="text-center p-8 bg-white rounded-xl shadow-sm border" role="region" aria-labelledby="interactive-quizzes-heading">
-          <div className="mx-auto mb-4 p-4 bg-blue-100 rounded-full w-fit">
-            <Brain size={24} className="text-blue-600" aria-hidden="true" />
-          </div>
-          <h2 id="interactive-quizzes-heading" className="text-xl font-semibold mb-2">Interactive Quizzes</h2>
-          <p className="text-gray-600">
-            Test your knowledge with case-based questions and detailed explanations for each answer.
-          </p>
-        </div>
-      </section>
-
-      {/* Enhanced Progress Indicators Section */}
-      <section className="mt-12 grid md:grid-cols-2 gap-8" aria-labelledby="detailed-progress-heading">
+      {/* Collapsible: Detailed Learning Progress (Phase 1.2: Progressive Disclosure) */}
+      <section className="mt-8" aria-labelledby="detailed-progress-heading">
         <h2 id="detailed-progress-heading" className="sr-only">Detailed Learning Progress</h2>
-        
-        <LearningProgress 
-          sections={learningSections}
-          className="h-fit"
-          aria-label="Learning sections progress breakdown"
-        />
-        
-        <MedicalTopicProgress 
-          topicData={medicalTopics}
-          className="h-fit"
-          aria-label="Medical topic mastery levels"
-        />
+
+        <button
+          onClick={() => toggleSection('detailedProgress')}
+          className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors mb-4"
+        >
+          <span className={`transition-transform ${expandedSections.detailedProgress ? 'rotate-180' : ''}`}>
+            <ChevronDown size={16} />
+          </span>
+          {expandedSections.detailedProgress ? 'Hide detailed progress' : 'Show detailed progress analytics'}
+        </button>
+
+        {expandedSections.detailedProgress && (
+          <div className="grid md:grid-cols-2 gap-8">
+            <LearningProgress
+              sections={learningSections}
+              className="h-fit"
+              aria-label="Learning sections progress breakdown"
+            />
+
+            <MedicalTopicProgress
+              topicData={medicalTopics}
+              className="h-fit"
+              aria-label="Medical topic mastery levels"
+            />
+          </div>
+        )}
       </section>
     </main>
   );

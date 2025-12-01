@@ -51,7 +51,8 @@ const ClinicalDecisionTree = ({
   onDecisionPathChange = () => {},
   className = '',
   antibioticData = [],
-  pathogenData = []
+  pathogenData = [],
+  selectedPathogen = null
 }) => {
   // Core decision state management
   const [currentNode, setCurrentNode] = useState('root');
@@ -656,6 +657,19 @@ const ClinicalDecisionTree = ({
       <div className="decision-tree-header">
         <h2>Clinical Decision Support</h2>
         <div className="decision-context">
+          {selectedPathogen && (
+            <span className="selected-pathogen">
+              📍 Pathogen: <strong>{selectedPathogen.name}</strong>
+              {selectedPathogen.severity && (
+                <span className={`severity-badge severity-${selectedPathogen.severity}`}>
+                  {selectedPathogen.severity.toUpperCase()}
+                </span>
+              )}
+              {selectedPathogen.gramStain && (
+                <span className="gram-stain">{selectedPathogen.gramStain}</span>
+              )}
+            </span>
+          )}
           <span className="condition">{condition.replace(/-/g, ' ')}</span>
           {clinicalInputs.age && (
             <span className="patient-age">Age: {clinicalInputs.age}y</span>

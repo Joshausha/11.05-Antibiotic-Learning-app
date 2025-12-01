@@ -3,7 +3,7 @@ type: development-guidance
 title: CLAUDE.md - Antibiotic Learning App Development Guide
 status: streamlined-post-consolidation
 created: 2025-07-16
-modified: 2025-11-28
+modified: 2025-11-30
 tags: [claude-code, development-patterns, medical-education, consolidated]
 category: Projects
 purpose: claude-code-development-guidance-essential-patterns-only
@@ -13,7 +13,7 @@ redirect: PROJECT_STATUS.md for comprehensive project information
 
 # CLAUDE.md - Essential Development Patterns
 **Streamlined Development Guide for Claude Code**
-*Last Updated: 2025-11-28*
+*Last Updated: 2025-11-30*
 
 > **📋 CONSOLIDATED DOCUMENTATION NOTICE**: Most project information has been consolidated into [`PROJECT_STATUS.md`](PROJECT_STATUS.md). This file contains only essential development patterns for Claude Code sessions.
 
@@ -21,12 +21,24 @@ redirect: PROJECT_STATUS.md for comprehensive project information
 
 ## 🎯 Project Overview
 
-**Antibiotic Learning App** - Production-ready clinical decision education platform with 96.9% test suite pass rate (62/64 suites).
+**Antibiotic Learning App** - Production-ready clinical decision education platform with streamlined learning-focused UI/UX.
 
-**Current Focus**: Phase 7.2 Enhanced Network Visualization
-- ✅ **Week 1 Complete** (2025-11-28): Jaccard similarity algorithm, PathogenRelationshipData generation, medical validation
-- **Week 1 Results**: 97 tests (100% pass), 50-65 relationships (0 medical violations), 100% clinical accuracy
-- ➡️ **Week 2 Starting**: NetworkLayoutEngine with D3.js force-directed layout
+**Current Focus**: Phase 1.3 Design Token Standardization (After Phase 1 UI/UX Completion)
+
+**✅ PHASE 1: UI/UX IMPROVEMENT - COMPLETE** (2025-12-01)
+- ✅ **Phase 1.1**: VisualizationsTab progressive disclosure (COMPLETE)
+  - 60% reduction in visual clutter in default view
+  - 3 collapsible groups: Overview Dashboard (default), Explore Relationships, Analyze Patterns, Settings
+  - Build: 416.26 kB gzipped | Tests: 1723 passing (zero regressions)
+
+- ✅ **Phase 1.2**: HomeTab simplification (COMPLETE)
+  - 71% CTA reduction: 7 buttons → 2 primary (Take Quiz, Browse Conditions)
+  - 5 secondary actions in collapsible "More Learning Tools"
+  - Removed Feature Cards section (redundant), made progress analytics collapsible
+  - Build: 416.26 kB gzipped | Tests: 1718 passing (net +3 tests!)
+
+**Phase 7.2 Network Visualization**: ✅ Weeks 1-2 complete (Jaccard similarity + D3.js layouts)
+**Priority 2 Medical Integration**: ✅ Complete (ClinicalDecisionTree, GuidelineComparison, PathogenRelationships)
 
 **For Complete Project Information**: See [`PROJECT_STATUS.md`](PROJECT_STATUS.md)
 
@@ -128,14 +140,16 @@ const count = pathogens?.length || 0;
 
 ## 📋 Current Status Quick Reference
 
-- **Test Infrastructure**: ✅ 96.9% base test suite + Phase 7.2 Week 1 (97 new tests, 100% pass rate)
-  - **Phase 7.2 Week 1**: ✅ 97 tests (Jaccard: 49, PathogenRelationshipData: 41, Medical validation: 7) - 100% pass
-- **Code Quality**: ✅ Systematic optimization (204 linting warnings)
-- **Production Build**: ✅ 68.86 kB gzipped
-- **Medical Foundation**: ✅ Northwestern animations + Phase 7.2 Jaccard similarity (100% clinical accuracy, 0 violations)
-- **Development Phase**: Phase 7.2 Week 1 complete, Week 2 D3.js integration starting
+- **Test Infrastructure**: ✅ 1718 total tests passing (100% pass rate, zero regressions)
+  - **Phase 1 Updates**: ✅ HomeTab simplified, 36/36 tests passing (net +3 tests from Phase 1.2)
+  - **Phase 7.2 Week 1**: ✅ 97 tests (Jaccard: 49, PathogenRelationshipData: 41, Medical validation: 7)
+  - **Priority 2.2 Integration Tests**: ✅ 24 tests (Guideline display, state management, navigation, accessibility)
+- **Code Quality**: ✅ Systematic optimization (204 linting warnings, zero critical issues)
+- **Production Build**: ✅ 416.26 kB gzipped (54 bytes smaller, optimal size)
+- **Medical Foundation**: ✅ Northwestern animations + Priority 2 Medical Integration + Phase 1 UI/UX (100% clinical accuracy)
+- **Development Phase**: Phase 1 UI/UX COMPLETE ✅ - Phase 1.3 Design Token Standardization IN PROGRESS
 
-**Phase Status**: Phase 7.2 Week 1 (Foundation Layer) COMPLETE, Week 2 (D3.js Integration) STARTING
+**Current Status**: Phase 1 UI/UX Improvement COMPLETE ✅ - Phase 1.3 (Design Tokens) NEXT
 
 ---
 

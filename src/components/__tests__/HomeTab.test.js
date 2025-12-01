@@ -20,22 +20,14 @@ describe('HomeTab Component', () => {
     expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
   });
 
-  test('renders all feature cards', () => {
-    render(<HomeTab setActiveTab={mockSetActiveTab} />);
-    
-    expect(screen.getByRole('heading', { name: /clinical guidelines/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /targeted learning/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /interactive quizzes/i })).toBeInTheDocument();
-  });
-
   test('renders call-to-action button', () => {
     render(<HomeTab setActiveTab={mockSetActiveTab} />);
-    
+
     const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
     const referenceButton = screen.getByText(/browse reference/i);
-    
-    // Should find both the main CTA button and feature card button
-    expect(quizButtons).toHaveLength(2);
+
+    // Should find the main CTA buttons (others are in collapsed section)
+    expect(quizButtons.length).toBeGreaterThan(0);
     expect(referenceButton).toBeInTheDocument();
   });
 
@@ -50,31 +42,16 @@ describe('HomeTab Component', () => {
 
   test('component structure includes main sections', () => {
     render(<HomeTab setActiveTab={mockSetActiveTab} />);
-    
+
     // Check for main heading and description
     expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
     expect(screen.getByText(/master infectious diseases/i)).toBeInTheDocument();
-    
-    // Check for feature descriptions - use getAllByText for multiple elements
-    expect(screen.getAllByText(/evidence-based treatment protocols/i)).toHaveLength(2);
-    expect(screen.getByText(/test your knowledge with case-based questions/i)).toBeInTheDocument();
+
+    // Check for primary section and main CTA buttons
+    expect(screen.getByText(/get started learning/i)).toBeInTheDocument();
+    expect(screen.getByText(/test your knowledge with clinical cases/i)).toBeInTheDocument();
   });
 
-  test('feature cards have proper structure', () => {
-    render(<HomeTab setActiveTab={mockSetActiveTab} />);
-    
-    // Check that feature card headings exist
-    const clinicalGuidelinesHeading = screen.getByRole('heading', { name: /clinical guidelines/i });
-    const targetedLearningHeading = screen.getByRole('heading', { name: /targeted learning/i });
-    const interactiveQuizzesHeading = screen.getByRole('heading', { name: /interactive quizzes/i });
-    
-    expect(clinicalGuidelinesHeading).toBeInTheDocument();
-    expect(targetedLearningHeading).toBeInTheDocument();
-    expect(interactiveQuizzesHeading).toBeInTheDocument();
-    
-    // Check for descriptive text
-    expect(screen.getByText(/focus on high-yield infectious disease/i)).toBeInTheDocument();
-  });
 
   // Enhanced Phase 2 Accessibility and WCAG Compliance Tests
   
@@ -172,10 +149,11 @@ describe('HomeTab Component', () => {
       });
       
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
-      
+
       // Content should still be accessible
       expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
-      expect(screen.getAllByRole('button', { name: /take a quiz/i })).toHaveLength(2);
+      const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
+      expect(quizButtons.length).toBeGreaterThan(0); // Main CTA button
       
       // Restore original window size
       Object.defineProperty(window, 'innerWidth', {
@@ -283,47 +261,12 @@ describe('HomeTab Component', () => {
       
       // Component should render without errors even with zero progress
       const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
-      expect(quizButtons).toHaveLength(2); // Main CTA and feature card button
+      expect(quizButtons.length).toBeGreaterThan(0); // Main CTA button exists
     });
   });
   
-  describe('Feature Cards Interaction', () => {
-    test('feature cards are properly structured for accessibility', () => {
-      render(<HomeTab setActiveTab={mockSetActiveTab} />);
-      
-      // Check for the three main feature cards using more specific selectors
-      expect(screen.getByRole('heading', { name: /clinical guidelines/i })).toBeInTheDocument();
-      expect(screen.getByRole('heading', { name: /targeted learning/i })).toBeInTheDocument();
-      expect(screen.getByRole('heading', { name: /interactive quizzes/i })).toBeInTheDocument();
-      
-      // Verify we have the expected feature cards regions
-      const clinicalGuidelinesRegion = screen.getByRole('region', { name: /clinical guidelines/i });
-      expect(clinicalGuidelinesRegion).toBeInTheDocument();
-    });
-    
-    test('feature descriptions are informative and complete', () => {
-      render(<HomeTab setActiveTab={mockSetActiveTab} />);
-      
-      // Check for comprehensive descriptions
-      expect(screen.getAllByText(/evidence-based treatment protocols/i)[0]).toBeInTheDocument();
-      expect(screen.getByText(/focus on high-yield infectious disease/i)).toBeInTheDocument();
-      expect(screen.getByText(/test your knowledge with case-based questions/i)).toBeInTheDocument();
-    });
-    
-    test('icons are properly associated with feature cards', () => {
-      render(<HomeTab setActiveTab={mockSetActiveTab} />);
-      
-      // Check that feature cards have proper structure with headings
-      const clinicalGuidelinesHeading = screen.getByRole('heading', { name: /clinical guidelines/i });
-      const targetedLearningHeading = screen.getByRole('heading', { name: /targeted learning/i });
-      const interactiveQuizzesHeading = screen.getByRole('heading', { name: /interactive quizzes/i });
-      
-      expect(clinicalGuidelinesHeading).toBeInTheDocument();
-      expect(targetedLearningHeading).toBeInTheDocument();
-      expect(interactiveQuizzesHeading).toBeInTheDocument();
-    });
-  });
-  
+  // Feature Cards Interaction tests removed (Phase 1.2: Feature Cards removed for clutter reduction)
+
   describe('Navigation and User Flow', () => {
     test('handles navigation errors gracefully', () => {
       const mockSetActiveTabWithError = jest.fn(() => {
@@ -455,22 +398,23 @@ describe('HomeTab Component', () => {
       
       expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
       const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
-      expect(quizButtons).toHaveLength(2); // Main CTA and feature card button
+      expect(quizButtons.length).toBeGreaterThan(0); // Main CTA button exists
     });
-    
+
     test('maintains state during prop updates', () => {
       const mockSetActiveTab1 = jest.fn();
       const mockSetActiveTab2 = jest.fn();
-      
+
       const { rerender } = render(<HomeTab setActiveTab={mockSetActiveTab1} />);
-      
+
       // Component should render with first prop
       const quizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
-      expect(quizButtons).toHaveLength(2); // Main CTA and feature card button
-      
+      expect(quizButtons.length).toBeGreaterThan(0); // Main CTA button exists
+      const quizButton = quizButtons[0];
+
       // Update prop and verify component still works
       rerender(<HomeTab setActiveTab={mockSetActiveTab2} />);
-      
+
       const updatedQuizButtons = screen.getAllByRole('button', { name: /take a quiz/i });
       const updatedStartButton = updatedQuizButtons[0]; // Main CTA button
       fireEvent.click(updatedStartButton);
@@ -531,30 +475,27 @@ describe('HomeTab Component', () => {
   describe('Content Quality and Medical Education Focus', () => {
     test('displays medically accurate content', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
-      
+
       // Check for medical terminology and concepts
       expect(screen.getByText(/infectious diseases/i)).toBeInTheDocument();
       expect(screen.getByText(/antimicrobial therapy/i)).toBeInTheDocument();
-      expect(screen.getAllByText(/clinical guidelines/i)[0]).toBeInTheDocument();
-      expect(screen.getAllByText(/evidence-based/i)[0]).toBeInTheDocument();
+      expect(screen.getByText(/medical learning app/i)).toBeInTheDocument();
     });
     
     test('promotes educational best practices', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
-      
-      // Check for educational concepts
-      expect(screen.getByText(/case-based questions/i)).toBeInTheDocument();
-      expect(screen.getByText(/detailed explanations/i)).toBeInTheDocument();
-      expect(screen.getByText(/high-yield/i)).toBeInTheDocument();
+
+      // Check for educational concepts in main CTA
+      expect(screen.getByText(/test your knowledge with clinical cases/i)).toBeInTheDocument();
+      expect(screen.getByText(/explore medical conditions/i)).toBeInTheDocument();
     });
-    
+
     test('emphasizes clinical relevance', () => {
       render(<HomeTab setActiveTab={mockSetActiveTab} />);
-      
-      // Check for clinical practice focus
-      expect(screen.getByText(/clinical practice/i)).toBeInTheDocument();
-      expect(screen.getAllByText(/treatment protocols/i)[0]).toBeInTheDocument();
-      expect(screen.getByText(/medical societies/i)).toBeInTheDocument();
+
+      // Check for clinical focus in primary actions
+      expect(screen.getByText(/infectious diseases/i)).toBeInTheDocument();
+      expect(screen.getByText(/antimicrobial therapy/i)).toBeInTheDocument();
     });
   });
   

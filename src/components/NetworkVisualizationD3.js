@@ -38,13 +38,15 @@ import '../styles/NetworkVisualizationD3.css';
  * @param {boolean} props.showMetrics - Display performance metrics (default: true)
  * @param {number} props.width - Canvas width (default: 800)
  * @param {number} props.height - Canvas height (default: 600)
+ * @param {function} props.onNodeClick - Callback when a node is clicked (receives node data)
  * @returns {React.ReactElement} Rendered network visualization
  */
 const NetworkVisualizationD3 = ({
   layoutType = 'force',
   showMetrics = true,
   width = 800,
-  height = 600
+  height = 600,
+  onNodeClick = null
 }) => {
   const svgRef = useRef(null);
   const [currentLayout, setCurrentLayout] = useState(layoutType);
@@ -337,6 +339,10 @@ const NetworkVisualizationD3 = ({
       .on('click', (event, d) => {
         event.stopPropagation();
         setSelectedNode(d);
+        // Call onNodeClick callback if provided (for ClinicalDecisionTree integration)
+        if (onNodeClick) {
+          onNodeClick(d);
+        }
       })
       .on('mouseenter', (event, d) => {
         setHoveredNode(d);
@@ -382,7 +388,7 @@ const NetworkVisualizationD3 = ({
       hideTooltip();
     });
 
-  }, [layout, selectedNode, hoveredNode, similarityThreshold, severityFilters, gramStainFilters, tooltip]);
+  }, [layout, selectedNode, hoveredNode, similarityThreshold, severityFilters, gramStainFilters, tooltip, onNodeClick]);
 
   /**
    * Get severity color for consistency
