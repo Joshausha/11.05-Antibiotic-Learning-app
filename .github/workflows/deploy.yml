@@ -98,37 +98,19 @@ jobs:
   post-deploy:
     runs-on: ubuntu-latest
     needs: deploy
-    if: always()
-    
+    if: needs.deploy.result == 'success'
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Create deployment tag
+    - name: Deployment summary
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-        TAG_NAME="deploy-${TIMESTAMP}"
-        
-        git tag -a "$TAG_NAME" -m "Deployment on $(date)"
-        git push origin "$TAG_NAME"
-    
-    - name: Update deployment status
-      run: |
-        echo "Deployment completed at: $(date)"
+        echo "✅ Deployment successful!"
+        echo ""
+        echo "📋 Deployment Details"
+        echo "====================="
         echo "Repository: ${{ github.repository }}"
         echo "Commit: ${{ github.sha }}"
         echo "Branch: ${{ github.ref_name }}"
         echo "Actor: ${{ github.actor }}"
-    
-    - name: Notify deployment status
-      run: |
-        if [ "${{ needs.deploy.result }}" = "success" ]; then
-          echo "✅ Deployment successful!"
-          echo "🌐 Site URL: https://${{ github.repository_owner }}.github.io/Antibiotic-Learning-app"
-        else
-          echo "❌ Deployment failed!"
-          echo "Check the logs for details."
-        fi
+        echo "Deployed at: $(date)"
+        echo ""
+        echo "🌐 Site URL: https://${{ github.repository_owner }}.github.io/11.05-Antibiotic-Learning-app/"
