@@ -1,41 +1,42 @@
 /**
  * VisualizationsTab Component
  * Comprehensive data visualization dashboard for the antibiotic learning app
- * Provides multiple visualization types for exploring medical data relationships
+ *
+ * REFACTORED: Phase 4 - Extracted modules:
+ * - useVisualizationState hook (state management)
+ * - visualizationConfig (configuration)
+ * - OverviewDashboard component
+ * - PathogenNetworkPanel component
+ * - AntibioticAnalysisPanel component
  */
 
-import React, { memo, useState, useEffect, useRef } from 'react';
-import { 
-  BarChart3, 
-  Network, 
-  PieChart, 
-  Activity, 
-  Target, 
+import React, { memo, useEffect } from 'react';
+import {
+  BarChart3,
+  Network,
+  PieChart,
   Microscope,
   TrendingUp,
   Grid,
-  Filter,
-  Download
+  Filter
 } from 'lucide-react';
-import LoadingSpinner from './LoadingSpinner';
 import ErrorBoundary from './ErrorBoundary';
 
-// Import sophisticated network visualization
-import PathogenNetworkVisualization from './PathogenNetworkVisualization';
-import PathogenNetworkVisualizationCytoscape from './PathogenNetworkVisualizationCytoscape';
-import NetworkVisualizationD3 from './NetworkVisualizationD3';
+// Extracted components
+import OverviewDashboard from './visualizations/OverviewDashboard';
+import PathogenNetworkPanel from './visualizations/PathogenNetworkPanel';
+import AntibioticAnalysisPanel from './visualizations/AntibioticAnalysisPanel';
 
-// Import Northwestern pie chart components
-import AnimatedNorthwesternPieChart from './AnimatedNorthwesternPieChart';
-import NorthwesternPieChart from './NorthwesternPieChart';
+// Extracted hook and config
+import useVisualizationState from '../hooks/useVisualizationState';
+import {
+  overviewOption,
+  exploreOptions,
+  analyzeOptions,
+  filterOptions
+} from '../config/visualizationConfig';
 
-// Import Northwestern spatial layout system
-import NorthwesternSpatialLayout from './NorthwesternSpatialLayout';
-
-// Import Northwestern animation system - the crown jewel (875 lines)
-import { useNorthwesternAnimations } from '../animations/NorthwesternAnimations';
-
-// Import Phase 7: Northwestern Comparison components
+// Import Phase 7 comparison components
 import NorthwesternComparisonView from './NorthwesternComparisonView';
 import ComparisonControlPanel from './ComparisonControlPanel';
 
@@ -45,162 +46,79 @@ import ClinicalDecisionTree from './ClinicalDecision/ClinicalDecisionTree';
 // Import Guideline Comparison Panel for evidence-based recommendations
 import GuidelineComparisonPanel from './ClinicalDecision/GuidelineComparisonPanel';
 
-// Import guideline data and helper functions (Priority 2.2)
+// Import guideline data
 import {
   getGuidelinesForCondition,
   getGuidelinesForPathogen,
   guidelineDisclaimer
 } from '../data/ClinicalGuidelineData';
 
-import {
-  getConditionsForPathogen,
-  getConditionKeys
-} from '../data/PathogenConditionMapping';
+// Import Northwestern Animation System
+import { useNorthwesternAnimations } from '../animations/NorthwesternAnimations';
 
 const VisualizationsTab = ({
   pathogenData,
   antibioticData,
   medicalConditions,
   onSelectCondition,
-  onSelectPathogen 
+  onSelectPathogen
 }) => {
-  const [activeVisualization, setActiveVisualization] = useState('overview');
-  const [selectedFilter, setSelectedFilter] = useState('all');
-  // New state for spatial layout switching
-  const [networkLayoutMode, setNetworkLayoutMode] = useState('d3');
-  const [spatialViewMode, setSpatialViewMode] = useState('clustered');
-
-  // State for pathogen context navigation (Priority 2.1: ClinicalDecisionTree integration)
-  const [selectedPathogen, setSelectedPathogen] = useState(null);
-
-  // State for guideline display (Priority 2.2: GuidelineComparisonPanel integration)
-  const [selectedConditionForGuidelines, setSelectedConditionForGuidelines] = useState('community-acquired-pneumonia');
-  const [displayedGuidelines, setDisplayedGuidelines] = useState([]);
-
-  // Northwestern Animation System integration
-  const [emergencyMode, setEmergencyMode] = useState(false);
-  const [animationEnabled, setAnimationEnabled] = useState(false); // TEMPORARILY DISABLED: Animations causing content to disappear
-  const visualizationRef = useRef(null);
-
-  // Phase 7: Comparison Mode State
-  const [selectedComparisonAntibiotics, setSelectedComparisonAntibiotics] = useState([]);
-
-  // Progressive Disclosure State (Phase 1.1: UI/UX Clutter Reduction)
-  const [expandedSections, setExpandedSections] = useState({
-    explore: false,
-    analyze: false,
-    settings: false
-  });
-
-  const toggleSection = (section) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
+  // Use extracted state management hook
+  const {
+    activeVisualization,
+    setActiveVisualization,
+    selectedFilter,
+    setSelectedFilter,
+    networkLayoutMode,
+    setNetworkLayoutMode,
+    spatialViewMode,
+    setSpatialViewMode,
+    selectedPathogen,
+    setSelectedPathogen,
+    selectedConditionForGuidelines,
+    setSelectedConditionForGuidelines,
+    displayedGuidelines,
+    setDisplayedGuidelines,
+    emergencyMode,
+    setEmergencyMode,
+    animationEnabled,
+    setAnimationEnabled,
+    visualizationRef,
+    toggleEmergencyMode,
+    toggleAnimation,
+    selectedComparisonAntibiotics,
+    setSelectedComparisonAntibiotics,
+    handleComparisonDeselect,
+    expandedSections,
+    toggleSection,
+    overviewStats,
+    categoryDistribution,
+    drugClassDistribution,
+    handleNetworkNodeClick,
+    returnToNetwork
+  } = useVisualizationState({ pathogenData, antibioticData, medicalConditions });
 
   // Initialize Northwestern Animation System
   const {
     animationManager,
-    createCoverageRevealAnimation,
-    createHoverAnimation,
     createSelectionAnimation,
-    createLearningProgressAnimation,
-    createScenarioTransitionAnimation,
-    CLINICAL_TIMING,
-    MEDICAL_EASING
+    createScenarioTransitionAnimation
   } = useNorthwesternAnimations({
     emergencyMode,
     performanceMode: 'standard'
   });
 
-  // Calculate overview statistics
-  const overviewStats = {
-    totalConditions: medicalConditions?.length || 0,
-    totalPathogens: pathogenData?.pathogens?.length || 0,
-    totalAntibiotics: antibioticData?.antibiotics?.length || 0,
-    gramPositive: pathogenData?.pathogens?.filter(p => p.gramStatus === 'Positive').length || 0,
-    gramNegative: pathogenData?.pathogens?.filter(p => p.gramStatus === 'Negative').length || 0
-  };
-
-  // Generate category distribution data
-  const categoryDistribution = medicalConditions?.reduce((acc, condition) => {
-    acc[condition.category] = (acc[condition.category] || 0) + 1;
-    return acc;
-  }, {}) || {};
-
-  // Generate drug class distribution
-  const drugClassDistribution = antibioticData?.antibiotics?.reduce((acc, antibiotic) => {
-    acc[antibiotic.class] = (acc[antibiotic.class] || 0) + 1;
-    return acc;
-  }, {}) || {};
-
-  // Progressive Disclosure: Grouped visualization options (Phase 1.1: Clutter Reduction)
-  const overviewOption = {
-    id: 'overview',
-    title: 'Overview Dashboard',
-    icon: Grid,
-    description: 'High-level statistics and key metrics',
-    group: 'default'
-  };
-
-  const exploreOptions = [
-    {
-      id: 'pathogen-network',
-      title: 'Pathogen Network',
-      icon: Network,
-      description: 'Interactive network of pathogen relationships',
-      group: 'explore'
-    },
-    {
-      id: 'antibiotic-comparison',
-      title: 'Antibiotic Comparison',
-      icon: PieChart,
-      description: 'Side-by-side Northwestern coverage comparison',
-      group: 'explore'
-    }
-  ];
-
-  const analyzeOptions = [
-    {
-      id: 'category-distribution',
-      title: 'Category Distribution',
-      icon: PieChart,
-      description: 'Distribution of medical conditions by category',
-      group: 'analyze'
-    },
-    {
-      id: 'antibiotic-analysis',
-      title: 'Antibiotic Analysis',
-      icon: Activity,
-      description: 'Drug class distribution and usage patterns',
-      group: 'analyze'
-    },
-    {
-      id: 'pathogen-analysis',
-      title: 'Pathogen Analysis',
-      icon: Microscope,
-      description: 'Gram status and morphology analysis',
-      group: 'analyze'
-    }
-  ];
-
   // Northwestern Animation Effects
   useEffect(() => {
     if (!animationEnabled || !visualizationRef.current) return;
 
-    // Animate visualization transition with clinical timing
-    // createScenarioTransitionAnimation expects an array, so wrap single element
     const transitionAnimations = createScenarioTransitionAnimation(
       [visualizationRef.current],
       activeVisualization,
-      {
-        educationLevel: 'resident',
-        emergencyMode
-      }
+      { educationLevel: 'resident', emergencyMode }
     );
 
-    if (animationManager && transitionAnimations && transitionAnimations.length > 0) {
+    if (animationManager && transitionAnimations?.length > 0) {
       const firstAnimation = transitionAnimations[0];
       animationManager.animate(
         firstAnimation.element,
@@ -213,7 +131,14 @@ const VisualizationsTab = ({
         animationManager.cleanup();
       }
     };
-  }, [activeVisualization, animationManager, animationEnabled, emergencyMode, createScenarioTransitionAnimation]);
+  }, [activeVisualization, animationManager, animationEnabled, emergencyMode, createScenarioTransitionAnimation, visualizationRef]);
+
+  // Update emergency mode in animation manager
+  useEffect(() => {
+    if (animationManager?.setEmergencyMode) {
+      animationManager.setEmergencyMode(emergencyMode);
+    }
+  }, [emergencyMode, animationManager]);
 
   // Enhanced visualization selection with animation
   const handleVisualizationChange = async (visualizationId) => {
@@ -221,19 +146,15 @@ const VisualizationsTab = ({
       setActiveVisualization(visualizationId);
       return;
     }
-    
-    // Create selection animation using Northwestern system
+
     const selectionElement = document.querySelector(`[data-visualization="${visualizationId}"]`);
     if (selectionElement && animationManager) {
       const selectionAnimation = createSelectionAnimation(
         selectionElement,
         'visualization',
-        {
-          educationLevel: 'resident',
-          emergencyMode
-        }
+        { educationLevel: 'resident', emergencyMode }
       );
-      
+
       try {
         await animationManager.animate(
           selectionAnimation.element,
@@ -243,137 +164,24 @@ const VisualizationsTab = ({
         console.warn('Animation failed:', error);
       }
     }
-    
+
     setActiveVisualization(visualizationId);
   };
 
-  // Emergency mode toggle for clinical workflows
-  const toggleEmergencyMode = () => {
-    const newEmergencyMode = !emergencyMode;
-    setEmergencyMode(newEmergencyMode);
+  // Handle guideline display request
+  const handleShowGuidelinesForPathogen = (pathogenName, condition = null) => {
+    const effectiveCondition = condition || selectedConditionForGuidelines;
+    const guidelinesForPathogen = getGuidelinesForPathogen(pathogenName, effectiveCondition);
+    const guidelinesForCondition = guidelinesForPathogen.length > 0
+      ? guidelinesForPathogen
+      : getGuidelinesForCondition(effectiveCondition);
 
-    if (animationManager) {
-      animationManager.setEmergencyMode(newEmergencyMode);
-    }
+    setSelectedConditionForGuidelines(effectiveCondition);
+    setDisplayedGuidelines(guidelinesForCondition);
+    setActiveVisualization('guidelines');
   };
 
-  // Priority 2.1: Handle network node click for ClinicalDecisionTree navigation
-  const handleNetworkNodeClick = (pathogenNode) => {
-    // Store pathogen context for ClinicalDecisionTree
-    setSelectedPathogen(pathogenNode);
-    // Switch to Clinical Decision Tree view
-    setActiveVisualization('clinical-decision-tree');
-  };
-
-  const renderOverviewDashboard = () => (
-    <div className="space-y-6">
-      {/* Key Metrics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <div className="flex items-center gap-3">
-            <Target className="text-blue-600" size={24} />
-            <div>
-              <div className="text-2xl font-bold text-gray-900">{overviewStats.totalConditions}</div>
-              <div className="text-sm text-gray-600">Medical Conditions</div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <div className="flex items-center gap-3">
-            <Microscope className="text-green-600" size={24} />
-            <div>
-              <div className="text-2xl font-bold text-gray-900">{overviewStats.totalPathogens}</div>
-              <div className="text-sm text-gray-600">Pathogens</div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <div className="flex items-center gap-3">
-            <Activity className="text-purple-600" size={24} />
-            <div>
-              <div className="text-2xl font-bold text-gray-900">{overviewStats.totalAntibiotics}</div>
-              <div className="text-sm text-gray-600">Antibiotics</div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <div className="flex items-center gap-3">
-            <TrendingUp className="text-orange-600" size={24} />
-            <div>
-              <div className="text-2xl font-bold text-gray-900">
-                {Object.keys(categoryDistribution).length}
-              </div>
-              <div className="text-sm text-gray-600">Categories</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Insights */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Microscope size={20} className="text-green-600" />
-            Gram Status Distribution
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-700">Gram-Positive</span>
-              <div className="flex items-center gap-2">
-                <div className="w-32 bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-green-500 h-2 rounded-full"
-                    style={{ 
-                      width: `${(overviewStats.gramPositive / overviewStats.totalPathogens) * 100}%` 
-                    }}
-                  ></div>
-                </div>
-                <span className="text-sm font-medium">{overviewStats.gramPositive}</span>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-700">Gram-Negative</span>
-              <div className="flex items-center gap-2">
-                <div className="w-32 bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-red-500 h-2 rounded-full"
-                    style={{ 
-                      width: `${(overviewStats.gramNegative / overviewStats.totalPathogens) * 100}%` 
-                    }}
-                  ></div>
-                </div>
-                <span className="text-sm font-medium">{overviewStats.gramNegative}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <PieChart size={20} className="text-blue-600" />
-            Top Categories
-          </h3>
-          <div className="space-y-2">
-            {Object.entries(categoryDistribution)
-              .sort(([,a], [,b]) => b - a)
-              .slice(0, 5)
-              .map(([category, count]) => (
-                <div key={category} className="flex items-center justify-between">
-                  <span className="text-gray-700 text-sm">{category}</span>
-                  <span className="text-sm font-medium bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                    {count}
-                  </span>
-                </div>
-              ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
+  // Render category distribution
   const renderCategoryDistribution = () => (
     <div className="bg-white p-6 rounded-xl shadow-sm border">
       <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
@@ -383,7 +191,7 @@ const VisualizationsTab = ({
       <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-3">
           {Object.entries(categoryDistribution)
-            .sort(([,a], [,b]) => b - a)
+            .sort(([, a], [, b]) => b - a)
             .map(([category, count]) => {
               const percentage = ((count / overviewStats.totalConditions) * 100).toFixed(1);
               return (
@@ -393,10 +201,7 @@ const VisualizationsTab = ({
                     <div className="text-sm text-gray-600">{count} conditions ({percentage}%)</div>
                   </div>
                   <div className="w-16 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-500 h-2 rounded-full"
-                      style={{ width: `${percentage}%` }}
-                    ></div>
+                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${percentage}%` }} />
                   </div>
                 </div>
               );
@@ -413,86 +218,7 @@ const VisualizationsTab = ({
     </div>
   );
 
-  const renderAntibioticAnalysis = () => (
-    <div className="bg-white p-6 rounded-xl shadow-sm border">
-      <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-        <Activity size={24} className="text-purple-600" />
-        Interactive Antibiotic Coverage Analysis
-      </h3>
-      
-      {/* Northwestern Pie Charts Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-        {antibioticData && antibioticData.antibiotics && antibioticData.antibiotics.slice(0, 6).map((antibiotic, index) => (
-          <div key={antibiotic.name || index} className="bg-gray-50 rounded-lg p-4">
-            <h4 className="text-lg font-medium text-gray-900 mb-3 text-center">
-              {antibiotic.name || `Antibiotic ${index + 1}`}
-            </h4>
-            <div className="flex justify-center">
-              <ErrorBoundary>
-                <AnimatedNorthwesternPieChart
-                  antibiotic={antibiotic}
-                  size="small"
-                  interactive={true}
-                  showTooltips={true}
-                  onSegmentHover={(segment) => {
-                    console.log('Hovered segment:', segment);
-                  }}
-                />
-              </ErrorBoundary>
-            </div>
-            <div className="mt-2 text-sm text-gray-600 text-center">
-              {antibiotic.class || 'Unknown class'}
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      {/* Fallback for missing data */}
-      {(!antibioticData || !antibioticData.antibiotics || antibioticData.antibiotics.length === 0) && (
-        <div className="text-center py-8">
-          <Activity size={48} className="mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-500">Antibiotic data loading...</p>
-          <p className="text-sm text-gray-400 mt-2">Interactive Northwestern pie charts will display when data is available</p>
-        </div>
-      )}
-      
-      {/* Drug Class Distribution Summary */}
-      <div className="border-t pt-6">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">Drug Class Distribution</h4>
-        <div className="space-y-3">
-          {Object.entries(drugClassDistribution)
-            .sort(([,a], [,b]) => b - a)
-            .map(([drugClass, count]) => {
-              const percentage = ((count / overviewStats.totalAntibiotics) * 100).toFixed(1);
-              const colorClass = {
-                'Penicillins': 'bg-blue-500',
-                'Cephalosporins': 'bg-green-500',
-                'Fluoroquinolones': 'bg-orange-500',
-                'Macrolides': 'bg-pink-500',
-                'Aminoglycosides': 'bg-indigo-500',
-                'Glycopeptides': 'bg-purple-500'
-              }[drugClass] || 'bg-gray-500';
-              
-              return (
-                <div key={drugClass} className="flex items-center justify-between p-2 rounded">
-                  <span className="font-medium text-gray-900">{drugClass}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">{count} drugs ({percentage}%)</span>
-                    <div className="w-16 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full ${colorClass}`}
-                        style={{ width: `${percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
-      </div>
-    </div>
-  );
-
+  // Render pathogen analysis
   const renderPathogenAnalysis = () => (
     <div className="bg-white p-6 rounded-xl shadow-sm border">
       <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
@@ -508,18 +234,14 @@ const VisualizationsTab = ({
                 <span className="font-medium text-green-800">Gram-Positive</span>
                 <span className="text-green-600 font-bold">{overviewStats.gramPositive}</span>
               </div>
-              <div className="mt-2 text-sm text-green-700">
-                Cell wall rich in peptidoglycan
-              </div>
+              <div className="mt-2 text-sm text-green-700">Cell wall rich in peptidoglycan</div>
             </div>
             <div className="p-3 bg-red-50 rounded-lg">
               <div className="flex items-center justify-between">
                 <span className="font-medium text-red-800">Gram-Negative</span>
                 <span className="text-red-600 font-bold">{overviewStats.gramNegative}</span>
               </div>
-              <div className="mt-2 text-sm text-red-700">
-                Thin peptidoglycan layer, outer membrane
-              </div>
+              <div className="mt-2 text-sm text-red-700">Thin peptidoglycan layer, outer membrane</div>
             </div>
           </div>
         </div>
@@ -534,213 +256,47 @@ const VisualizationsTab = ({
     </div>
   );
 
-  const renderPathogenNetwork = () => (
-    <div className="bg-white p-6 rounded-xl shadow-sm border">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold flex items-center gap-2">
-          <Network size={24} className="text-indigo-600" />
-          Pathogen Relationship Network
-        </h3>
-        
-        {/* Layout Switching Controls */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Layout:</span>
-            <select
-              value={networkLayoutMode}
-              onChange={(e) => setNetworkLayoutMode(e.target.value)}
-              className="px-3 py-1 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="d3">D3 Force-Directed</option>
-              <option value="d3-pro">D3 Multi-Layout (New)</option>
-              <option value="cytoscape">Cytoscape Network</option>
-              <option value="spatial">Northwestern Spatial</option>
-            </select>
-          </div>
-          
-          {networkLayoutMode === 'spatial' && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">View:</span>
-              <select
-                value={spatialViewMode}
-                onChange={(e) => setSpatialViewMode(e.target.value)}
-                className="px-3 py-1 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="clustered">Clustered</option>
-                <option value="grid">Grid Layout</option>
-                <option value="radial">Radial</option>
-              </select>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      <ErrorBoundary>
-        {networkLayoutMode === 'd3' ? (
-          <PathogenNetworkVisualization
-            selectedPathogen={null}
-            onSelectPathogen={onSelectPathogen}
-            onShowPathDetails={(pathogen) => {
-              if (onSelectPathogen) onSelectPathogen(pathogen);
-            }}
-          />
-        ) : networkLayoutMode === 'd3-pro' ? (
-          <NetworkVisualizationD3
-            layoutType="force"
-            showMetrics={true}
-            width={1000}
-            height={600}
-            onNodeClick={handleNetworkNodeClick}
-          />
-        ) : networkLayoutMode === 'cytoscape' ? (
-          <PathogenNetworkVisualizationCytoscape />
-        ) : (
-          <NorthwesternSpatialLayout
-            antibiotics={antibioticData?.antibiotics || []}
-            viewMode={spatialViewMode}
-            showConnections={true}
-            onAntibioticSelect={(antibiotic) => {
-              console.log('Selected antibiotic from spatial layout:', antibiotic);
-
-              // Northwestern Animation: Selection feedback
-              if (animationEnabled && animationManager) {
-                const selectionAnimation = createSelectionAnimation(
-                  document.querySelector(`[data-antibiotic-id="${antibiotic.id}"]`),
-                  'antibiotic',
-                  { educationLevel: 'resident', emergencyMode }
-                );
-
-                if (selectionAnimation) {
-                  animationManager.animate(
-                    selectionAnimation.element,
-                    selectionAnimation.config
-                  ).catch(console.warn);
-                }
-              }
-            }}
-            onGroupSelect={(groupKey, antibiotics) => {
-              console.log('Selected group from spatial layout:', groupKey, antibiotics);
-
-              // Northwestern Animation: Group selection feedback
-              if (animationEnabled && animationManager) {
-                const groupElements = document.querySelectorAll(`[data-spatial-group="${groupKey}"]`);
-                groupElements.forEach(element => {
-                  const groupAnimation = createSelectionAnimation(
-                    element,
-                    'group',
-                    { educationLevel: 'resident', emergencyMode }
-                  );
-
-                  if (groupAnimation) {
-                    animationManager.animate(
-                      groupAnimation.element,
-                      groupAnimation.config
-                    ).catch(console.warn);
-                  }
-                });
-              }
-            }}
-            emergencyMode={emergencyMode}
-            clinicalContext="education"
-          />
-        )}
-      </ErrorBoundary>
-      
-      {/* Layout Information */}
-      <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-        <div className="text-sm text-gray-600">
-          {networkLayoutMode === 'd3' ? (
-            <span>Force-directed layout showing pathogen relationships through dynamic positioning</span>
-          ) : networkLayoutMode === 'd3-pro' ? (
-            <span>Professional D3.js multi-layout visualization: Switch between Force-Directed (similarity clustering), Hierarchical (clinical severity), and Circular (Gram stain classification) layouts. Click nodes for details and zoom/pan with mouse.</span>
-          ) : networkLayoutMode === 'cytoscape' ? (
-            <span>Cytoscape-powered network visualization.</span>
-          ) : (
-            <span>
-              Northwestern spatial layout organizing {antibioticData?.antibiotics?.length || 0} antibiotics
-              using {spatialViewMode} methodology with clinical workflow optimization
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  // Phase 7: Render Comparison View
+  // Render antibiotic comparison
   const renderAntibioticComparison = () => (
     <div className="space-y-6">
-      {/* Antibiotic Selection Control Panel */}
       <ComparisonControlPanel
         allAntibiotics={antibioticData?.antibiotics || []}
         selectedAntibiotics={selectedComparisonAntibiotics}
         onSelectionChange={setSelectedComparisonAntibiotics}
         maxSelection={4}
       />
-
-      {/* Northwestern Comparison View */}
       <NorthwesternComparisonView
         selectedAntibiotics={selectedComparisonAntibiotics}
-        onAntibioticDeselect={(id) => {
-          setSelectedComparisonAntibiotics(
-            selectedComparisonAntibiotics.filter(ab => ab.id !== id)
-          );
-        }}
+        onAntibioticDeselect={handleComparisonDeselect}
         emergencyMode={emergencyMode}
         educationLevel="resident"
       />
     </div>
   );
 
-  // Priority 2.2: Handle guideline display request from network node
-  const handleShowGuidelinesForPathogen = (pathogenName, condition = null) => {
-    const effectiveCondition = condition || selectedConditionForGuidelines;
-
-    // Get guidelines for this pathogen and condition combination
-    const guidelinesForPathogen = getGuidelinesForPathogen(pathogenName, effectiveCondition);
-    const guidelinesForCondition = guidelinesForPathogen.length > 0
-      ? guidelinesForPathogen
-      : getGuidelinesForCondition(effectiveCondition);
-
-    setSelectedConditionForGuidelines(effectiveCondition);
-    setDisplayedGuidelines(guidelinesForCondition);
-    setActiveVisualization('guidelines');
-  };
-
-  // Priority 2.2: Render guidelines panel
+  // Render guidelines panel
   const renderGuidelinesPanel = () => (
     <div className="space-y-6">
-      {/* Back to Network Navigation */}
       <div className="bg-white rounded-xl shadow-sm border p-4">
         <button
-          onClick={() => {
-            setActiveVisualization('pathogen-network');
-            setDisplayedGuidelines([]);
-          }}
+          onClick={returnToNetwork}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
         >
           ← Back to Network
         </button>
       </div>
-
-      {/* Medical Disclaimer */}
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
         <p className="text-sm text-red-800 font-semibold">⚠️ Educational Use Only</p>
         <p className="text-xs text-red-700 mt-2">{guidelineDisclaimer}</p>
       </div>
-
-      {/* Guidelines Display */}
       {displayedGuidelines.length > 0 ? (
         <ErrorBoundary>
           <GuidelineComparisonPanel
             condition={selectedConditionForGuidelines}
             guidelines={displayedGuidelines}
             emergencyMode={emergencyMode}
-            onGuidelineSelect={(guideline) => {
-              console.log('Guideline selected:', guideline);
-            }}
-            onExpandDetails={(guidelineId) => {
-              console.log('Guideline expanded:', guidelineId);
-            }}
+            onGuidelineSelect={(guideline) => console.log('Guideline selected:', guideline)}
+            onExpandDetails={(guidelineId) => console.log('Guideline expanded:', guidelineId)}
           />
         </ErrorBoundary>
       ) : (
@@ -753,23 +309,17 @@ const VisualizationsTab = ({
     </div>
   );
 
-  // Priority 2.1: Render Clinical Decision Tree with pathogen context
+  // Render clinical decision tree
   const renderClinicalDecisionTree = () => (
     <div className="space-y-6">
-      {/* Back to Network Navigation */}
       <div className="bg-white rounded-xl shadow-sm border p-4">
         <button
-          onClick={() => {
-            setActiveVisualization('pathogen-network');
-            setSelectedPathogen(null);
-          }}
+          onClick={returnToNetwork}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
         >
           ← Back to Network
         </button>
       </div>
-
-      {/* Clinical Decision Tree Component */}
       {selectedPathogen ? (
         <ErrorBoundary>
           <ClinicalDecisionTree
@@ -777,12 +327,8 @@ const VisualizationsTab = ({
             patientAge={null}
             emergencyMode={emergencyMode}
             selectedPathogen={selectedPathogen}
-            onDecisionPathChange={(path) => {
-              console.log('Decision path changed:', path);
-            }}
-            onRecommendationComplete={(recommendation) => {
-              console.log('Recommendation completed:', recommendation);
-            }}
+            onDecisionPathChange={(path) => console.log('Decision path changed:', path)}
+            onRecommendationComplete={(recommendation) => console.log('Recommendation completed:', recommendation)}
             antibioticData={antibioticData}
             pathogenData={pathogenData}
           />
@@ -797,18 +343,44 @@ const VisualizationsTab = ({
     </div>
   );
 
+  // Main visualization content router
   const renderVisualizationContent = () => {
     switch (activeVisualization) {
       case 'overview':
-        return renderOverviewDashboard();
+        return (
+          <OverviewDashboard
+            overviewStats={overviewStats}
+            categoryDistribution={categoryDistribution}
+          />
+        );
       case 'antibiotic-comparison':
         return renderAntibioticComparison();
       case 'pathogen-network':
-        return renderPathogenNetwork();
+        return (
+          <PathogenNetworkPanel
+            networkLayoutMode={networkLayoutMode}
+            setNetworkLayoutMode={setNetworkLayoutMode}
+            spatialViewMode={spatialViewMode}
+            setSpatialViewMode={setSpatialViewMode}
+            antibioticData={antibioticData}
+            onSelectPathogen={onSelectPathogen}
+            onNetworkNodeClick={handleNetworkNodeClick}
+            emergencyMode={emergencyMode}
+            animationEnabled={animationEnabled}
+            animationManager={animationManager}
+            createSelectionAnimation={createSelectionAnimation}
+          />
+        );
       case 'category-distribution':
         return renderCategoryDistribution();
       case 'antibiotic-analysis':
-        return renderAntibioticAnalysis();
+        return (
+          <AntibioticAnalysisPanel
+            antibioticData={antibioticData}
+            drugClassDistribution={drugClassDistribution}
+            overviewStats={overviewStats}
+          />
+        );
       case 'pathogen-analysis':
         return renderPathogenAnalysis();
       case 'clinical-decision-tree':
@@ -816,8 +388,36 @@ const VisualizationsTab = ({
       case 'guidelines':
         return renderGuidelinesPanel();
       default:
-        return renderOverviewDashboard();
+        return (
+          <OverviewDashboard
+            overviewStats={overviewStats}
+            categoryDistribution={categoryDistribution}
+          />
+        );
     }
+  };
+
+  // Render visualization option button
+  const renderOptionButton = (option) => {
+    const Icon = option.icon;
+    return (
+      <button
+        key={option.id}
+        data-visualization={option.id}
+        onClick={() => handleVisualizationChange(option.id)}
+        className={`p-4 border rounded-lg text-left transition-colors ${
+          activeVisualization === option.id
+            ? 'border-indigo-500 bg-indigo-50 text-indigo-900'
+            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+        }`}
+      >
+        <Icon size={20} className={`mb-2 ${
+          activeVisualization === option.id ? 'text-indigo-600' : 'text-gray-600'
+        }`} />
+        <div className="text-sm font-medium">{option.title}</div>
+        <div className="text-xs text-gray-500 mt-1">{option.description}</div>
+      </button>
+    );
   };
 
   return (
@@ -833,7 +433,7 @@ const VisualizationsTab = ({
         </p>
       </div>
 
-      {/* Visualization Selector with Progressive Disclosure (Phase 1.1: 60% Clutter Reduction) */}
+      {/* Visualization Selector with Progressive Disclosure */}
       <div className="bg-white rounded-xl shadow-sm border p-6">
         <h2 className="text-lg font-semibold mb-6">📊 Data Visualizations</h2>
 
@@ -841,22 +441,7 @@ const VisualizationsTab = ({
         <div className="mb-6">
           <h3 className="text-sm font-medium text-gray-700 mb-3">Default View</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <button
-              key={overviewOption.id}
-              data-visualization={overviewOption.id}
-              onClick={() => handleVisualizationChange(overviewOption.id)}
-              className={`p-4 border rounded-lg text-left transition-colors ${
-                activeVisualization === overviewOption.id
-                  ? 'border-indigo-500 bg-indigo-50 text-indigo-900'
-                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <Grid size={20} className={`mb-2 ${
-                activeVisualization === overviewOption.id ? 'text-indigo-600' : 'text-gray-600'
-              }`} />
-              <div className="text-sm font-medium">{overviewOption.title}</div>
-              <div className="text-xs text-gray-500 mt-1">{overviewOption.description}</div>
-            </button>
+            {renderOptionButton(overviewOption)}
           </div>
         </div>
 
@@ -872,27 +457,7 @@ const VisualizationsTab = ({
           </button>
           {expandedSections.explore && (
             <div className="grid grid-cols-2 md:grid-cols-2 gap-3 ml-6 pl-4 border-l-2 border-indigo-200">
-              {exploreOptions.map((option) => {
-                const Icon = option.icon;
-                return (
-                  <button
-                    key={option.id}
-                    data-visualization={option.id}
-                    onClick={() => handleVisualizationChange(option.id)}
-                    className={`p-4 border rounded-lg text-left transition-colors ${
-                      activeVisualization === option.id
-                        ? 'border-indigo-500 bg-indigo-50 text-indigo-900'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Icon size={20} className={`mb-2 ${
-                      activeVisualization === option.id ? 'text-indigo-600' : 'text-gray-600'
-                    }`} />
-                    <div className="text-sm font-medium">{option.title}</div>
-                    <div className="text-xs text-gray-500 mt-1">{option.description}</div>
-                  </button>
-                );
-              })}
+              {exploreOptions.map(renderOptionButton)}
             </div>
           )}
         </div>
@@ -909,27 +474,7 @@ const VisualizationsTab = ({
           </button>
           {expandedSections.analyze && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 ml-6 pl-4 border-l-2 border-indigo-200">
-              {analyzeOptions.map((option) => {
-                const Icon = option.icon;
-                return (
-                  <button
-                    key={option.id}
-                    data-visualization={option.id}
-                    onClick={() => handleVisualizationChange(option.id)}
-                    className={`p-4 border rounded-lg text-left transition-colors ${
-                      activeVisualization === option.id
-                        ? 'border-indigo-500 bg-indigo-50 text-indigo-900'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Icon size={20} className={`mb-2 ${
-                      activeVisualization === option.id ? 'text-indigo-600' : 'text-gray-600'
-                    }`} />
-                    <div className="text-sm font-medium">{option.title}</div>
-                    <div className="text-xs text-gray-500 mt-1">{option.description}</div>
-                  </button>
-                );
-              })}
+              {analyzeOptions.map(renderOptionButton)}
             </div>
           )}
         </div>
@@ -963,7 +508,7 @@ const VisualizationsTab = ({
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setAnimationEnabled(!animationEnabled)}
+                    onClick={toggleAnimation}
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       animationEnabled
                         ? 'bg-blue-100 text-blue-800 border border-blue-200'
@@ -975,7 +520,6 @@ const VisualizationsTab = ({
                   </button>
                 </div>
               </div>
-
               <div className="space-y-3">
                 <h4 className="text-xs font-semibold text-gray-500 uppercase">Data Filters</h4>
                 <div className="flex items-center gap-2">
@@ -985,9 +529,9 @@ const VisualizationsTab = ({
                     onChange={(e) => setSelectedFilter(e.target.value)}
                     className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
-                    <option value="all">All Data</option>
-                    <option value="gram-positive">Gram-Positive Only</option>
-                    <option value="gram-negative">Gram-Negative Only</option>
+                    {filterOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
                   </select>
                 </div>
               </div>
