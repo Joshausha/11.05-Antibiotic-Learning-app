@@ -43,6 +43,7 @@ const Header = ({
     { id: 'reference', label: 'Reference', icon: Book },
     { id: 'pathogen-explorer', label: 'Pathogens', icon: Microscope },
     { id: 'antibiotic-explorer', label: 'Antibiotics', icon: Pill }
+    { id: 'visualizations', label: 'Network', icon: BookOpen },
   ];
 
   // Handle keyboard navigation and outside clicks

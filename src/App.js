@@ -1,14 +1,14 @@
-import React, { lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 
 // Import Error Boundary and Context
 import ErrorBoundary from './components/ErrorBoundary';
 import { AppProvider, useAppContext } from './contexts/AppContext';
 
 // Import our core components (always loaded)
+import ConditionDetailModal from './components/ConditionDetailModal';
+import ConditionsTab from './components/ConditionsTab';
 import Header from './components/Header';
 import HomeTab from './components/HomeTab';
-import ConditionsTab from './components/ConditionsTab';
-import ConditionDetailModal from './components/ConditionDetailModal';
 import SkeletonLoader from './components/SkeletonLoader';
 
 // Import hooks for analytics data
@@ -23,6 +23,7 @@ const QuizTab = lazy(() => import('./components/QuizTab'));
 const ConsolidatedPathogenExplorer = lazy(() => import('./components/ConsolidatedPathogenExplorer'));
 const AntibioticExplorer = lazy(() => import('./components/AntibioticExplorer'));
 const LearningAnalyticsDashboard = lazy(() => import('./components/analytics/LearningAnalyticsDashboard'));
+// ✅ VisualizationsTab is loaded lazily here (Correct)
 const VisualizationsTab = lazy(() => import('./components/VisualizationsTab'));
 
 /**
@@ -39,8 +40,6 @@ const AppContent = () => {
     showMobileMenu,
     setShowMobileMenu,
     isMobile,
-    // quizProgress,
-    // bookmarks,
     pathogenData,
     antibioticData,
     searchData,
@@ -56,8 +55,6 @@ const AppContent = () => {
     weakAreas: spacedRepetitionManager.identifyWeakAreas(),
     cardData: spacedRepetitionManager.cardData
   };
-
-  // const { filteredItems: filteredConditions } = searchData;
 
   return (
     <ErrorBoundary>
@@ -85,13 +82,15 @@ const AppContent = () => {
 
         {/* Main Content */}
         <main id="main-content" className="max-w-6xl mx-auto p-4 md:p-8">
-          {/* Render appropriate tab component based on activeTab */}
+          
+          {/* Learn Tab */}
           {activeTab === 'learn' && (
             <ErrorBoundary>
               <HomeTab setActiveTab={setActiveTab} />
             </ErrorBoundary>
           )}
 
+          {/* Quiz Tab */}
           {activeTab === 'quiz' && (
             <ErrorBoundary>
               <Suspense fallback={<SkeletonLoader type="quiz" />}>
@@ -103,6 +102,7 @@ const AppContent = () => {
             </ErrorBoundary>
           )}
 
+          {/* Analytics Tab */}
           {activeTab === 'analytics' && (
             <ErrorBoundary>
               <Suspense fallback={<SkeletonLoader type="content" lines={5} />}>
@@ -114,9 +114,9 @@ const AppContent = () => {
             </ErrorBoundary>
           )}
 
+          {/* Reference Tab */}
           {activeTab === 'reference' && (
             <div className="space-y-6">
-              {/* Medical Conditions Reference */}
               <ErrorBoundary>
                 <div className="bg-white rounded-xl shadow-sm border p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">Medical Conditions Reference</h2>
@@ -129,7 +129,6 @@ const AppContent = () => {
                 </div>
               </ErrorBoundary>
               
-              {/* Consolidated Pathogen & Antibiotic Explorer */}
               <ErrorBoundary>
                 <Suspense fallback={<SkeletonLoader type="list" />}>
                   <ConsolidatedPathogenExplorer
@@ -141,6 +140,7 @@ const AppContent = () => {
             </div>
           )}
 
+          {/* Pathogen Explorer Tab */}
           {activeTab === 'pathogen-explorer' && (
             <ErrorBoundary>
               <Suspense fallback={<SkeletonLoader type="list" />}>
@@ -152,6 +152,7 @@ const AppContent = () => {
             </ErrorBoundary>
           )}
 
+          {/* Antibiotic Explorer Tab */}
           {activeTab === 'antibiotic-explorer' && (
             <ErrorBoundary>
               <Suspense fallback={<SkeletonLoader type="list" />}>
@@ -162,6 +163,7 @@ const AppContent = () => {
             </ErrorBoundary>
           )}
 
+          {/* ✅ Visualizations Tab (The Fixed Version) */}
           {activeTab === 'visualizations' && (
             <ErrorBoundary>
               <Suspense fallback={<SkeletonLoader type="content" lines={8} />}>
@@ -194,10 +196,6 @@ const AppContent = () => {
   );
 };
 
-/**
- * Main App Component
- * Wraps the application with the context provider
- */
 function App() {
   return (
     <AppProvider>
