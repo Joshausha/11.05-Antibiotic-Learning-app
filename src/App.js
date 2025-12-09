@@ -1,16 +1,15 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 
 // Import Error Boundary and Context
 import ErrorBoundary from './components/ErrorBoundary';
 import { AppProvider, useAppContext } from './contexts/AppContext';
 
-// Import our core components
+// Import our core components (always loaded)
 import Header from './components/Header';
 import HomeTab from './components/HomeTab';
 import ConditionsTab from './components/ConditionsTab';
-import QuizTab from './components/QuizTab';
 import ConditionDetailModal from './components/ConditionDetailModal';
-// import LoadingSpinner from './components/LoadingSpinner';
+import SkeletonLoader from './components/SkeletonLoader';
 
 // Import hooks for analytics data
 import useQuizProgress from './hooks/useQuizProgress';
@@ -19,11 +18,12 @@ import spacedRepetitionManager from './utils/spacedRepetitionManager';
 // Import quiz questions data
 import quizQuestions from './data/quizQuestions';
 
-// Direct imports to fix chunk loading issues
-import ConsolidatedPathogenExplorer from './components/ConsolidatedPathogenExplorer';
-import AntibioticExplorer from './components/AntibioticExplorer';
-import LearningAnalyticsDashboard from './components/analytics/LearningAnalyticsDashboard';
-import VisualizationsTab from './components/VisualizationsTab';
+// Lazy-loaded components for code splitting (loaded on-demand)
+const QuizTab = lazy(() => import('./components/QuizTab'));
+const ConsolidatedPathogenExplorer = lazy(() => import('./components/ConsolidatedPathogenExplorer'));
+const AntibioticExplorer = lazy(() => import('./components/AntibioticExplorer'));
+const LearningAnalyticsDashboard = lazy(() => import('./components/analytics/LearningAnalyticsDashboard'));
+const VisualizationsTab = lazy(() => import('./components/VisualizationsTab'));
 
 /**
  * AppContent Component
@@ -94,19 +94,23 @@ const AppContent = () => {
 
           {activeTab === 'quiz' && (
             <ErrorBoundary>
-              <QuizTab 
-                quizQuestions={quizQuestions}
-                setActiveTab={setActiveTab}
-              />
+              <Suspense fallback={<SkeletonLoader type="quiz" />}>
+                <QuizTab
+                  quizQuestions={quizQuestions}
+                  setActiveTab={setActiveTab}
+                />
+              </Suspense>
             </ErrorBoundary>
           )}
 
           {activeTab === 'analytics' && (
             <ErrorBoundary>
-              <LearningAnalyticsDashboard 
-                quizHistory={quizHistory || []}
-                spacedRepetitionData={spacedRepetitionData}
-              />
+              <Suspense fallback={<SkeletonLoader type="content" lines={5} />}>
+                <LearningAnalyticsDashboard
+                  quizHistory={quizHistory || []}
+                  spacedRepetitionData={spacedRepetitionData}
+                />
+              </Suspense>
             </ErrorBoundary>
           )}
 
@@ -127,43 +131,50 @@ const AppContent = () => {
               
               {/* Consolidated Pathogen & Antibiotic Explorer */}
               <ErrorBoundary>
-                <ConsolidatedPathogenExplorer 
-                  pathogenData={pathogenData}
-                  onSelectCondition={setSelectedCondition}
-                />
+                <Suspense fallback={<SkeletonLoader type="list" />}>
+                  <ConsolidatedPathogenExplorer
+                    pathogenData={pathogenData}
+                    onSelectCondition={setSelectedCondition}
+                  />
+                </Suspense>
               </ErrorBoundary>
             </div>
           )}
 
           {activeTab === 'pathogen-explorer' && (
             <ErrorBoundary>
-              <ConsolidatedPathogenExplorer 
-                pathogenData={pathogenData}
-                onSelectCondition={setSelectedCondition}
-              />
+              <Suspense fallback={<SkeletonLoader type="list" />}>
+                <ConsolidatedPathogenExplorer
+                  pathogenData={pathogenData}
+                  onSelectCondition={setSelectedCondition}
+                />
+              </Suspense>
             </ErrorBoundary>
           )}
 
           {activeTab === 'antibiotic-explorer' && (
             <ErrorBoundary>
-              <AntibioticExplorer 
-                antibioticData={antibioticData}
-              />
+              <Suspense fallback={<SkeletonLoader type="list" />}>
+                <AntibioticExplorer
+                  antibioticData={antibioticData}
+                />
+              </Suspense>
             </ErrorBoundary>
           )}
 
           {activeTab === 'visualizations' && (
             <ErrorBoundary>
-              <VisualizationsTab 
-                pathogenData={pathogenData}
-                antibioticData={antibioticData}
-                medicalConditions={medicalConditions}
-                onSelectCondition={setSelectedCondition}
-                onSelectPathogen={(pathogen) => {
-                  // Handle pathogen selection if needed
-                  console.log('Selected pathogen:', pathogen);
-                }}
-              />
+              <Suspense fallback={<SkeletonLoader type="content" lines={8} />}>
+                <VisualizationsTab
+                  pathogenData={pathogenData}
+                  antibioticData={antibioticData}
+                  medicalConditions={medicalConditions}
+                  onSelectCondition={setSelectedCondition}
+                  onSelectPathogen={(pathogen) => {
+                    // Handle pathogen selection if needed
+                  }}
+                />
+              </Suspense>
             </ErrorBoundary>
           )}
 

@@ -19,7 +19,7 @@
  * @medical-disclaimer Educational purposes only - verify against current guidelines
  */
 
-import { NODE_TYPES } from './ClinicalDecisionTree';
+import { NODE_TYPES } from './NodeTypes';
 
 /**
  * Clinical severity classifications for pediatric infections

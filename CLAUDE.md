@@ -3,7 +3,7 @@ type: development-guidance
 title: CLAUDE.md - Antibiotic Learning App Development Guide
 status: streamlined-post-consolidation
 created: 2025-07-16
-modified: 2025-11-30
+modified: 2025-12-09
 tags: [claude-code, development-patterns, medical-education, consolidated]
 category: Projects
 purpose: claude-code-development-guidance-essential-patterns-only
@@ -13,7 +13,7 @@ redirect: PROJECT_STATUS.md for comprehensive project information
 
 # CLAUDE.md - Essential Development Patterns
 **Streamlined Development Guide for Claude Code**
-*Last Updated: 2025-11-30*
+*Last Updated: 2025-12-09*
 
 > **📋 CONSOLIDATED DOCUMENTATION NOTICE**: Most project information has been consolidated into [`PROJECT_STATUS.md`](PROJECT_STATUS.md). This file contains only essential development patterns for Claude Code sessions.
 
@@ -140,16 +140,17 @@ const count = pathogens?.length || 0;
 
 ## 📋 Current Status Quick Reference
 
-- **Test Infrastructure**: ✅ 1718 total tests passing (100% pass rate, zero regressions)
+- **Test Infrastructure**: ✅ 1822 total tests passing (100% pass rate, zero regressions)
+  - **Phase 2 Updates**: ✅ Northwestern visualization cleanup, showCenterLabel prop (1 new test added)
   - **Phase 1 Updates**: ✅ HomeTab simplified, 36/36 tests passing (net +3 tests from Phase 1.2)
   - **Phase 7.2 Week 1**: ✅ 97 tests (Jaccard: 49, PathogenRelationshipData: 41, Medical validation: 7)
   - **Priority 2.2 Integration Tests**: ✅ 24 tests (Guideline display, state management, navigation, accessibility)
 - **Code Quality**: ✅ Systematic optimization (204 linting warnings, zero critical issues)
 - **Production Build**: ✅ 416.26 kB gzipped (54 bytes smaller, optimal size)
 - **Medical Foundation**: ✅ Northwestern animations + Priority 2 Medical Integration + Phase 1 UI/UX (100% clinical accuracy)
-- **Development Phase**: Phase 1 UI/UX COMPLETE ✅ - Phase 1.3 Design Token Standardization IN PROGRESS
+- **Development Phase**: Phase 2 Northwestern Visualization Cleanup COMPLETE ✅ - Phase 1.3 Design Token Standardization NEXT
 
-**Current Status**: Phase 1 UI/UX Improvement COMPLETE ✅ - Phase 1.3 (Design Tokens) NEXT
+**Current Status**: Phase 2 Northwestern Visualization Cleanup COMPLETE ✅ - Phase 1.3 (Design Tokens) NEXT
 
 ---
 

@@ -3,7 +3,7 @@ type: project-status
 title: PROJECT_STATUS.md - Antibiotic Learning App
 status: active-development
 created: 2025-08-24
-modified: 2025-12-01
+modified: 2025-12-09
 tags: [project-status, medical-education, clinical-decision-support, single-source-of-truth, ui-ux-optimization, phase-1-complete, medical-accuracy-validated]
 category: Projects
 purpose: consolidated-project-documentation
@@ -13,7 +13,7 @@ priority: high
 
 # PROJECT_STATUS.md - Antibiotic Learning App
 **Single Source of Truth - Consolidated Documentation**
-*Last Updated: 2025-12-01 EDT*
+*Last Updated: 2025-12-09 EDT*
 
 ---
 
@@ -65,6 +65,30 @@ priority: high
 - ✅ **Code Quality**: Defensive programming, React best practices, medical accuracy maintained
 - ✅ **Accessibility**: 224 ARIA attributes preserved, WCAG 2.1 AA compliance maintained
 - ✅ **Northwestern Animations**: 875 lines intact and functional
+
+### Phase 2: Northwestern Visualization Cleanup ✅ COMPLETE
+**Implementation Time**: 30 minutes | **Status**: Production Ready | **Completed**: 2025-12-09
+
+**Problem Identified**:
+- Triple antibiotic name display (center of chart + link below + drug class below)
+- Text overlay obscuring pie chart segments
+- Dense card layout with insufficient spacing
+
+**Changes Made**:
+1. **NorthwesternPieChart.js**: Added `showCenterLabel` prop (default: false)
+   - Center label now hidden by default for cleaner grid display
+   - Prop allows explicit opt-in when center label needed
+2. **NorthwesternSpatialLayout.css**: Improved spacing
+   - Added 10px gap to `.spatial-grid`
+   - Increased card padding and min-height
+   - Better visual separation between cards
+
+**Results**:
+- ✅ **Visual Clarity**: Antibiotic name appears only below chart
+- ✅ **Segment Visibility**: All 8 Northwestern segments fully visible
+- ✅ **Card Spacing**: Improved breathing room between cards
+- ✅ **Tests**: 1822 passing (1 new test added)
+- ✅ **Build**: Successful production build
 
 ---
 

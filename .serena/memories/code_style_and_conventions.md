@@ -35,3 +35,12 @@
 - **Component Composition**: Building complex UIs from simple components
 - **Props vs State**: Clear separation of concerns
 - **Performance**: Foundation laid for React.memo and optimization
+
+## Conditional Feature Props Pattern (Phase 2)
+- **showCenterLabel Pattern**: Props that toggle visual features with sensible defaults
+  - Example: `showCenterLabel={false}` (default) in NorthwesternPieChart
+  - Pattern: Hide complex elements by default, allow explicit opt-in
+  - Use Case: Grid displays vs standalone views need different visual density
+  - Prop Naming: Boolean props use `show*`, `enable*`, or `is*` prefixes
+- **PropTypes Required**: All new props must have PropTypes definitions
+- **Default Values**: Declare defaults in function signature for clarity

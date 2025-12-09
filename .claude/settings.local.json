@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(src/components/EnhancedNorthwesternPieChart.js )",
+      "Bash(src/components/NorthwesternSpatialLayout.js )",
+      "Bash(src/styles/NorthwesternSpatialLayout.css )",
+      "Bash(\"src/components/__tests__/NorthwesternPieChart.test.js\" )",
+      "Bash(\"src/components/__tests__/NorthwesternSpatialLayout.test.js\")",
+      "Bash(src/components/PathogenNetworkVisualization.js )",
+      "Bash(src/utils/networkFilterUtils.js )",
+      "Bash(src/utils/networkNodeStyles.js )",
+      "Bash(src/hooks/useNetworkLayoutSimulation.js)",
+      "Bash(src/components/OptimizedNorthwesternIntegration.js )",
+      "Bash(src/hooks/useNorthwesternErrorRecovery.js )",
+      "Bash(src/hooks/useVisualizationState.js )",
+      "Bash(src/utils/northwesternSpatialAlgorithms.js)"
+    ]
+  }
+}

@@ -100,7 +100,7 @@ describe('AppContext', () => {
       const context = result.current;
 
       // Check core state properties
-      // TODO(human) - Update remaining test expectations to use 'learn' instead of 'home'
+      // TD-003: Verify all test expectations use 'learn' instead of 'home' (see TECH_DEBT.md)
       expect(context).toHaveProperty('activeTab', 'learn');
       expect(context).toHaveProperty('selectedCondition', null);
       expect(context).toHaveProperty('showMobileMenu', false);

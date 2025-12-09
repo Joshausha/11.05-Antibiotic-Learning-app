@@ -26,18 +26,7 @@ import DecisionPathwayRenderer from './DecisionPathwayRenderer';
 import ClinicalInputPanel from './ClinicalInputPanel';
 import { getDecisionTree, validateClinicalInputs } from './DecisionTreeDataStructure';
 import { ClinicalAnimationManager, CLINICAL_TIMING, MEDICAL_EASING } from '../../animations/NorthwesternAnimations';
-
-/**
- * Decision tree node types for clinical reasoning pathways
- */
-export const NODE_TYPES = {
-  ROOT: 'root',           // Starting point for decision tree
-  INPUT: 'input',         // Collect clinical information
-  DECISION: 'decision',   // Branch point based on clinical criteria
-  OUTCOME: 'outcome',     // Final antibiotic recommendation
-  EVIDENCE: 'evidence',   // Supporting guideline information
-  WARNING: 'warning'      // Safety alerts and contraindications
-};
+import { NODE_TYPES } from './NodeTypes';
 
 /**
  * Clinical decision tree component

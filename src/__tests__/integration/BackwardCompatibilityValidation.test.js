@@ -53,13 +53,13 @@ describe('Backward Compatibility Validation - Minimal', () => {
   describe('Future Validation Placeholders', () => {
     test('should restore full Enhanced Antibiotic validation after data fixes', () => {
       // Placeholder for restored validation after Phase 0 completion
-      // TODO: Restore 30-antibiotic validation with Northwestern spectrum
+      // TD-001: Restore 30-antibiotic validation with Northwestern spectrum (see TECH_DEBT.md)
       expect(true).toBe(true);
     });
-    
+
     test('should restore component integration tests after data fixes', () => {
       // Placeholder for component testing after data import issues resolved
-      // TODO: Restore QuizTab, AntibioticExplorer, ConditionsTab, PathogenExplorer tests
+      // TD-002: Restore QuizTab, AntibioticExplorer, ConditionsTab, PathogenExplorer tests (see TECH_DEBT.md)
       expect(true).toBe(true);
     });
   });

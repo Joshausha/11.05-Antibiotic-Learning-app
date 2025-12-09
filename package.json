@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node scripts/start.js",
     "dev": "node scripts/start.js",
-    "build": "node scripts/build.js",
+    "build": "GENERATE_SOURCEMAP=false node scripts/build.js",
     "test": "node scripts/test.js --watchAll=false",
     "lint": "NODE_ENV=development eslint src/ --ext .js,.jsx",
     "lint:fix": "NODE_ENV=development eslint src/ --ext .js,.jsx --fix",
@@ -20,7 +20,6 @@
   },
   "dependencies": {
     "@babel/core": "^7.16.0",
-    "@playwright/test": "^1.54.1",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
     "@svgr/webpack": "^8.1.0",
     "babel-jest": "^27.4.2",
@@ -49,7 +48,7 @@
     "jest": "^27.4.3",
     "jest-resolve": "^27.4.2",
     "jest-watch-typeahead": "^1.0.0",
-    "lucide-react": "^0.263.1",
+    "lucide-react": "^0.556.0",
     "mini-css-extract-plugin": "^2.4.5",
     "postcss": "^8.4.4",
     "postcss-flexbugs-fixes": "^5.0.2",
@@ -69,6 +68,7 @@
     "resolve-url-loader": "^5.0.0",
     "sass-loader": "^12.3.0",
     "semver": "^7.3.5",
+    "serve": "^14.2.5",
     "source-map-loader": "^3.0.0",
     "style-loader": "^3.3.1",
     "tailwindcss": "^3.0.2",
@@ -80,6 +80,7 @@
     "workbox-webpack-plugin": "^6.4.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",

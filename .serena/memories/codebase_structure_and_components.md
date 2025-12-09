@@ -1,7 +1,7 @@
 # Codebase Structure and Components
-**Last Updated**: 2025-10-04
+**Last Updated**: 2025-12-09
 **Component Count**: 47+ components
-**Test Suites**: 57 test suites with 1,509 passing tests
+**Test Suites**: 57+ test suites with 1,822 passing tests
 
 ## Top-Level Directory Structure
 
@@ -85,7 +85,7 @@ src/components/
 │   └── NorthwesternQuizComponent.js    # Northwestern-style quiz
 │
 ├── Northwestern Visualization Suite
-│   ├── NorthwesternPieChart.js              # Base pie chart
+│   ├── NorthwesternPieChart.js              # Base pie chart (showCenterLabel prop added Phase 2)
 │   ├── EnhancedNorthwesternPieChart.js      # Enhanced version
 │   ├── AnimatedNorthwesternPieChart.js      # Animated version
 │   ├── NorthwesternPieChartDemo.js          # Demo component
