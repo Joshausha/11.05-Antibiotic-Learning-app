@@ -193,6 +193,81 @@ export const groupByDrugClass = (antibiotics) => {
 };
 
 /**
+ * Group antibiotics by administration route
+ * @param {Array} antibiotics - Array of enhanced antibiotic objects
+ * @returns {Object} Grouped antibiotics by route (Oral Only, IV Only, Both)
+ */
+export const groupByRoute = (antibiotics) => {
+  const grouped = {
+    'Oral Only': [],
+    'IV Only': [],
+    'Oral + IV': []
+  };
+
+  antibiotics.forEach(antibiotic => {
+    const routeColor = antibiotic.routeColor || 'blue';
+    if (routeColor === 'red') {
+      grouped['Oral Only'].push(antibiotic);
+    } else if (routeColor === 'blue') {
+      grouped['IV Only'].push(antibiotic);
+    } else if (routeColor === 'purple') {
+      grouped['Oral + IV'].push(antibiotic);
+    }
+  });
+
+  // Sort within each group alphabetically
+  Object.keys(grouped).forEach(route => {
+    grouped[route].sort((a, b) => a.name.localeCompare(b.name));
+  });
+
+  return grouped;
+};
+
+/**
+ * Group antibiotics alphabetically (A-Z)
+ * @param {Array} antibiotics - Array of enhanced antibiotic objects
+ * @returns {Object} Single group with alphabetically sorted antibiotics
+ */
+export const groupByAlphabetical = (antibiotics) => {
+  const sorted = [...antibiotics].sort((a, b) => a.name.localeCompare(b.name));
+  return { 'All Antibiotics (A-Z)': sorted };
+};
+
+/**
+ * Group antibiotics by coverage breadth (narrow to broad spectrum)
+ * Coverage score = sum of all 8 Northwestern segment values (0-2 each, max 16)
+ * @param {Array} antibiotics - Array of enhanced antibiotic objects
+ * @returns {Object} Grouped antibiotics by spectrum breadth
+ */
+export const groupByCoverageBreadth = (antibiotics) => {
+  // Calculate coverage score for each antibiotic
+  const withCoverageScore = antibiotics.map(ab => {
+    const spectrum = ab.northwesternSpectrum || {};
+    const coverageScore = Object.values(spectrum).reduce((sum, val) => sum + (val || 0), 0);
+    return { ...ab, coverageScore };
+  });
+
+  // Sort by coverage score (ascending: narrow to broad)
+  withCoverageScore.sort((a, b) => a.coverageScore - b.coverageScore);
+
+  // Group into narrow/moderate/broad categories
+  const grouped = {
+    'Narrow Spectrum (0-4)': withCoverageScore.filter(ab => ab.coverageScore <= 4),
+    'Moderate Spectrum (5-8)': withCoverageScore.filter(ab => ab.coverageScore > 4 && ab.coverageScore <= 8),
+    'Broad Spectrum (9+)': withCoverageScore.filter(ab => ab.coverageScore > 8)
+  };
+
+  // Remove empty groups
+  Object.keys(grouped).forEach(key => {
+    if (grouped[key].length === 0) {
+      delete grouped[key];
+    }
+  });
+
+  return grouped;
+};
+
+/**
  * Apply Northwestern spatial grouping logic
  * @param {Object} groupedAntibiotics - Antibiotics grouped by class
  * @returns {Object} Spatially organized groups
@@ -529,6 +604,9 @@ export default {
   GENERATION_CLUSTERING,
   determineBreakpoint,
   groupByDrugClass,
+  groupByRoute,
+  groupByAlphabetical,
+  groupByCoverageBreadth,
   applySpatialGrouping,
   calculateGridCoordinates,
   calculateResponsiveLayout,
