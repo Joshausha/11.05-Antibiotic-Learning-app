@@ -13,7 +13,14 @@
       "Bash(src/components/OptimizedNorthwesternIntegration.js )",
       "Bash(src/hooks/useNorthwesternErrorRecovery.js )",
       "Bash(src/hooks/useVisualizationState.js )",
-      "Bash(src/utils/northwesternSpatialAlgorithms.js)"
+      "Bash(src/utils/northwesternSpatialAlgorithms.js)",
+      "Bash(find:*)",
+      "Bash(npm test:*)",
+      "Bash(grep:*)",
+      "Bash(npm run lint)",
+      "Bash(ls:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm ls:*)"
     ]
   }
 }

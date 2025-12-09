@@ -17,6 +17,30 @@ priority: high
 
 ---
 
+## ⚠️ KNOWN ISSUES (As of 2025-12-09)
+
+**Build-Blocking Issues:**
+| Issue | Impact | Root Cause |
+|-------|--------|------------|
+| D3 Module Resolution | ❌ Production build fails | `Cannot find module 'd3'` in Jest/Webpack |
+| Cytoscape Module | ❌ 2 test suites fail | `Cannot find module 'react-cytoscapejs'` |
+| NetworkLayoutEngine | ❌ 1 test suite fails | D3 dependency issue |
+| Medical Naming Test | ⚠️ 1 test fails | Regex too strict for "Coagulase-negative Staphylococcus" |
+
+**Current Verified Metrics (2025-12-09):**
+- **Tests**: 1750 passing, 1 failed (99.94% pass rate)
+- **Test Suites**: 67/71 passing (94.4% pass rate)
+- **Production Build**: ❌ FAILS - D3 module resolution error
+- **Dev Server**: ✅ Works (port 3000)
+- **Lint**: 274 problems (3 errors, 271 warnings)
+
+**Remediation Priority:**
+1. Fix D3/Cytoscape module installation or mocking
+2. Update medical naming test regex for compound names
+3. Address lint errors
+
+---
+
 ## 🎨 PHASE 1: UI/UX IMPROVEMENT - COMPLETE ✅
 *Completed: 2025-12-01*
 
@@ -66,8 +90,8 @@ priority: high
 - ✅ **Accessibility**: 224 ARIA attributes preserved, WCAG 2.1 AA compliance maintained
 - ✅ **Northwestern Animations**: 875 lines intact and functional
 
-### Phase 2: Northwestern Visualization Cleanup ✅ COMPLETE
-**Implementation Time**: 30 minutes | **Status**: Production Ready | **Completed**: 2025-12-09
+### Phase 2: Northwestern Visualization Cleanup ✅ COMPLETE (with caveats)
+**Implementation Time**: 30 minutes | **Status**: Component Changes Complete | **Completed**: 2025-12-09
 
 **Problem Identified**:
 - Triple antibiotic name display (center of chart + link below + drug class below)
@@ -87,8 +111,8 @@ priority: high
 - ✅ **Visual Clarity**: Antibiotic name appears only below chart
 - ✅ **Segment Visibility**: All 8 Northwestern segments fully visible
 - ✅ **Card Spacing**: Improved breathing room between cards
-- ✅ **Tests**: 1822 passing (1 new test added)
-- ✅ **Build**: Successful production build
+- ⚠️ **Tests**: 1750/1751 passing (4 suites failing due to D3/Cytoscape module issues - see Known Issues)
+- ❌ **Build**: Production build fails (D3 module resolution - see Known Issues)
 
 ---
 
@@ -391,18 +415,20 @@ The Antibiotic Learning App is a **production-ready medical education platform**
 
 ## 🛠️ Technical Status
 
-### Test Infrastructure ✅ STABLE
-- **Test Suites**: 62 passing, 2 failing (**96.9% test suite pass rate**)
-- **Individual Tests**: 1,248 passing, 30 failing (**97.7% individual test pass rate**) 
+### Test Infrastructure ⚠️ MOSTLY STABLE (See Known Issues)
+- **Test Suites**: 67 passing, 4 failing (**94.4% test suite pass rate**)
+- **Individual Tests**: 1,750 passing, 1 failing (**99.94% individual test pass rate**)
+- **Failing Suites**: D3 module (2), Cytoscape module (1), Medical naming regex (1)
 - **Hook API Recovery**: ✅ Complete useQuizProgress and useBookmarks API compatibility achieved
 - **Coverage**: 43.76% (improvement planned for Phase 3)
-- **Build Status**: ✅ Production builds successful
+- **Build Status**: ❌ Production builds fail (D3 module resolution)
+- **Dev Server**: ✅ Works on port 3000
 
-### Code Quality 🔄 OPTIMIZED
-- **Linting Warnings**: 204 (reduced from 220, systematic improvement ongoing)
-- **Dependencies**: ✅ Clean React 18 dependency tree
+### Code Quality 🔄 NEEDS ATTENTION
+- **Linting**: 274 problems (3 errors, 271 warnings)
+- **Dependencies**: ⚠️ D3 and Cytoscape module resolution issues
 - **Architecture**: ✅ Strong component separation with Context API
-- **Bundle Size**: 68.86 kB gzipped (optimal)
+- **Bundle Size**: Unknown (build fails)
 
 ### Key Technical Assets
 - **Northwestern Animations System**: 875-line sophisticated medical animation foundation (crown jewel)
