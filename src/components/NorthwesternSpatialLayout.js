@@ -36,6 +36,9 @@ import {
   SPATIAL_GROUPS,
   determineBreakpoint,
   groupByDrugClass,
+  groupByRoute,
+  groupByAlphabetical,
+  groupByCoverageBreadth,
   applySpatialGrouping,
   calculateGridCoordinates,
   calculateResponsiveLayout,
@@ -45,17 +48,40 @@ import {
 } from '../utils/northwesternSpatialAlgorithms.js';
 
 /**
+ * View mode configuration for comparison vs exploration views
+ */
+const VIEW_MODE_CONFIG = {
+  comparison: {
+    chartSize: 'small',
+    showLabels: false,
+    cardPadding: '8px',
+    minCardHeight: '140px',
+    maxColumns: { mobile: 3, tablet: 5, desktop: 6 }
+  },
+  exploration: {
+    chartSize: 'large',
+    showLabels: true,
+    cardPadding: '16px',
+    minCardHeight: '320px',
+    maxColumns: { mobile: 1, tablet: 2, desktop: 3 }
+  }
+};
+
+/**
  * Northwestern Spatial Layout Component
  * Organizes antibiotics in clinically-relevant spatial groupings
  */
 const NorthwesternSpatialLayout = ({
   antibiotics = [],
-  viewMode = 'clustered',
+  viewMode = 'comparison',           // 'comparison' | 'exploration'
+  groupingMode = 'drugClass',        // 'drugClass' | 'route' | 'alphabetical' | 'coverage'
   screenSize: propScreenSize,
   showConnections = false,
   highlightedClasses = [],
   onAntibioticSelect,
   onGroupSelect,
+  onViewModeChange,                  // Callback when view mode changes
+  onGroupingModeChange,              // Callback when grouping mode changes
   className = '',
   // Performance and optimization props
   enableVirtualization = false,
@@ -115,6 +141,9 @@ const NorthwesternSpatialLayout = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, [enableVirtualization]);
 
+  // Get view mode configuration
+  const viewConfig = VIEW_MODE_CONFIG[viewMode] || VIEW_MODE_CONFIG.comparison;
+
   // Core spatial layout calculation
   const spatialLayout = useMemo(() => {
     if (!antibiotics.length) {
@@ -123,21 +152,57 @@ const NorthwesternSpatialLayout = ({
 
     const startTime = performance.now();
 
-    // Step 1: Group antibiotics by drug class
-    const grouped = groupByDrugClass(antibiotics);
-    
-    // Step 2: Apply Northwestern spatial grouping methodology  
-    const spatialGroups = applySpatialGrouping(grouped);
-    
-    // Step 3: Calculate grid coordinates
-    const positioned = calculateGridCoordinates(spatialGroups, gridConfig);
-    
+    // Step 1: Group antibiotics based on selected grouping mode
+    let grouped;
+    switch (groupingMode) {
+      case 'route':
+        grouped = groupByRoute(antibiotics);
+        break;
+      case 'alphabetical':
+        grouped = groupByAlphabetical(antibiotics);
+        break;
+      case 'coverage':
+        grouped = groupByCoverageBreadth(antibiotics);
+        break;
+      case 'drugClass':
+      default:
+        grouped = groupByDrugClass(antibiotics);
+        break;
+    }
+
+    // Step 2: Apply spatial grouping (for drug class mode) or flat positioning (for other modes)
+    let spatialGroups;
+    if (groupingMode === 'drugClass') {
+      spatialGroups = applySpatialGrouping(grouped);
+    } else {
+      // For non-drugClass groupings, create simple spatial groups from the grouped data
+      spatialGroups = {};
+      Object.keys(grouped).forEach((groupKey, index) => {
+        spatialGroups[groupKey] = {
+          name: groupKey,
+          antibiotics: grouped[groupKey],
+          color: ['#e3f2fd', '#f3e5f5', '#e8f5e8', '#fff3e0'][index % 4],
+          priority: index + 1
+        };
+      });
+    }
+
+    // Step 3: Calculate grid coordinates with view mode adjustments
+    const effectiveGridConfig = {
+      ...gridConfig,
+      columns: viewConfig.maxColumns[screenSize] || gridConfig.columns
+    };
+    const positioned = calculateGridCoordinates(spatialGroups, effectiveGridConfig);
+
     // Step 4: Generate responsive layout properties
     const layout = calculateResponsiveLayout(
-      containerDimensions.width, 
+      containerDimensions.width,
       containerDimensions.height,
       antibiotics.length
     );
+
+    // Override chart size based on view mode
+    layout.chartSize = viewConfig.chartSize;
 
     // Step 5: Validate Northwestern compliance
     const validation = validationUtils.validateNorthwesternCompliance(positioned);
@@ -157,10 +222,10 @@ const NorthwesternSpatialLayout = ({
       performance: {
         calculationTime,
         antibioticCount: antibiotics.length,
-        gridCells: gridConfig.columns * gridConfig.rows
+        gridCells: effectiveGridConfig.columns * gridConfig.rows
       }
     };
-  }, [antibiotics, screenSize, containerDimensions, gridConfig]);
+  }, [antibiotics, screenSize, containerDimensions, gridConfig, groupingMode, viewConfig]);
 
   // Performance optimization - visible positions for virtualization
   const visiblePositions = useMemo(() => {
@@ -290,15 +355,84 @@ const NorthwesternSpatialLayout = ({
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={`northwestern-spatial-layout northwestern-spatial-layout--${viewMode} northwestern-spatial-layout--${screenSize} ${className}`}
       data-antibiotic-count={antibiotics.length}
       data-screen-size={screenSize}
       data-emergency-mode={emergencyMode}
+      data-grouping-mode={groupingMode}
     >
+      {/* View Mode Controls and Grouping Selector */}
+      <div className="spatial-layout-controls">
+        {/* View Mode Toggle */}
+        <div className="view-mode-toggle" role="tablist" aria-label="View mode">
+          <button
+            role="tab"
+            aria-selected={viewMode === 'comparison'}
+            className={`view-toggle-btn ${viewMode === 'comparison' ? 'active' : ''}`}
+            onClick={() => onViewModeChange?.('comparison')}
+          >
+            <span className="icon">▦</span> Compare
+          </button>
+          <button
+            role="tab"
+            aria-selected={viewMode === 'exploration'}
+            className={`view-toggle-btn ${viewMode === 'exploration' ? 'active' : ''}`}
+            onClick={() => onViewModeChange?.('exploration')}
+          >
+            <span className="icon">◉</span> Explore
+          </button>
+        </div>
+
+        {/* Grouping Selector */}
+        <div className="grouping-selector">
+          <label htmlFor="grouping-mode">Group by:</label>
+          <select
+            id="grouping-mode"
+            value={groupingMode}
+            onChange={(e) => onGroupingModeChange?.(e.target.value)}
+            aria-label="Grouping mode"
+          >
+            <option value="drugClass">Drug Class</option>
+            <option value="route">Route (Oral/IV)</option>
+            <option value="alphabetical">Alphabetical (A-Z)</option>
+            <option value="coverage">Coverage Breadth</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Shared Coverage Legend */}
+      <div className="shared-coverage-legend" aria-label="Coverage legend">
+        <div className="legend-section">
+          <span className="legend-title">Coverage:</span>
+          <div className="legend-items">
+            <div className="legend-item">
+              <span className="legend-dot legend-dot--none"></span>
+              <span className="legend-label">None</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-dot legend-dot--limited"></span>
+              <span className="legend-label">Limited</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-dot legend-dot--excellent"></span>
+              <span className="legend-label">Excellent</span>
+            </div>
+          </div>
+        </div>
+        <div className="legend-section route-legend">
+          <span className="legend-title">Route:</span>
+          <div className="legend-items">
+            <span className="route-indicator route-indicator--oral">Oral</span>
+            <span className="route-indicator route-indicator--iv">IV</span>
+            <span className="route-indicator route-indicator--both">Both</span>
+          </div>
+        </div>
+      </div>
+
       {/* Group boundaries visual (Agent 3.2 integration point) */}
-      {showConnections && (
+      {showConnections && groupingMode === 'drugClass' && (
         <div className="group-boundaries">
           {groupBoundaries.map(boundary => (
             <div
@@ -356,11 +490,14 @@ const NorthwesternSpatialLayout = ({
               {/* Integrated Phase 2 Enhanced Northwestern Pie Chart */}
               <EnhancedNorthwesternPieChart
                 antibiotic={antibiotic}
-                size={spatialLayout.layout.chartSize}
+                size={viewConfig.chartSize}
                 interactive={!emergencyMode}
                 clinicalContext={clinicalContext}
                 emergencyMode={emergencyMode}
-                showLabels={screenSize !== 'mobile'}
+                showLabels={viewConfig.showLabels && screenSize !== 'mobile'}
+                showCoverageIndicators={false}
+                showRouteIndicators={false}
+                showDebugInfo={false}
                 onSegmentHover={(segment, coverage) => {
                   // Forward to parent for detailed interactions (Agent 3.3 integration)
                 }}
@@ -405,7 +542,7 @@ const NorthwesternSpatialLayout = ({
 NorthwesternSpatialLayout.propTypes = {
   antibiotics: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number.isRequired,
+      id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
       name: PropTypes.string.isRequired,
       class: PropTypes.string.isRequired,
       northwesternSpectrum: PropTypes.object.isRequired,
@@ -414,12 +551,15 @@ NorthwesternSpatialLayout.propTypes = {
       generation: PropTypes.string
     })
   ).isRequired,
-  viewMode: PropTypes.oneOf(['grid', 'clustered', 'class']),
+  viewMode: PropTypes.oneOf(['comparison', 'exploration']),
+  groupingMode: PropTypes.oneOf(['drugClass', 'route', 'alphabetical', 'coverage']),
   screenSize: PropTypes.oneOf(['mobile', 'tablet', 'desktop']),
   showConnections: PropTypes.bool,
   highlightedClasses: PropTypes.arrayOf(PropTypes.string),
   onAntibioticSelect: PropTypes.func,
   onGroupSelect: PropTypes.func,
+  onViewModeChange: PropTypes.func,
+  onGroupingModeChange: PropTypes.func,
   className: PropTypes.string,
   enableVirtualization: PropTypes.bool,
   renderBufferSize: PropTypes.number,

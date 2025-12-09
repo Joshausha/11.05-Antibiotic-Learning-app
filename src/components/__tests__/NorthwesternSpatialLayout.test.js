@@ -433,15 +433,15 @@ describe('NorthwesternSpatialLayout', () => {
 
   test('passes correct props to pie chart components', async () => {
     render(
-      <NorthwesternSpatialLayout 
+      <NorthwesternSpatialLayout
         antibiotics={testAntibiotics}
         screenSize="desktop"
       />
     );
-    
+
     await waitFor(() => {
       const pieChart = screen.getByTestId(`pie-chart-${testAntibiotics[0].id}`);
-      expect(pieChart).toHaveAttribute('data-chart-size', 'medium'); // Desktop uses medium charts
+      expect(pieChart).toHaveAttribute('data-chart-size', 'small'); // Comparison mode uses small charts for grid density
     });
   });
 

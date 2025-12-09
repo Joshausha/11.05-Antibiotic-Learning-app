@@ -45,6 +45,7 @@
   width: 100%;
   height: 100%;
   padding: 16px;
+  gap: 10px; /* Add gap between cards for better visual separation */
   box-sizing: border-box;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
 }
@@ -135,7 +136,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* Align chart to top */
+  padding: 12px 8px 40px; /* Top, sides, bottom for label */
+  min-height: 150px; /* Ensure adequate height */
   background-color: #ffffff;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
@@ -472,14 +475,287 @@
     background: white;
     box-shadow: none;
   }
-  
+
   .spatial-debug-info {
     display: none;
   }
-  
+
   .antibiotic-position {
     break-inside: avoid;
     box-shadow: none;
     border: 1px solid #000;
+  }
+}
+
+/* ========================================
+   VIEW MODE CONTROLS
+   ======================================== */
+
+.spatial-layout-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.view-mode-toggle {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.view-toggle-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.view-toggle-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.view-toggle-btn.active {
+  background: #1976d2;
+  color: white;
+}
+
+.view-toggle-btn .icon {
+  font-size: 14px;
+}
+
+.grouping-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.grouping-selector label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.grouping-selector select {
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+  color: #374151;
+  min-width: 160px;
+}
+
+.grouping-selector select:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+/* ========================================
+   SHARED COVERAGE LEGEND
+   ======================================== */
+
+.shared-coverage-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.legend-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legend-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.legend-items {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid #d1d5db;
+}
+
+.legend-dot--none {
+  background-color: #ffffff;
+  border: 2px solid #ef4444;
+}
+
+.legend-dot--limited {
+  background-color: #bfdbfe;
+  border-color: #3b82f6;
+}
+
+.legend-dot--excellent {
+  background-color: #2563eb;
+  border-color: #1d4ed8;
+}
+
+.legend-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.route-legend {
+  padding-left: 24px;
+  border-left: 1px solid #e5e7eb;
+}
+
+.route-indicator {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.route-indicator--oral {
+  background-color: #fecaca;
+  color: #991b1b;
+}
+
+.route-indicator--iv {
+  background-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.route-indicator--both {
+  background-color: #ddd6fe;
+  color: #5b21b6;
+}
+
+/* ========================================
+   IMPROVED ANTIBIOTIC CARD STYLES
+   ======================================== */
+
+.northwestern-spatial-layout--comparison .antibiotic-position {
+  min-height: 160px;
+  padding: 12px 8px 45px; /* More room for label */
+}
+
+.northwestern-spatial-layout--exploration .antibiotic-position {
+  min-height: 280px;
+  padding: 16px 12px 12px;
+}
+
+.northwestern-spatial-layout--exploration .spatial-grid {
+  gap: 20px !important;
+  padding: 20px;
+}
+
+.northwestern-spatial-layout--exploration .position-label {
+  padding: 8px 10px;
+}
+
+.northwestern-spatial-layout--exploration .antibiotic-name {
+  font-size: 14px;
+}
+
+.northwestern-spatial-layout--exploration .drug-class {
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+/* Cleaner card hover effects */
+.antibiotic-position {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.antibiotic-position:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Route-based card accent */
+.antibiotic-position[data-route-color="red"] {
+  border-top: 3px solid #dc2626;
+}
+
+.antibiotic-position[data-route-color="blue"] {
+  border-top: 3px solid #2563eb;
+}
+
+.antibiotic-position[data-route-color="purple"] {
+  border-top: 3px solid #7c3aed;
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS FOR CONTROLS
+   ======================================== */
+
+@media (max-width: 640px) {
+  .spatial-layout-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .view-mode-toggle {
+    justify-content: center;
+  }
+
+  .grouping-selector {
+    justify-content: center;
+  }
+
+  .shared-coverage-legend {
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px 12px;
+  }
+
+  .route-legend {
+    padding-left: 0;
+    border-left: none;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
+  }
+}
+
+/* Hide controls in print */
+@media print {
+  .spatial-layout-controls,
+  .shared-coverage-legend {
+    display: none;
   }
 }

@@ -64,9 +64,10 @@ const EnhancedNorthwesternPieChart = ({
   
   // Medical workflow props
   clinicalPriority = 'standard',   // 'emergency', 'high', 'standard', 'low'
-  showCoverageIndicators = true,   // Show coverage level visual indicators
-  showRouteIndicators = true,      // Show route color indicators
+  showCoverageIndicators = false,  // Coverage legend now shown at layout level, not per-card
+  showRouteIndicators = false,     // Route info now shown in card label, not as separate indicator
   enableEmergencyAccess = true,    // Enable emergency clinical access patterns
+  showDebugInfo = false,           // Show debug info (only in development mode)
   
   // Accessibility enhancement props
   forceFocus = false,              // Force focus ring visibility
@@ -448,11 +449,11 @@ const EnhancedNorthwesternPieChart = ({
         </div>
       )}
       
-      {/* Performance and debug information (development only) */}
-      {process.env.NODE_ENV === 'development' && (
+      {/* Performance and debug information (development only, must be explicitly enabled) */}
+      {showDebugInfo && process.env.NODE_ENV === 'development' && (
         <div className="enhanced-northwestern-pie-chart__debug">
           <small>
-            Context: {effectiveContext} | Theme: {visualTheme} | 
+            Context: {effectiveContext} | Theme: {visualTheme} |
             States: {visualStates.size} | A11y: {colorBlindSafe ? 'ON' : 'OFF'}
           </small>
         </div>
@@ -507,6 +508,7 @@ EnhancedNorthwesternPieChart.propTypes = {
   showCoverageIndicators: PropTypes.bool,
   showRouteIndicators: PropTypes.bool,
   enableEmergencyAccess: PropTypes.bool,
+  showDebugInfo: PropTypes.bool,
   
   // Accessibility enhancement props
   forceFocus: PropTypes.bool,

@@ -110,16 +110,24 @@ describe('NorthwesternPieChart', () => {
       expect(container.firstChild).toHaveClass('custom-chart-class');
     });
 
-    test('renders center label with antibiotic name and route', () => {
-      render(<NorthwesternPieChart antibiotic={mockAntibiotic} size="medium" />);
-      
+    test('renders center label with antibiotic name and route when showCenterLabel is true', () => {
+      render(<NorthwesternPieChart antibiotic={mockAntibiotic} size="medium" showCenterLabel={true} />);
+
       const nameElement = screen.getByText('Penicillin G');
       const routeElement = screen.getByText('IV/IM');
-      
+
       expect(nameElement).toBeInTheDocument();
       expect(nameElement).toHaveClass('pie-center-label__name');
       expect(routeElement).toBeInTheDocument();
       expect(routeElement).toHaveClass('pie-center-label__route');
+    });
+
+    test('does not render center label by default', () => {
+      render(<NorthwesternPieChart antibiotic={mockAntibiotic} size="medium" />);
+
+      // Center label should not be present by default
+      expect(screen.queryByText('Penicillin G')).not.toBeInTheDocument();
+      expect(screen.queryByText('IV/IM')).not.toBeInTheDocument();
     });
   });
 
@@ -153,17 +161,17 @@ describe('NorthwesternPieChart', () => {
     });
 
     test('handles different route colors correctly', () => {
-      // Test oral antibiotic (red)
-      const { rerender } = render(<NorthwesternPieChart antibiotic={mockOralAntibiotic} size="medium" />);
+      // Test oral antibiotic (red) - showCenterLabel=true to test route text
+      const { rerender } = render(<NorthwesternPieChart antibiotic={mockOralAntibiotic} size="medium" showCenterLabel={true} />);
       expect(screen.getByText('PO')).toBeInTheDocument();
-      
+
       // Test IV antibiotic (blue)
-      rerender(<NorthwesternPieChart antibiotic={mockAntibiotic} size="medium" />);
+      rerender(<NorthwesternPieChart antibiotic={mockAntibiotic} size="medium" showCenterLabel={true} />);
       expect(screen.getByText('IV/IM')).toBeInTheDocument();
-      
+
       // Test dual route antibiotic (purple)
       const dualRouteAntibiotic = { ...mockAntibiotic, routeColor: 'purple', route: ['PO', 'IV'] };
-      rerender(<NorthwesternPieChart antibiotic={dualRouteAntibiotic} size="medium" />);
+      rerender(<NorthwesternPieChart antibiotic={dualRouteAntibiotic} size="medium" showCenterLabel={true} />);
       expect(screen.getByText('PO/IV')).toBeInTheDocument();
     });
 

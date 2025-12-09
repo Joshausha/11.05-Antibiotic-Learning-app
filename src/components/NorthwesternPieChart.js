@@ -144,7 +144,8 @@ const NorthwesternPieChart = ({
   selectedSegments = [],
   educationLevel = 'resident',
   emergencyMode = false,
-  enableTouchInteractions = true
+  enableTouchInteractions = true,
+  showCenterLabel = false  // Hide center label by default for cleaner grid display
 }) => {
   const [internalHoveredSegment, setInternalHoveredSegment] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -397,6 +398,12 @@ const NorthwesternPieChart = ({
               onClick={(e) => handleSegmentClick(segment, e)}
               onTouchStart={enableTouchInteractions ? (e) => handleTouchStart(segment, e) : undefined}
               onTouchEnd={enableTouchInteractions ? (e) => handleTouchEnd(segment, e) : undefined}
+              onKeyDown={(e) => {
+                if (interactive && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  handleSegmentClick(segment, e);
+                }
+              }}
               aria-label={`${segment.label}: ${segment.coverage}/2 coverage`}
               aria-pressed={isSelected}
               role="button"
@@ -405,33 +412,35 @@ const NorthwesternPieChart = ({
           );
         })}
         
-        {/* Center label */}
-        <g className="pie-center-label">
-          <text
-            x={centerX}
-            y={centerY - config.fontSize/2}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="pie-center-label__name"
-            fontSize={config.fontSize}
-            fontWeight="bold"
-            fill="currentColor"
-          >
-            {centerLabel.name}
-          </text>
-          <text
-            x={centerX}
-            y={centerY + config.fontSize/2}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="pie-center-label__route"
-            fontSize={config.fontSize * 0.8}
-            fill="currentColor"
-            opacity="0.7"
-          >
-            {centerLabel.route}
-          </text>
-        </g>
+        {/* Center label - only show when explicitly enabled */}
+        {showCenterLabel && (
+          <g className="pie-center-label">
+            <text
+              x={centerX}
+              y={centerY - config.fontSize/2}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="pie-center-label__name"
+              fontSize={config.fontSize}
+              fontWeight="bold"
+              fill="currentColor"
+            >
+              {centerLabel.name}
+            </text>
+            <text
+              x={centerX}
+              y={centerY + config.fontSize/2}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="pie-center-label__route"
+              fontSize={config.fontSize * 0.8}
+              fill="currentColor"
+              opacity="0.7"
+            >
+              {centerLabel.route}
+            </text>
+          </g>
+        )}
         
         {/* Optional segment labels */}
         <g 
@@ -496,7 +505,8 @@ NorthwesternPieChart.propTypes = {
   selectedSegments: PropTypes.arrayOf(PropTypes.string),
   educationLevel: PropTypes.oneOf(['student', 'resident', 'attending']),
   emergencyMode: PropTypes.bool,
-  enableTouchInteractions: PropTypes.bool
+  enableTouchInteractions: PropTypes.bool,
+  showCenterLabel: PropTypes.bool
 };
 
 export default NorthwesternPieChart;
