@@ -164,6 +164,19 @@ const northwesternSpectrumMap = {
   }
 };
 
+// Antibiotic Name to ID Mapping (for cases where antibiotics lack numeric id property)
+const antibioticNameToIdMap = {
+  'Penicillin': 1, 'Vancomycin': 2, 'Ciprofloxacin': 3, 'Ceftriaxone': 4,
+  'Azithromycin': 5, 'Clindamycin': 6, 'Gentamicin': 7, 'Meropenem': 8,
+  'Doxycycline': 9, 'Trimethoprim-Sulfamethoxazole': 10, 'TMP-SMX': 10,
+  'Linezolid': 11, 'Metronidazole': 12, 'Cefazolin': 13,
+  'Piperacillin-Tazobactam': 14, 'Ampicillin': 15, 'Amoxicillin': 16,
+  'Amoxicillin-clavulanate': 17, 'Ampicillin/sulbactam': 18, 'Cefdinir': 19,
+  'Cefepime': 20, 'Cefotaxime': 21, 'Cefpodoxime': 22, 'Ceftaroline': 23,
+  'Cefuroxime': 24, 'Cephalexin': 25, 'Daptomycin': 26, 'Levofloxacin': 27,
+  'Nafcillin': 28, 'Oxacillin': 29, 'Oxacillin/nafcillin': 29
+};
+
 // Cell Wall Activity Classification (for dotted border visualization)
 const cellWallActiveMap = {
   1: true,   // Penicillin
@@ -324,26 +337,34 @@ const northwesternPositionMap = {
  * Maintains full backward compatibility with existing schema
  */
 export const createNorthwesternAntibioticData = (originalAntibiotics) => {
-  return originalAntibiotics.map(antibiotic => ({
-    // Preserve all original fields for backward compatibility
-    ...antibiotic,
-    
-    // Add Northwestern 8-segment spectrum coverage
-    northwesternSpectrum: northwesternSpectrumMap[antibiotic.id] || {
-      MRSA: 0, VRE_faecium: 0, anaerobes: 0, atypicals: 0,
-      pseudomonas: 0, gramNegative: 0, MSSA: 0, enterococcus_faecalis: 0
-    },
-    
-    // Add Northwestern visualization properties
-    cellWallActive: cellWallActiveMap[antibiotic.id] || false,
-    generation: generationMap[antibiotic.id] || "Unclassified",
-    routeColor: routeColorMap[antibiotic.id] || "gray",
-    
-    // Add spatial positioning for Northwestern layout
-    northwesternPosition: northwesternPositionMap[antibiotic.id] || {
-      x: 0, y: 0, group: "unclassified", hasBorder: false
+  return originalAntibiotics.map(antibiotic => {
+    // Try ID first, then name lookup fallback
+    let antibioticId = antibiotic.id;
+    if (antibioticId === undefined && antibiotic.name) {
+      antibioticId = antibioticNameToIdMap[antibiotic.name];
     }
-  }));
+
+    return {
+      // Preserve all original fields for backward compatibility
+      ...antibiotic,
+
+      // Add Northwestern 8-segment spectrum coverage
+      northwesternSpectrum: northwesternSpectrumMap[antibioticId] || {
+        MRSA: 0, VRE_faecium: 0, anaerobes: 0, atypicals: 0,
+        pseudomonas: 0, gramNegative: 0, MSSA: 0, enterococcus_faecalis: 0
+      },
+
+      // Add Northwestern visualization properties
+      cellWallActive: cellWallActiveMap[antibioticId] || false,
+      generation: generationMap[antibioticId] || "Unclassified",
+      routeColor: routeColorMap[antibioticId] || "gray",
+
+      // Add spatial positioning for Northwestern layout
+      northwesternPosition: northwesternPositionMap[antibioticId] || {
+        x: 0, y: 0, group: "unclassified", hasBorder: false
+      }
+    };
+  });
 };
 
 /**
@@ -467,6 +488,7 @@ export const validateNorthwesternSchema = () => {
 // Export all mapping objects for external use
 export {
   northwesternSpectrumMap,
+  antibioticNameToIdMap,
   cellWallActiveMap,
   generationMap,
   routeColorMap,

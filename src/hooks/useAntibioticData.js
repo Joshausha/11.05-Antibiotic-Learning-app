@@ -6,6 +6,7 @@
 
 import { useMemo, useState } from 'react';
 import { buildIndexes, searchAntibiotics, getConditionsForAntibiotic, getDrugClassStats, findCombinationTherapyConditions } from '../utils/dataIndexer';
+import { createNorthwesternAntibioticData } from '../data/NorthwesternAntibioticSchema';
 
 const useAntibioticData = (medicalConditions) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,12 +25,16 @@ const useAntibioticData = (medicalConditions) => {
   // Get filtered and sorted antibiotics
   const antibiotics = useMemo(() => {
     if (!indexes) return [];
-    
-    return searchAntibiotics(indexes, {
+
+    const searchResults = searchAntibiotics(indexes, {
       query: searchQuery,
       drugClass: drugClassFilter,
       sortBy: sortBy
     });
+
+    // Merge Northwestern data from NorthwesternAntibioticSchema
+    // Note: This creates enhanced versions of the search results with Northwestern properties
+    return createNorthwesternAntibioticData(searchResults);
   }, [indexes, searchQuery, drugClassFilter, sortBy]);
 
   // Get conditions for selected antibiotic
