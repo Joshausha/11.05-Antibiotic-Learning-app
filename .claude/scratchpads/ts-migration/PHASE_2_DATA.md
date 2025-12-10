@@ -1,7 +1,7 @@
 # Phase 2: Data Layer
-**Last Updated**: 2025-12-09 21:50:00 EDT
+**Last Updated**: 2025-12-09 22:15:00 EDT
 **Status**: IN_PROGRESS
-**Progress**: 7/18 files (39%)
+**Progress**: 8/18 files (44%)
 
 ## Files To Migrate
 ### HIGH Priority (Next)
@@ -11,8 +11,8 @@
 - [x] `src/data/pathogenAntibioticMap.js` → `.ts` (lines: 450, complexity: MEDIUM) ✅ DONE - NEXT MEDIUM PRIORITY
 
 ### MEDIUM Priority
-- [x] `src/data/PathogenRelationshipJustifications.js` → `.ts` (lines: 456, complexity: MEDIUM) ✅ DONE - NEXT
-- [ ] `src/data/pathogenClassificationMap.js` → `.ts` (lines: 455, complexity: MEDIUM)
+- [x] `src/data/PathogenRelationshipJustifications.js` → `.ts` (lines: 456, complexity: MEDIUM) ✅ DONE
+- [x] `src/data/pathogenClassificationMap.js` → `.ts` (lines: 455, complexity: MEDIUM) ✅ DONE - NEXT
 - [ ] `src/data/SimpleAntibioticData.js` → `.ts` (lines: 452, complexity: MEDIUM)
 - [ ] `src/data/SimplePathogenData.js` → `.ts` (lines: 401, complexity: MEDIUM)
 - [ ] `src/data/durationMappings.js` → `.ts` (lines: 401, complexity: MEDIUM)
@@ -34,6 +34,7 @@
 - [x] `src/data/NorthwesternAntibioticSchema.ts` (completed: 2025-12-09 21:10) - 495 lines
 - [x] `src/data/pathogenAntibioticMap.ts` (completed: 2025-12-09 21:30) - 450 lines
 - [x] `src/data/PathogenRelationshipJustifications.ts` (completed: 2025-12-09 21:45) - 456 lines
+- [x] `src/data/pathogenClassificationMap.ts` (completed: 2025-12-09 22:15) - 455 lines
 
 ## Type Definitions Created
 - `QuizQuestion` interface in medical.types.ts
@@ -41,7 +42,7 @@
 - Extended types as needed during migration
 
 ## Blocking Issues
-None - ready to continue with MEDIUM priority files (PathogenRelationshipJustifications, pathogenClassificationMap)
+None - ready to continue with MEDIUM priority files (SimpleAntibioticData, SimplePathogenData, durationMappings, etc.)
 
 ## Notes for Next Agent
 - Test baseline at 97.2% (69/71 suites)
