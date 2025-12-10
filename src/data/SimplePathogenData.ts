@@ -4,7 +4,20 @@
  * Easy to understand and modify
  */
 
-const simplePathogens = [
+export interface SimplePathogen {
+  id: number;
+  name: string;
+  commonName: string;
+  gramStain: string;
+  shape: string;
+  morphology: string;
+  description: string;
+  commonSites: string[];
+  resistance: string;
+  severity: string;
+}
+
+const simplePathogens: SimplePathogen[] = [
   {
     id: 1,
     name: "Staphylococcus aureus",
@@ -356,26 +369,26 @@ const simplePathogens = [
 ];
 
 // Helper functions for sophomore developers
-export const getPathogenById = (id) => {
+export const getPathogenById = (id: number): SimplePathogen | undefined => {
   return simplePathogens.find(pathogen => pathogen.id === id);
 };
 
-export const getPathogenByName = (name) => {
-  return simplePathogens.find(pathogen => 
+export const getPathogenByName = (name: string): SimplePathogen | undefined => {
+  return simplePathogens.find(pathogen =>
     pathogen.name.toLowerCase() === name.toLowerCase() ||
     pathogen.commonName.toLowerCase() === name.toLowerCase()
   );
 };
 
-export const getPathogensByGramStatus = (gramStain) => {
+export const getPathogensByGramStatus = (gramStain: string): SimplePathogen[] => {
   return simplePathogens.filter(pathogen => pathogen.gramStain === gramStain);
 };
 
-export const getPathogensBySeverity = (severity) => {
+export const getPathogensBySeverity = (severity: string): SimplePathogen[] => {
   return simplePathogens.filter(pathogen => pathogen.severity === severity);
 };
 
-export const searchPathogens = (searchTerm) => {
+export const searchPathogens = (searchTerm?: string): SimplePathogen[] => {
   if (!searchTerm) return simplePathogens;
 
   const term = searchTerm.toLowerCase();
@@ -387,8 +400,8 @@ export const searchPathogens = (searchTerm) => {
 };
 
 // Data validation function
-export const validatePathogenData = () => {
-  const errors = [];
+export const validatePathogenData = (): string[] | null => {
+  const errors: string[] = [];
 
   simplePathogens.forEach(pathogen => {
     if (!pathogen.name) errors.push(`Pathogen ${pathogen.id} missing name`);

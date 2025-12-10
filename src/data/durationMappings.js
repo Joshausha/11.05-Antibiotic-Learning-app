@@ -5,7 +5,7 @@
  * Created: 2025-08-03
  */
 
-import simplePathogens from './SimplePathogenData.js';
+import simplePathogens from './SimplePathogenData';
 import simpleAntibiotics from './SimpleAntibioticData';
 import { rboConditionsMap } from './RBOMappingSystem.js';
 import pathogenAntibioticMap from './pathogenAntibioticMap';

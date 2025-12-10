@@ -4,7 +4,7 @@
  */
 
 import simpleAntibiotics from '../data/SimpleAntibioticData';
-import simplePathogens from '../data/SimplePathogenData.js';
+import simplePathogens from '../data/SimplePathogenData';
 import pathogenAntibioticMap from '../data/pathogenAntibioticMap';
 
 /**

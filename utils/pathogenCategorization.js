@@ -3,7 +3,7 @@
  * Transforms pathogen and antibiotic data into categories for visual comparison
  */
 
-import simplePathogens from '../data/SimplePathogenData.js';
+import simplePathogens from '../data/SimplePathogenData';
 import pathogenAntibioticMap from '../data/pathogenAntibioticMap';
 
 /**

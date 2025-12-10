@@ -5,7 +5,7 @@
  */
 
 import simpleAntibiotics from './SimpleAntibioticData';
-import simplePathogens from './SimplePathogenData.js';
+import simplePathogens from './SimplePathogenData';
 
 // RBO Clinical Conditions with mapped application data
 export const rboConditionsMap = [
