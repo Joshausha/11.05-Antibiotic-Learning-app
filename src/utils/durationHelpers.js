@@ -6,7 +6,7 @@
  */
 
 import { Clock, Timer, AlarmClock, Calendar } from 'lucide-react';
-import { rboConditionsMap } from '../data/RBOMappingSystem.js';
+import { rboConditionsMap } from '../data/RBOMappingSystem.ts';
 
 /**
  * Parse duration string from RBO data into structured format

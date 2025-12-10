@@ -7,7 +7,7 @@
 
 import simplePathogens from './SimplePathogenData';
 import simpleAntibiotics from './SimpleAntibioticData';
-import { rboConditionsMap } from './RBOMappingSystem.js';
+import { rboConditionsMap } from './RBOMappingSystem.ts';
 import pathogenAntibioticMap from './pathogenAntibioticMap';
 import {
   mapPathogenToConditions,

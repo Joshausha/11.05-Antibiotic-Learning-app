@@ -4,18 +4,40 @@
  * Updated: 2025-07-17 14:30:00
  */
 
-import simpleAntibiotics from './SimpleAntibioticData';
-import simplePathogens from './SimplePathogenData';
+import simpleAntibiotics from './SimpleAntibioticData.ts';
+import simplePathogens from './SimplePathogenData.ts';
+
+interface RBOCondition {
+  id: string;
+  category: string;
+  name: string;
+  mappedPathogens: string[];
+  mappedAntibiotics: string[];
+  duration: string;
+  severity: 'high' | 'medium' | 'low';
+}
+
+interface RBOCoverageStats {
+  totalConditions: number;
+  uniqueAntibiotics: number;
+  uniquePathogens: number;
+  categories: number;
+  severityDistribution: {
+    high: number;
+    medium: number;
+    low: number;
+  };
+}
 
 // RBO Clinical Conditions with mapped application data
-export const rboConditionsMap = [
+export const rboConditionsMap: RBOCondition[] = [
   {
     id: "uncomplicated_bloodstream_infection_nonneonates",
-    category: "Bloodstream Infection in Nonneonates", 
+    category: "Bloodstream Infection in Nonneonates",
     name: "Uncomplicated Bloodstream Infection",
     mappedPathogens: [
       "Staphylococcus aureus",
-      "Enterococcus faecalis", 
+      "Enterococcus faecalis",
       "Enterococcus faecium",
       "Escherichia coli",
       "Klebsiella pneumoniae",
@@ -24,7 +46,7 @@ export const rboConditionsMap = [
       "Coagulase-negative Staphylococcus"
     ],
     mappedAntibiotics: [
-      "Cefazolin", "Oxacillin", "Nafcillin", "Vancomycin", 
+      "Cefazolin", "Oxacillin", "Nafcillin", "Vancomycin",
       "Linezolid", "Daptomycin", "Ceftaroline", "Ampicillin"
     ],
     duration: "14 days from first negative blood culture",
@@ -33,26 +55,26 @@ export const rboConditionsMap = [
   {
     id: "osteomyelitis",
     category: "Bone/Joint",
-    name: "Osteomyelitis", 
+    name: "Osteomyelitis",
     mappedPathogens: [
       "Staphylococcus aureus",
       "Streptococcus pyogenes",
       "Kingella kingae"
     ],
     mappedAntibiotics: [
-      "Cefazolin", "Oxacillin", "Nafcillin", "Vancomycin", 
+      "Cefazolin", "Oxacillin", "Nafcillin", "Vancomycin",
       "Clindamycin", "Linezolid", "Daptomycin"
     ],
     duration: "3-4 weeks",
     severity: "high"
   },
   {
-    id: "septic_arthritis", 
+    id: "septic_arthritis",
     category: "Bone/Joint",
     name: "Septic arthritis",
     mappedPathogens: [
       "Staphylococcus aureus",
-      "Streptococcus pyogenes", 
+      "Streptococcus pyogenes",
       "Kingella kingae"
     ],
     mappedAntibiotics: [
@@ -64,7 +86,7 @@ export const rboConditionsMap = [
   },
   {
     id: "meningitis_non_neonates",
-    category: "Central Nervous System", 
+    category: "Central Nervous System",
     name: "Meningitis (non-neonates)",
     mappedPathogens: [
       "Streptococcus pneumoniae",
@@ -83,7 +105,7 @@ export const rboConditionsMap = [
     name: "Mastoiditis",
     mappedPathogens: [
       "Streptococcus pneumoniae",
-      "Streptococcus pyogenes", 
+      "Streptococcus pyogenes",
       "Staphylococcus aureus",
       "Haemophilus influenzae",
       "Microaerophilic streptococci",
@@ -91,7 +113,7 @@ export const rboConditionsMap = [
       "Pseudomonas aeruginosa"
     ],
     mappedAntibiotics: [
-      "Ampicillin/sulbactam", "Ceftriaxone", "Clindamycin", 
+      "Ampicillin/sulbactam", "Ceftriaxone", "Clindamycin",
       "Cefepime", "Levofloxacin"
     ],
     duration: "2-4 weeks",
@@ -100,7 +122,7 @@ export const rboConditionsMap = [
   {
     id: "acute_sinusitis",
     category: "Ear, Nose, and Throat",
-    name: "Acute sinusitis", 
+    name: "Acute sinusitis",
     mappedPathogens: [
       "Streptococcus pneumoniae",
       "Haemophilus influenzae",
@@ -114,7 +136,7 @@ export const rboConditionsMap = [
   },
   {
     id: "acute_otitis_media",
-    category: "Ear, Nose, and Throat", 
+    category: "Ear, Nose, and Throat",
     name: "Acute otitis media",
     mappedPathogens: [
       "Streptococcus pneumoniae",
@@ -122,7 +144,7 @@ export const rboConditionsMap = [
       "Moraxella catarrhalis"
     ],
     mappedAntibiotics: [
-      "Amoxicillin", "Amoxicillin-clavulanate", "Cefdinir", 
+      "Amoxicillin", "Amoxicillin-clavulanate", "Cefdinir",
       "Cefpodoxime", "Cefuroxime", "Ceftriaxone"
     ],
     duration: ">6 y: 5 days, 2-5 y: 7 days, <2 y: 10 days",
@@ -138,7 +160,7 @@ export const rboConditionsMap = [
     mappedAntibiotics: [
       "Penicillin", "Amoxicillin", "Cephalexin", "Clindamycin", "Azithromycin"
     ],
-    duration: "10 days", 
+    duration: "10 days",
     severity: "low"
   },
   {
@@ -148,7 +170,7 @@ export const rboConditionsMap = [
     mappedPathogens: [
       "Streptococcus pyogenes",
       "Anaerobes",
-      "Staphylococcus aureus", 
+      "Staphylococcus aureus",
       "Streptococcus anginosus",
       "Haemophilus influenzae"
     ],
@@ -159,20 +181,20 @@ export const rboConditionsMap = [
     severity: "high"
   },
   {
-    id: "uti_pyelonephritis", 
+    id: "uti_pyelonephritis",
     category: "Genitourinary",
     name: "UTI - pyelonephritis",
     mappedPathogens: [
       "Escherichia coli",
       "Klebsiella pneumoniae",
       "Proteus species",
-      "Enterobacter species", 
+      "Enterobacter species",
       "Citrobacter species",
       "Enterococcus faecalis",
       "Staphylococcus saprophyticus"
     ],
     mappedAntibiotics: [
-      "Cephalexin", "TMP-SMX", "Ampicillin", "Gentamicin", 
+      "Cephalexin", "TMP-SMX", "Ampicillin", "Gentamicin",
       "Ceftriaxone", "Ciprofloxacin"
     ],
     duration: "7-10 days (hospitalized), 5-10 days (outpatient)",
@@ -180,7 +202,7 @@ export const rboConditionsMap = [
   },
   {
     id: "intra_abdominal_infection",
-    category: "Intra-abdominal", 
+    category: "Intra-abdominal",
     name: "Intra-abdominal infection",
     mappedPathogens: [
       "Escherichia coli",
@@ -199,7 +221,7 @@ export const rboConditionsMap = [
     name: "Community-acquired pneumonia (CAP)",
     mappedPathogens: [
       "Streptococcus pneumoniae",
-      "Mycoplasma pneumoniae", 
+      "Mycoplasma pneumoniae",
       "Streptococcus pyogenes",
       "Staphylococcus aureus",
       "Haemophilus influenzae",
@@ -207,7 +229,7 @@ export const rboConditionsMap = [
       "Respiratory viruses"
     ],
     mappedAntibiotics: [
-      "Amoxicillin", "Ampicillin", "Penicillin", "Clindamycin", 
+      "Amoxicillin", "Ampicillin", "Penicillin", "Clindamycin",
       "Levofloxacin", "Ceftriaxone", "Azithromycin", "Vancomycin", "Linezolid"
     ],
     duration: "5 days for uncomplicated CAP",
@@ -216,13 +238,13 @@ export const rboConditionsMap = [
   {
     id: "cellulitis_nonpurulent",
     category: "Skin and Soft Tissue Infections",
-    name: "Cellulitis (nonpurulent)", 
+    name: "Cellulitis (nonpurulent)",
     mappedPathogens: [
       "Streptococcus pyogenes",
       "Staphylococcus aureus"
     ],
     mappedAntibiotics: [
-      "Cefazolin", "Oxacillin", "Nafcillin", "Cephalexin", "Clindamycin", 
+      "Cefazolin", "Oxacillin", "Nafcillin", "Cephalexin", "Clindamycin",
       "TMP-SMX", "Doxycycline", "Vancomycin", "Linezolid", "Ceftaroline", "Daptomycin"
     ],
     duration: "5-7 days",
@@ -230,13 +252,13 @@ export const rboConditionsMap = [
   },
   {
     id: "purulent_cellulitis_abscess",
-    category: "Skin and Soft Tissue Infections", 
+    category: "Skin and Soft Tissue Infections",
     name: "Purulent cellulitis/Abscess",
     mappedPathogens: [
       "Staphylococcus aureus"
     ],
     mappedAntibiotics: [
-      "Cefazolin", "Cephalexin", "TMP-SMX", "Clindamycin", 
+      "Cefazolin", "Cephalexin", "TMP-SMX", "Clindamycin",
       "Doxycycline", "Vancomycin", "Linezolid", "Ceftaroline", "Daptomycin"
     ],
     duration: "5-7 days",
@@ -247,81 +269,49 @@ export const rboConditionsMap = [
     category: "Skin and Soft Tissue Infections",
     name: "Lymphadenitis",
     mappedPathogens: [
-      "Streptococcus pyogenes",
       "Staphylococcus aureus",
-      "Bartonella species", 
-      "Nontuberculous mycobacteria"
+      "Streptococcus pyogenes"
     ],
     mappedAntibiotics: [
-      "Cefazolin", "Cephalexin", "Clindamycin"
+      "Cefazolin", "Cephalexin", "Clindamycin", "TMP-SMX", "Oxacillin", "Nafcillin"
     ],
     duration: "5-7 days",
-    severity: "low"
+    severity: "medium"
   }
 ];
 
-// Helper functions for mapping RBO data to application
-export const getConditionsByCategory = (category) => {
-  return rboConditionsMap.filter(condition => condition.category === category);
-};
-
-export const getConditionById = (id) => {
-  return rboConditionsMap.find(condition => condition.id === id);
-};
-
-export const getConditionsBySeverity = (severity) => {
-  return rboConditionsMap.filter(condition => condition.severity === severity);
-};
-
-export const getAntibioticsForCondition = (conditionId) => {
-  const condition = getConditionById(conditionId);
-  if (!condition) return [];
-  
-  return condition.mappedAntibiotics.map(antibioticName => {
-    return simpleAntibiotics.find(ab => 
-      ab.name.toLowerCase() === antibioticName.toLowerCase() ||
-      ab.name.toLowerCase().includes(antibioticName.toLowerCase())
-    );
-  }).filter(Boolean);
-};
-
-export const getPathogensForCondition = (conditionId) => {
-  const condition = getConditionById(conditionId);
-  if (!condition) return [];
-  
-  return condition.mappedPathogens.map(pathogenName => {
-    return simplePathogens.find(pathogen => 
-      pathogen.name.toLowerCase() === pathogenName.toLowerCase() ||
-      pathogen.name.toLowerCase().includes(pathogenName.toLowerCase()) ||
-      pathogen.commonName.toLowerCase().includes(pathogenName.toLowerCase())
-    );
-  }).filter(Boolean);
-};
-
-export const getConditionsForAntibiotic = (antibioticName) => {
+/**
+ * Get all conditions that use a specific antibiotic
+ */
+export const getConditionsForAntibiotic = (antibioticName: string): RBOCondition[] => {
   return rboConditionsMap.filter(condition =>
-    condition.mappedAntibiotics.some(ab => 
+    condition.mappedAntibiotics.some(ab =>
       ab.toLowerCase().includes(antibioticName.toLowerCase())
     )
   );
 };
 
-export const getConditionsForPathogen = (pathogenName) => {
+/**
+ * Get all conditions associated with a specific pathogen
+ */
+export const getConditionsForPathogen = (pathogenName: string): RBOCondition[] => {
   return rboConditionsMap.filter(condition =>
-    condition.mappedPathogens.some(pathogen => 
+    condition.mappedPathogens.some(pathogen =>
       pathogen.toLowerCase().includes(pathogenName.toLowerCase())
     )
   );
 };
 
-// Data validation for RBO mapping
-export const validateRBOMapping = () => {
-  const errors = [];
-  
+/**
+ * Data validation for RBO mapping
+ */
+export const validateRBOMapping = (): string[] | null => {
+  const errors: string[] = [];
+
   rboConditionsMap.forEach(condition => {
     // Check if mapped antibiotics exist in our data
     condition.mappedAntibiotics.forEach(antibioticName => {
-      const found = simpleAntibiotics.find(ab => 
+      const found = simpleAntibiotics.find(ab =>
         ab.name.toLowerCase() === antibioticName.toLowerCase() ||
         ab.name.toLowerCase().includes(antibioticName.toLowerCase())
       );
@@ -329,10 +319,10 @@ export const validateRBOMapping = () => {
         errors.push(`Antibiotic '${antibioticName}' in condition '${condition.name}' not found in application data`);
       }
     });
-    
+
     // Check if mapped pathogens exist in our data
     condition.mappedPathogens.forEach(pathogenName => {
-      const found = simplePathogens.find(pathogen => 
+      const found = simplePathogens.find(pathogen =>
         pathogen.name.toLowerCase() === pathogenName.toLowerCase() ||
         pathogen.name.toLowerCase().includes(pathogenName.toLowerCase()) ||
         pathogen.commonName.toLowerCase().includes(pathogenName.toLowerCase())
@@ -342,21 +332,23 @@ export const validateRBOMapping = () => {
       }
     });
   });
-  
+
   return errors.length === 0 ? null : errors;
 };
 
-// Statistics about RBO coverage
-export const getRBOCoverageStats = () => {
+/**
+ * Statistics about RBO coverage
+ */
+export const getRBOCoverageStats = (): RBOCoverageStats => {
   const totalConditions = rboConditionsMap.length;
-  const uniqueAntibiotics = new Set();
-  const uniquePathogens = new Set();
-  
+  const uniqueAntibiotics = new Set<string>();
+  const uniquePathogens = new Set<string>();
+
   rboConditionsMap.forEach(condition => {
     condition.mappedAntibiotics.forEach(ab => uniqueAntibiotics.add(ab.toLowerCase()));
     condition.mappedPathogens.forEach(pathogen => uniquePathogens.add(pathogen.toLowerCase()));
   });
-  
+
   return {
     totalConditions,
     uniqueAntibiotics: uniqueAntibiotics.size,

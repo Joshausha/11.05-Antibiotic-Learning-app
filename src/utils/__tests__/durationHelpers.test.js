@@ -23,7 +23,7 @@ jest.mock('lucide-react', () => ({
 }));
 
 // Mock RBOMappingSystem
-jest.mock('../../data/RBOMappingSystem.js', () => ({
+jest.mock('../../data/RBOMappingSystem.ts', () => ({
   rboConditionsMap: [
     {
       id: 'pneumonia_cap',
