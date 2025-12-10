@@ -403,10 +403,54 @@ module.exports = function (webpackEnv) {
                 and: [/\.(ts|tsx|js|jsx|md|mdx)$/],
               },
             },
-            // Process application JS with Babel.
-            // The preset includes JSX, Flow, TypeScript, and some ESnext features.
+            // Process TypeScript files with ts-loader for type checking
+            // Then pass through Babel for JSX transformation
             {
-              test: /\.(js|mjs|jsx|ts|tsx)$/,
+              test: /\.(ts|tsx)$/,
+              include: paths.appSrc,
+              use: [
+                {
+                  loader: require.resolve('babel-loader'),
+                  options: {
+                    customize: require.resolve(
+                      'babel-preset-react-app/webpack-overrides'
+                    ),
+                    presets: [
+                      [
+                        require.resolve('babel-preset-react-app'),
+                        {
+                          runtime: hasJsxRuntime ? 'automatic' : 'classic',
+                        },
+                      ],
+                    ],
+                    plugins: [
+                      isEnvDevelopment &&
+                        shouldUseReactRefresh &&
+                        require.resolve('react-refresh/babel'),
+                    ].filter(Boolean),
+                    cacheDirectory: true,
+                    cacheCompression: false,
+                    compact: isEnvProduction,
+                  },
+                },
+                {
+                  loader: require.resolve('ts-loader'),
+                  options: {
+                    transpileOnly: false,
+                    getCustomTransformers: () => ({
+                      before: [],
+                    }),
+                    compilerOptions: {
+                      module: 'esnext',
+                    },
+                  },
+                },
+              ],
+            },
+            // Process application JS with Babel.
+            // The preset includes JSX, Flow, and some ESnext features.
+            {
+              test: /\.(js|mjs|jsx)$/,
               include: paths.appSrc,
               loader: require.resolve('babel-loader'),
               options: {
@@ -421,7 +465,7 @@ module.exports = function (webpackEnv) {
                     },
                   ],
                 ],
-                
+
                 plugins: [
                   isEnvDevelopment &&
                     shouldUseReactRefresh &&

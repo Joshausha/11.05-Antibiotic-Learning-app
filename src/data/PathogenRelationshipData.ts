@@ -20,31 +20,186 @@ import { generatePathogenRelationships, getRelationshipStatistics } from '../uti
 import { relationshipJustifications, getRelationshipJustification } from './PathogenRelationshipJustifications';
 
 /**
+ * ============================================================================
+ * TYPESCRIPT INTERFACES - Type-safe pathogen relationship data structures
+ * ============================================================================
+ */
+
+/** Gram stain classification for pathogens */
+export type GramStainType = 'positive' | 'negative' | 'atypical' | 'acid-fast' | 'virus' | 'mixed';
+
+/** Clinical severity levels for pathogens */
+export type SeverityLevel = 'low' | 'medium' | 'high';
+
+/** Relationship type classifications */
+export type RelationshipType = 'strong' | 'medium' | 'weak';
+
+/** Edge labels for Cytoscape relationships */
+export type EdgeLabel =
+  | 'anatomic-association'
+  | 'co-infection'
+  | 'shared-resistance'
+  | 'treatment-interaction'
+  | 'similar-coverage'
+  | 'antibiotic-class'
+  | 'susceptible'
+  | 'resistant';
+
+/** Edge strength indicators */
+export type EdgeStrength = 'very-high' | 'high' | 'medium-high' | 'medium';
+
+/** Priority tier levels */
+export type PriorityTier = 1 | 2 | 3;
+
+/**
+ * Antibiotic data within a pathogen relationship
+ * Represents antibiotics shared between two pathogens
+ */
+export interface SharedAntibioticInfo {
+  id: number;
+  name: string;
+}
+
+/**
+ * Core pathogen relationship from Jaccard similarity analysis
+ * Used by network visualization and clinical decision support
+ */
+export interface PathogenRelationship {
+  sourceId: number;
+  sourceName: string;
+  targetId: number;
+  targetName: string;
+  similarity: number;
+  relationshipType: RelationshipType;
+  sharedAntibiotics: SharedAntibioticInfo[];
+  clinicalRationale: string;
+  medicalSource: string;
+}
+
+/**
+ * Justification object for a pathogen relationship
+ * Provides medical context and teaching importance
+ */
+export interface RelationshipJustification {
+  [key: string]: any;
+  importance?: 'high' | 'medium' | 'low';
+}
+
+/**
+ * Pathogen relationship with medical justification merged
+ * Used for detailed clinical context display
+ */
+export interface PathogenRelationshipWithJustification extends PathogenRelationship {
+  justification: RelationshipJustification | null;
+}
+
+/**
+ * Relationship statistics summary
+ * Provides overview metrics for relationship distribution analysis
+ */
+export interface RelationshipStatistics {
+  totalRelationships: number;
+  strongRelationships: number;
+  mediumRelationships: number;
+  weakRelationships: number;
+  averageSimilarity: number;
+  distribution: {
+    strong: number;
+    medium: number;
+    weak: number;
+  };
+}
+
+/**
+ * Cytoscape node data for pathogens
+ */
+export interface PathogenNodeData {
+  id: string;
+  label: string;
+  type: 'pathogen';
+  gramStain?: GramStainType;
+  shape?: string;
+  morphology?: string;
+  description?: string;
+  commonSites?: string[];
+  resistance?: string;
+  severity?: SeverityLevel;
+}
+
+/**
+ * Cytoscape node data for antibiotics
+ */
+export interface AntibioticNodeData {
+  id: string;
+  label: string;
+  type: 'antibiotic';
+  class?: string;
+  category?: string;
+  spectrum?: string;
+  mechanism?: string;
+  route?: string;
+}
+
+/** Union type for all Cytoscape node data */
+export type CytoscapeNodeData = PathogenNodeData | AntibioticNodeData;
+
+/**
+ * Cytoscape node structure with data
+ * Used for network graph visualization
+ */
+export interface CytoscapeNode {
+  data: CytoscapeNodeData;
+}
+
+/**
+ * Cytoscape edge data for relationships
+ * Represents connections between pathogens and antibiotics
+ */
+export interface CytoscapeEdgeData {
+  source: string;
+  target: string;
+  label: EdgeLabel;
+  strength?: EdgeStrength;
+  evidence?: string;
+  clinicalContext?: string;
+  tier?: PriorityTier;
+  pediatricRelevance?: string;
+}
+
+/**
+ * Cytoscape edge structure with data
+ * Used for network graph visualization
+ */
+export interface CytoscapeEdge {
+  data: CytoscapeEdgeData;
+}
+
+/**
  * Generate all medically-validated pathogen relationships
  * Uses Jaccard similarity algorithm with medical validation rules
  * Threshold: 0.3 (30% antibiotic overlap minimum)
  * Medical validation: Enabled
  */
-const allRelationships = generatePathogenRelationships(0.3, true);
+const allRelationships: PathogenRelationship[] = generatePathogenRelationships(0.3, true);
 
 /**
  * Relationship statistics
  * Provides overview of relationship distribution
  */
-export const stats = getRelationshipStatistics(allRelationships);
+export const stats: RelationshipStatistics = getRelationshipStatistics(allRelationships) as RelationshipStatistics;
 
 /**
  * Get all pathogen relationships
- * @returns {Array} Array of relationship objects with sourceId, targetId, similarity, relationshipType, etc.
+ * @returns Array of relationship objects with sourceId, targetId, similarity, relationshipType, etc.
  */
-export const getPathogenRelationships = () => allRelationships;
+export const getPathogenRelationships = (): PathogenRelationship[] => allRelationships;
 
 /**
  * Get relationships for a specific pathogen
- * @param {number} pathogenId - Pathogen ID
- * @returns {Array} Relationships where pathogen is source or target
+ * @param pathogenId - Pathogen ID
+ * @returns Relationships where pathogen is source or target
  */
-export const getRelationshipsForPathogen = (pathogenId) => {
+export const getRelationshipsForPathogen = (pathogenId: number): PathogenRelationship[] => {
   return allRelationships.filter(r =>
     r.sourceId === pathogenId || r.targetId === pathogenId
   );
@@ -52,30 +207,33 @@ export const getRelationshipsForPathogen = (pathogenId) => {
 
 /**
  * Get relationships by type
- * @param {string} type - 'strong', 'medium', 'weak', or 'all'
- * @returns {Array} Filtered relationships
+ * @param type - 'strong', 'medium', 'weak', or 'all'
+ * @returns Filtered relationships
  */
-export const getRelationshipsByType = (type) => {
+export const getRelationshipsByType = (type: RelationshipType | 'all'): PathogenRelationship[] => {
   if (type === 'all') return allRelationships;
   return allRelationships.filter(r => r.relationshipType === type);
 };
 
 /**
  * Get relationships above similarity threshold
- * @param {number} threshold - Similarity threshold (0-1)
- * @returns {Array} Relationships with similarity >= threshold
+ * @param threshold - Similarity threshold (0-1)
+ * @returns Relationships with similarity >= threshold
  */
-export const getRelationshipsAboveThreshold = (threshold) => {
+export const getRelationshipsAboveThreshold = (threshold: number): PathogenRelationship[] => {
   return allRelationships.filter(r => r.similarity >= threshold);
 };
 
 /**
  * Get relationship with medical justification merged
- * @param {number} sourceId - Source pathogen ID
- * @param {number} targetId - Target pathogen ID
- * @returns {Object} Relationship object with justification merged
+ * @param sourceId - Source pathogen ID
+ * @param targetId - Target pathogen ID
+ * @returns Relationship object with justification merged, or null if not found
  */
-export const getRelationshipWithJustification = (sourceId, targetId) => {
+export const getRelationshipWithJustification = (
+  sourceId: number,
+  targetId: number
+): PathogenRelationshipWithJustification | null => {
   const relationship = allRelationships.find(r =>
     r.sourceId === sourceId && r.targetId === targetId ||
     r.sourceId === targetId && r.targetId === sourceId
@@ -97,9 +255,9 @@ export const getRelationshipWithJustification = (sourceId, targetId) => {
 
 /**
  * Get all relationships with justifications merged
- * @returns {Array} All relationships with medical justifications included
+ * @returns All relationships with medical justifications included
  */
-export const getRelationshipsWithJustifications = () => {
+export const getRelationshipsWithJustifications = (): PathogenRelationshipWithJustification[] => {
   return allRelationships.map(relationship => {
     const { sourceId, targetId } = relationship;
 
@@ -118,9 +276,9 @@ export const getRelationshipsWithJustifications = () => {
 
 /**
  * Get all relationships with high-priority justifications (teaching focus)
- * @returns {Array} Relationships with high-importance justifications
+ * @returns Relationships with high-importance justifications
  */
-export const getHighPriorityRelationships = () => {
+export const getHighPriorityRelationships = (): PathogenRelationshipWithJustification[] => {
   return getRelationshipsWithJustifications()
     .filter(r => r.justification && r.justification.importance === 'high');
 };
@@ -128,8 +286,11 @@ export const getHighPriorityRelationships = () => {
 // ============================================================================
 // LEGACY CYTOSCAPE FORMAT (for backward compatibility)
 // ============================================================================
-// Transformed pathogen data for Cytoscape nodes
-export const nodes = [
+/**
+ * Transformed pathogen and antibiotic nodes for Cytoscape visualization
+ * Includes both pathogen (29) and antibiotic (30) nodes with medical metadata
+ */
+export const nodes: CytoscapeNode[] = [
   // =============================================================================
   // PATHOGEN NODES (29 nodes)
   // =============================================================================
@@ -216,7 +377,7 @@ export const nodes = [
  * Created: 2025-10-14
  * Source: AAP Red Book Online (RBO.json) - 22 syndromes analyzed
  */
-export const edges = [
+export const edges: CytoscapeEdge[] = [
   // =============================================================================
   // TIER 1 - CRITICAL RELATIONSHIPS (8 edges)
   // =============================================================================
@@ -915,7 +1076,10 @@ const pathogenGraphData = {
   edges,
 };
 
-// Export both the legacy Cytoscape format and the new Jaccard similarity-based relationships
+/**
+ * Default export: Complete pathogen relationship data structure
+ * Combines both legacy Cytoscape format and new Jaccard similarity-based relationships
+ */
 export default {
   ...pathogenGraphData,
   relationships: allRelationships,
