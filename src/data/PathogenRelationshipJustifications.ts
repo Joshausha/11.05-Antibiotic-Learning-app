@@ -18,7 +18,24 @@
  * Medical justifications keyed by "sourceId_targetId" relationship
  * Each justification includes clinical context, teaching points, and board relevance
  */
-export const relationshipJustifications = {
+
+export type BoardRelevanceLevel = 'CRITICAL' | 'IMPORTANT' | 'additional';
+export type ImportanceLevel = 'high' | 'medium' | 'low';
+
+export interface PathogenRelationshipJustification {
+  clinicalRationale: string;
+  anatomicAssociation: string;
+  sharedResistance: string[];
+  clinicalContext: string;
+  medicalSource: string;
+  teachingPoints: string[];
+  boardRelevance: string;
+  importance: ImportanceLevel;
+}
+
+export type RelationshipJustificationsMap = Record<string, PathogenRelationshipJustification>;
+
+export const relationshipJustifications: RelationshipJustificationsMap = {
   // ============================================================================
   // TIER 1 - CRITICAL NEONATAL RELATIONSHIPS
   // ============================================================================
@@ -423,20 +440,20 @@ export const relationshipJustifications = {
 
 /**
  * Get justification for a specific pathogen relationship
- * @param {string|number} sourceId - Source pathogen ID or name
- * @param {string|number} targetId - Target pathogen ID or name
- * @returns {object} Justification object or null if not found
+ * @param sourceId - Source pathogen ID or name
+ * @param targetId - Target pathogen ID or name
+ * @returns Justification object or null if not found
  */
-export const getRelationshipJustification = (sourceId, targetId) => {
+export const getRelationshipJustification = (sourceId: string | number, targetId: string | number): PathogenRelationshipJustification | null => {
   const key = `${sourceId}_${targetId}`;
   return relationshipJustifications[key] || null;
 };
 
 /**
  * Get all high-priority justifications (teaching focus)
- * @returns {array} Array of high-importance relationships
+ * @returns Array of high-importance relationships
  */
-export const getHighPriorityJustifications = () => {
+export const getHighPriorityJustifications = (): Array<PathogenRelationshipJustification & { key: string }> => {
   return Object.entries(relationshipJustifications)
     .filter(([, data]) => data.importance === 'high')
     .map(([key, data]) => ({ key, ...data }));
@@ -444,10 +461,10 @@ export const getHighPriorityJustifications = () => {
 
 /**
  * Get justifications by board relevance level
- * @param {string} level - 'CRITICAL', 'IMPORTANT', or 'additional'
- * @returns {array} Filtered justifications
+ * @param level - 'CRITICAL', 'IMPORTANT', or 'additional'
+ * @returns Filtered justifications
  */
-export const getJustificationsByBoardRelevance = (level) => {
+export const getJustificationsByBoardRelevance = (level: BoardRelevanceLevel): Array<PathogenRelationshipJustification & { key: string }> => {
   return Object.entries(relationshipJustifications)
     .filter(([, data]) => data.boardRelevance?.startsWith(level))
     .map(([key, data]) => ({ key, ...data }));
