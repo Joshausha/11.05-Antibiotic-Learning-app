@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, FC, ReactNode } from 'react';
+import { AppContextValue, AppProviderProps, TabType, MedicalCondition, SearchData, PathogenDataType, AntibioticDataType, QuizProgressType, BookmarksType } from '../types/app.types';
 import useResponsive from '../hooks/useResponsive';
 import useSearch from '../hooks/useSearch';
 import useQuizProgress from '../hooks/useQuizProgress';
@@ -13,17 +14,17 @@ import ErrorBoundary from '../components/ErrorBoundary';
  * AppContext - Centralized application state management
  * Reduces prop drilling by providing app-wide state through Context API
  */
-const AppContext = createContext();
+const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 /**
  * AppProvider Component
  * Provides application state and data to all child components
  */
-export const AppProvider = ({ children }) => {
+export const AppProvider: FC<AppProviderProps> = ({ children }) => {
   // Core app state
-  const [activeTab, setActiveTab] = useState('learn');
-  const [selectedCondition, setSelectedCondition] = useState(null);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('learn');
+  const [selectedCondition, setSelectedCondition] = useState<MedicalCondition | null>(null);
+  const [showMobileMenu, setShowMobileMenu] = useState<boolean>(false);
 
   // Initialize error handler - Agent T4: Defensive programming with null safety
   const errorHandler = useErrorHandler() || {};
@@ -41,7 +42,7 @@ export const AppProvider = ({ children }) => {
   const searchData = useSearch(medicalConditions, searchFields);
 
   // Context value object
-  const contextValue = {
+  const contextValue: AppContextValue = {
     // Core state
     activeTab,
     setActiveTab,
@@ -49,17 +50,17 @@ export const AppProvider = ({ children }) => {
     setSelectedCondition,
     showMobileMenu,
     setShowMobileMenu,
-    
+
     // Device state
     isMobile,
-    
+
     // Data and functionality
     quizProgress,
     bookmarks,
     pathogenData,
     antibioticData,
     searchData,
-    
+
     // Static data
     medicalConditions,
   };
@@ -79,13 +80,13 @@ export const AppProvider = ({ children }) => {
  * Provides easy access to app state and functions
  * Enhanced with Agent T4 defensive programming patterns
  */
-export const useAppContext = () => {
+export const useAppContext = (): AppContextValue => {
   const context = useContext(AppContext);
-  
+
   if (!context) {
     throw new Error('useAppContext must be used within an AppProvider');
   }
-  
+
   // Agent T4: Defensive programming - ensure required properties exist
   const {
     activeTab = 'learn',
@@ -102,7 +103,7 @@ export const useAppContext = () => {
     searchData = { filteredItems: [], searchTerm: '', setSearchTerm: () => {} },
     medicalConditions = []
   } = context;
-  
+
   return {
     activeTab,
     setActiveTab,

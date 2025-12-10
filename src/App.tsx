@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, FC, ReactNode } from 'react';
 
 // Import Error Boundary and Context
 import ErrorBoundary from './components/ErrorBoundary';
@@ -29,7 +29,7 @@ const VisualizationsTab = lazy(() => import('./components/VisualizationsTab'));
  * AppContent Component
  * Contains the main application logic and uses context for state management
  */
-const AppContent = () => {
+const AppContent: FC = () => {
   // Get all state and data from context
   const {
     activeTab = 'learn',
@@ -49,7 +49,7 @@ const AppContent = () => {
 
   // Get quiz progress data for analytics
   const { quizHistory } = useQuizProgress();
-  
+
   // Get spaced repetition data for analytics
   const spacedRepetitionData = {
     analytics: spacedRepetitionManager.getAnalytics(),
@@ -63,24 +63,31 @@ const AppContent = () => {
     <ErrorBoundary>
       <div className="min-h-screen bg-slate-50 font-sans">
         {/* Skip navigation link for accessibility */}
-        <a 
-          href="#main-content" 
+        <a
+          href="#main-content"
           className="skip-link"
-          onFocus={(e) => e.target.style.position = 'static'}
-          onBlur={(e) => e.target.style.position = 'absolute'}
+          onFocus={(e) => {
+            const target = e.target as HTMLAnchorElement;
+            target.style.position = 'static';
+          }}
+          onBlur={(e) => {
+            const target = e.target as HTMLAnchorElement;
+            target.style.position = 'absolute';
+          }}
         >
           Skip to main content
         </a>
-        
+
         {/* Use our Header component */}
         <ErrorBoundary>
-          <Header 
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            isMobile={isMobile}
-            showMobileMenu={showMobileMenu}
-            setShowMobileMenu={setShowMobileMenu}
-          />
+          {/* @ts-ignore - Header component not yet TypeScript */}
+          <Header {...({
+            activeTab,
+            setActiveTab,
+            isMobile,
+            showMobileMenu,
+            setShowMobileMenu
+          } as any)} />
         </ErrorBoundary>
 
         {/* Main Content */}
@@ -88,6 +95,7 @@ const AppContent = () => {
           {/* Render appropriate tab component based on activeTab */}
           {activeTab === 'learn' && (
             <ErrorBoundary>
+              {/* @ts-ignore - HomeTab not yet TypeScript */}
               <HomeTab setActiveTab={setActiveTab} />
             </ErrorBoundary>
           )}
@@ -95,10 +103,11 @@ const AppContent = () => {
           {activeTab === 'quiz' && (
             <ErrorBoundary>
               <Suspense fallback={<SkeletonLoader type="quiz" />}>
-                <QuizTab
-                  quizQuestions={quizQuestions}
-                  setActiveTab={setActiveTab}
-                />
+                {/* @ts-ignore - QuizTab not yet TypeScript */}
+                <QuizTab {...({
+                  quizQuestions,
+                  setActiveTab
+                } as any)} />
               </Suspense>
             </ErrorBoundary>
           )}
@@ -120,15 +129,16 @@ const AppContent = () => {
               <ErrorBoundary>
                 <div className="bg-white rounded-xl shadow-sm border p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">Medical Conditions Reference</h2>
-                  <ConditionsTab 
-                    filteredConditions={searchData.filteredItems}
-                    setSelectedCondition={setSelectedCondition}
-                    searchTerm={searchData.searchTerm}
-                    setSearchTerm={searchData.setSearchTerm}
-                  />
+                  {/* @ts-ignore - ConditionsTab not yet TypeScript */}
+                  <ConditionsTab {...({
+                    filteredConditions: searchData.filteredItems,
+                    setSelectedCondition,
+                    searchTerm: searchData.searchTerm,
+                    setSearchTerm: searchData.setSearchTerm
+                  } as any)} />
                 </div>
               </ErrorBoundary>
-              
+
               {/* Consolidated Pathogen & Antibiotic Explorer */}
               <ErrorBoundary>
                 <Suspense fallback={<SkeletonLoader type="list" />}>
@@ -170,7 +180,7 @@ const AppContent = () => {
                   antibioticData={antibioticData}
                   medicalConditions={medicalConditions}
                   onSelectCondition={setSelectedCondition}
-                  onSelectPathogen={(pathogen) => {
+                  onSelectPathogen={() => {
                     // Handle pathogen selection if needed
                   }}
                 />
@@ -181,11 +191,12 @@ const AppContent = () => {
           {/* Condition Detail Modal */}
           {selectedCondition && (
             <ErrorBoundary>
-              <ConditionDetailModal
-                condition={selectedCondition}
-                conditions={medicalConditions}
-                onClose={() => setSelectedCondition(null)}
-              />
+              {/* @ts-ignore - ConditionDetailModal not yet TypeScript */}
+              <ConditionDetailModal {...({
+                condition: selectedCondition,
+                conditions: medicalConditions,
+                onClose: () => setSelectedCondition(null)
+              } as any)} />
             </ErrorBoundary>
           )}
         </main>
@@ -198,12 +209,12 @@ const AppContent = () => {
  * Main App Component
  * Wraps the application with the context provider
  */
-function App() {
+const App: FC = () => {
   return (
     <AppProvider>
       <AppContent />
     </AppProvider>
   );
-}
+};
 
 export default App;
