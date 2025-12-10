@@ -32,7 +32,7 @@ import {
   convertToOriginalScale,
   getEffectivenessDistribution,
   validateConversionAlgorithm
-} from '../coverageConversionAlgorithm.js';
+} from '../coverageConversionAlgorithm';
 
 import {
   initializeCompatibility,
@@ -41,7 +41,7 @@ import {
   getNorthwesternEffectivenessForPair,
   ensureNorthwesternFormat,
   validateBackwardCompatibility
-} from '../backwardCompatibility.js';
+} from '../backwardCompatibility.ts';
 
 import simpleAntibiotics from '../SimpleAntibioticData';
 import simplePathogens from '../SimplePathogenData';
