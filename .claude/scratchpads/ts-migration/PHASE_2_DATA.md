@@ -1,14 +1,14 @@
 # Phase 2: Data Layer
-**Last Updated**: 2025-12-09 21:00:00 EDT
+**Last Updated**: 2025-12-09 21:15:00 EDT
 **Status**: IN_PROGRESS
-**Progress**: 4/18 files (22%)
+**Progress**: 5/18 files (28%)
 
 ## Files To Migrate
 ### HIGH Priority (Next)
 - [x] `src/data/quizQuestions.js` → `.ts` (lines: 1053, complexity: HIGH) ✅ DONE
 - [x] `src/data/quizQuestionsWithDifficulty.js` → `.ts` (lines: 1120, complexity: HIGH) ✅ DONE
-- [ ] `src/data/NorthwesternAntibioticSchema.js` → `.ts` (lines: 495, complexity: MEDIUM)
-- [ ] `src/data/pathogenAntibioticMap.js` → `.ts` (lines: 450, complexity: MEDIUM)
+- [x] `src/data/NorthwesternAntibioticSchema.js` → `.ts` (lines: 495, complexity: MEDIUM) ✅ DONE
+- [ ] `src/data/pathogenAntibioticMap.js` → `.ts` (lines: 450, complexity: MEDIUM) - NEXT
 
 ### MEDIUM Priority
 - [ ] `src/data/PathogenRelationshipJustifications.js` → `.ts` (lines: 456, complexity: MEDIUM)
@@ -29,8 +29,9 @@
 ## Completed Files
 - [x] `src/data/medicalConditions.ts` (completed: 2025-12-08)
 - [x] `src/data/PathogenRelationshipData.ts` (completed: 2025-12-08)
-- [x] `src/data/quizQuestions.ts` (completed: 2025-12-09 20:50)
-- [x] `src/data/quizQuestionsWithDifficulty.ts` (completed: 2025-12-09 21:00)
+- [x] `src/data/quizQuestions.ts` (completed: 2025-12-09 20:50) - 1053 lines
+- [x] `src/data/quizQuestionsWithDifficulty.ts` (completed: 2025-12-09 21:00) - 1120 lines
+- [x] `src/data/NorthwesternAntibioticSchema.ts` (completed: 2025-12-09 21:10) - 495 lines
 
 ## Type Definitions Created
 - `QuizQuestion` interface in medical.types.ts
