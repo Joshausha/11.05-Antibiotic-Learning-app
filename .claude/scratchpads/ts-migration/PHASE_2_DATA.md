@@ -1,7 +1,7 @@
 # Phase 2: Data Layer
-**Last Updated**: 2025-12-09 22:15:00 EDT
+**Last Updated**: 2025-12-09 22:30:00 EDT
 **Status**: IN_PROGRESS
-**Progress**: 8/18 files (44%)
+**Progress**: 9/18 files (50%)
 
 ## Files To Migrate
 ### HIGH Priority (Next)
@@ -12,8 +12,8 @@
 
 ### MEDIUM Priority
 - [x] `src/data/PathogenRelationshipJustifications.js` → `.ts` (lines: 456, complexity: MEDIUM) ✅ DONE
-- [x] `src/data/pathogenClassificationMap.js` → `.ts` (lines: 455, complexity: MEDIUM) ✅ DONE - NEXT
-- [ ] `src/data/SimpleAntibioticData.js` → `.ts` (lines: 452, complexity: MEDIUM)
+- [x] `src/data/pathogenClassificationMap.js` → `.ts` (lines: 455, complexity: MEDIUM) ✅ DONE
+- [x] `src/data/SimpleAntibioticData.js` → `.ts` (lines: 452, complexity: MEDIUM) ✅ DONE - NEXT
 - [ ] `src/data/SimplePathogenData.js` → `.ts` (lines: 401, complexity: MEDIUM)
 - [ ] `src/data/durationMappings.js` → `.ts` (lines: 401, complexity: MEDIUM)
 - [ ] `src/data/RBOMappingSystem.js` → `.ts` (lines: 372, complexity: MEDIUM)
@@ -35,6 +35,7 @@
 - [x] `src/data/pathogenAntibioticMap.ts` (completed: 2025-12-09 21:30) - 450 lines
 - [x] `src/data/PathogenRelationshipJustifications.ts` (completed: 2025-12-09 21:45) - 456 lines
 - [x] `src/data/pathogenClassificationMap.ts` (completed: 2025-12-09 22:15) - 455 lines
+- [x] `src/data/SimpleAntibioticData.ts` (completed: 2025-12-09 22:30) - 452 lines
 
 ## Type Definitions Created
 - `QuizQuestion` interface in medical.types.ts
