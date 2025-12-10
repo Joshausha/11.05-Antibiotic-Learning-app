@@ -2,19 +2,21 @@
  * Quiz Questions Data - Northwestern Enhanced
  * Contains clinical questions for testing knowledge of infectious diseases and antimicrobial therapy
  * Each question includes options, correct answer index, and detailed explanation
- * 
- * Enhanced by: Agent 2.5 - Component Integration Guardian  
+ *
+ * Enhanced by: Agent 2.5 - Component Integration Guardian
  * Date: 2025-08-18
- * 
+ *
  * Generated from RBO_JSON data
  * Total questions: 91 (79 original + 12 Northwestern)
  * Covers 20 medical conditions + Northwestern coverage analysis
  * Last updated: 2025-08-18
  */
 
-import northwesternQuizQuestions from './northwesternQuizQuestions.js';
+import { QuizQuestion } from '../types/medical.types';
+import northwesternQuizQuestions from './northwesternQuizQuestions';
 
-const quizQuestions = [
+// Type definition for combined questions that includes Northwestern extended properties
+const quizQuestions: QuizQuestion[] = [
   {
     "question": "Which of the following is a common pathogen causing uti - pyelonephritis?",
     "options": [
@@ -1045,7 +1047,8 @@ const quizQuestions = [
 ];
 
 // Combine original questions with Northwestern questions
-const combinedQuizQuestions = [
+// Northwestern questions have additional optional properties (difficulty, northwesternFocus, etc.)
+const combinedQuizQuestions: Array<QuizQuestion | any> = [
   ...quizQuestions,
   ...northwesternQuizQuestions
 ];

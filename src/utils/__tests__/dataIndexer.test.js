@@ -4,7 +4,7 @@
  */
 
 // Import real medical conditions for integration testing
-import medicalConditions from '../../data/medicalConditions.js';
+import medicalConditions from '../../data/medicalConditions';
 
 import {
   buildIndexes,
