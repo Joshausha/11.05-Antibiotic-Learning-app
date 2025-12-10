@@ -4,7 +4,21 @@
  * Effectiveness levels: "high", "medium", "low", "resistant"
  */
 
-const pathogenAntibioticMap = {
+export interface PathogenAntibioticRelationship {
+  antibioticId: number;
+  name: string;
+  effectiveness: 'high' | 'medium' | 'low' | 'resistant';
+  notes: string;
+}
+
+export interface PathogenEntry {
+  pathogenName: string;
+  antibiotics: PathogenAntibioticRelationship[];
+}
+
+export type PathogenAntibioticMapType = Record<number, PathogenEntry>;
+
+const pathogenAntibioticMap: PathogenAntibioticMapType = {
   // Staphylococcus aureus (MSSA/MRSA)
   1: {
     pathogenName: "Staphylococcus aureus",
@@ -358,35 +372,42 @@ const pathogenAntibioticMap = {
 };
 
 // Helper functions for sophomore developers
-export const getAntibioticsForPathogen = (pathogenId) => {
+export const getAntibioticsForPathogen = (pathogenId: number): PathogenAntibioticRelationship[] => {
   return pathogenAntibioticMap[pathogenId]?.antibiotics || [];
 };
 
-export const getEffectivenessForPair = (pathogenId, antibioticId) => {
+export const getEffectivenessForPair = (pathogenId: number, antibioticId: number): string | null => {
   const pathogen = pathogenAntibioticMap[pathogenId];
   if (!pathogen) return null;
-  
+
   const antibiotic = pathogen.antibiotics.find(ab => ab.antibioticId === antibioticId);
   return antibiotic?.effectiveness || null;
 };
 
-export const getHighEffectivenessAntibiotics = (pathogenId) => {
+export const getHighEffectivenessAntibiotics = (pathogenId: number): PathogenAntibioticRelationship[] => {
   const antibiotics = getAntibioticsForPathogen(pathogenId);
   return antibiotics.filter(ab => ab.effectiveness === "high");
 };
 
-export const getResistantAntibiotics = (pathogenId) => {
+export const getResistantAntibiotics = (pathogenId: number): PathogenAntibioticRelationship[] => {
   const antibiotics = getAntibioticsForPathogen(pathogenId);
   return antibiotics.filter(ab => ab.effectiveness === "resistant");
 };
 
-export const getPathogensForAntibiotic = (antibioticId) => {
-  const results = [];
-  
+interface PathogenForAntibioticResult {
+  pathogenId: number;
+  pathogenName: string;
+  effectiveness: string;
+  notes: string;
+}
+
+export const getPathogensForAntibiotic = (antibioticId: number): PathogenForAntibioticResult[] => {
+  const results: PathogenForAntibioticResult[] = [];
+
   Object.keys(pathogenAntibioticMap).forEach(pathogenId => {
-    const pathogen = pathogenAntibioticMap[pathogenId];
+    const pathogen = pathogenAntibioticMap[parseInt(pathogenId)];
     const antibiotic = pathogen.antibiotics.find(ab => ab.antibioticId === antibioticId);
-    
+
     if (antibiotic) {
       results.push({
         pathogenId: parseInt(pathogenId),
@@ -396,42 +417,49 @@ export const getPathogensForAntibiotic = (antibioticId) => {
       });
     }
   });
-  
+
   return results;
 };
 
-export const getEffectivenessStats = () => {
-  const stats = {
+interface EffectivenessStats {
+  high: number;
+  medium: number;
+  low: number;
+  resistant: number;
+}
+
+export const getEffectivenessStats = (): EffectivenessStats => {
+  const stats: EffectivenessStats = {
     high: 0,
     medium: 0,
     low: 0,
     resistant: 0
   };
-  
+
   Object.values(pathogenAntibioticMap).forEach(pathogen => {
     pathogen.antibiotics.forEach(antibiotic => {
       stats[antibiotic.effectiveness]++;
     });
   });
-  
+
   return stats;
 };
 
 // Data validation function
-export const validateRelationshipData = () => {
-  const errors = [];
-  
+export const validateRelationshipData = (): string[] | null => {
+  const errors: string[] = [];
+
   Object.keys(pathogenAntibioticMap).forEach(pathogenId => {
-    const pathogen = pathogenAntibioticMap[pathogenId];
-    
+    const pathogen = pathogenAntibioticMap[parseInt(pathogenId)];
+
     if (!pathogen.pathogenName) {
       errors.push(`Pathogen ${pathogenId} missing name`);
     }
-    
+
     if (!pathogen.antibiotics || pathogen.antibiotics.length === 0) {
       errors.push(`Pathogen ${pathogenId} has no antibiotics`);
     }
-    
+
     pathogen.antibiotics?.forEach((antibiotic, index) => {
       if (!antibiotic.antibioticId) {
         errors.push(`Pathogen ${pathogenId}, antibiotic ${index} missing ID`);
@@ -444,7 +472,7 @@ export const validateRelationshipData = () => {
       }
     });
   });
-  
+
   return errors.length === 0 ? null : errors;
 };
 

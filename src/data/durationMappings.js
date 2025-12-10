@@ -8,7 +8,7 @@
 import simplePathogens from './SimplePathogenData.js';
 import simpleAntibiotics from './SimpleAntibioticData.js';
 import { rboConditionsMap } from './RBOMappingSystem.js';
-import pathogenAntibioticMap from './pathogenAntibioticMap.js';
+import pathogenAntibioticMap from './pathogenAntibioticMap';
 import { 
   mapPathogenToConditions, 
   getPathogenDurations, 

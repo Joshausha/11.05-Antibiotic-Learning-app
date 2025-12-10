@@ -4,7 +4,7 @@
  */
 
 import simpleAntibiotics from '../data/SimpleAntibioticData.js';
-import pathogenAntibioticMap from '../data/pathogenAntibioticMap.js';
+import pathogenAntibioticMap from '../data/pathogenAntibioticMap';
 import { calculateCategoryEffectiveness } from './pathogenCategorization.js';
 
 /**

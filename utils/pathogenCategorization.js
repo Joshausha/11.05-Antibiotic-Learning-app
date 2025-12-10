@@ -4,7 +4,7 @@
  */
 
 import simplePathogens from '../data/SimplePathogenData.js';
-import pathogenAntibioticMap from '../data/pathogenAntibioticMap.js';
+import pathogenAntibioticMap from '../data/pathogenAntibioticMap';
 
 /**
  * Categorize pathogens by gram status and infection type

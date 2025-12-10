@@ -5,7 +5,7 @@
 
 import simpleAntibiotics from '../data/SimpleAntibioticData.js';
 import simplePathogens from '../data/SimplePathogenData.js';
-import pathogenAntibioticMap from '../data/pathogenAntibioticMap.js';
+import pathogenAntibioticMap from '../data/pathogenAntibioticMap';
 
 /**
  * Generate matrix heatmap data structure

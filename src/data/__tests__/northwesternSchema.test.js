@@ -45,7 +45,7 @@ import {
 
 import simpleAntibiotics from '../SimpleAntibioticData.js';
 import simplePathogens from '../SimplePathogenData.js';
-import pathogenAntibioticMap from '../pathogenAntibioticMap.js';
+import pathogenAntibioticMap from '../pathogenAntibioticMap';
 
 describe('Northwestern Schema - Core Data Structures', () => {
   
