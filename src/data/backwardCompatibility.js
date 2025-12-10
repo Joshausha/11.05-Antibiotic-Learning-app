@@ -5,7 +5,7 @@
  */
 
 import { convertToOriginalScale, convertToNorthwesternScale } from './coverageConversionAlgorithm.js';
-import { getNorthwesternClassification, getContextualNorthwesternCategory } from './pathogenClassificationMap.js';
+import { getNorthwesternClassification, getContextualNorthwesternCategory } from './pathogenClassificationMap';
 
 /**
  * Compatibility Adapter Class

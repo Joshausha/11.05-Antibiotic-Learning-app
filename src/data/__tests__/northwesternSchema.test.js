@@ -25,7 +25,7 @@ import {
   isPathogenInNorthwesternCategory,
   getContextualNorthwesternCategory,
   validatePathogenClassification
-} from '../pathogenClassificationMap.js';
+} from '../pathogenClassificationMap';
 
 import {
   convertToNorthwesternScale,

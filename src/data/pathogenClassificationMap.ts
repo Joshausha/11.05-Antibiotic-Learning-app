@@ -1,7 +1,7 @@
 /**
  * Pathogen Classification Map for Northwestern 8-Segment Model
  * Maps existing 29 pathogens to Northwestern categories
- * 
+ *
  * Northwestern Categories:
  * 1. MRSA (Methicillin-resistant Staphylococcus aureus)
  * 2. VRE_faecium (Vancomycin-resistant Enterococcus faecium)
@@ -13,8 +13,59 @@
  * 8. enterococcus_faecalis (Enterococcus faecalis)
  */
 
+export type NorthwesternCategory =
+  | 'MRSA'
+  | 'VRE_faecium'
+  | 'anaerobes'
+  | 'atypicals'
+  | 'pseudomonas'
+  | 'gramNegative'
+  | 'MSSA'
+  | 'enterococcus_faecalis'
+  | 'gramPositive'
+  | 'viral';
+
+export interface PathogenClassification {
+  pathogenName: string;
+  northwesternCategories: NorthwesternCategory[];
+  primaryCategory: NorthwesternCategory;
+  notes: string;
+}
+
+export interface NorthwesternCategoryDefinition {
+  fullName: string;
+  description: string;
+  keyFeatures: string[];
+  clinicalSignificance: string;
+}
+
+export type PathogenToNorthwesternMapType = Record<number, PathogenClassification>;
+export type NorthwesternCategoryDefinitionsType = Record<NorthwesternCategory, NorthwesternCategoryDefinition>;
+
+export interface PathogenInCategory {
+  pathogenId: number;
+  pathogenName: string;
+  isPrimary: boolean;
+  notes: string;
+}
+
+export interface ResistanceProfile {
+  methicillinResistant?: boolean;
+  MRSA?: boolean;
+  vancomycinResistant?: boolean;
+  VRE?: boolean;
+}
+
+export interface CategoryStats {
+  totalPathogens: number;
+  primaryPathogens: number;
+  secondaryPathogens: number;
+}
+
+export type CategoryStatsMap = Record<NorthwesternCategory, CategoryStats>;
+
 // Map pathogen IDs to Northwestern categories
-const pathogenToNorthwesternMap = {
+const pathogenToNorthwesternMap: PathogenToNorthwesternMapType = {
   // Staphylococcus aureus (context-dependent: MSSA vs MRSA)
   1: {
     pathogenName: "Staphylococcus aureus",
@@ -25,7 +76,7 @@ const pathogenToNorthwesternMap = {
 
   // Escherichia coli
   2: {
-    pathogenName: "Escherichia coli", 
+    pathogenName: "Escherichia coli",
     northwesternCategories: ["gramNegative"],
     primaryCategory: "gramNegative",
     notes: "Classic gram-negative enteric pathogen"
@@ -43,7 +94,7 @@ const pathogenToNorthwesternMap = {
   4: {
     pathogenName: "Pseudomonas aeruginosa",
     northwesternCategories: ["pseudomonas"],
-    primaryCategory: "pseudomonas", 
+    primaryCategory: "pseudomonas",
     notes: "Dedicated Northwestern category due to unique resistance patterns"
   },
 
@@ -83,7 +134,7 @@ const pathogenToNorthwesternMap = {
   9: {
     pathogenName: "Acinetobacter baumannii",
     northwesternCategories: ["gramNegative"],
-    primaryCategory: "gramNegative", 
+    primaryCategory: "gramNegative",
     notes: "Multi-drug resistant gram-negative pathogen"
   },
 
@@ -194,7 +245,7 @@ const pathogenToNorthwesternMap = {
   // Citrobacter species
   23: {
     pathogenName: "Citrobacter species",
-    northwesternCategories: ["gramNegative"], 
+    northwesternCategories: ["gramNegative"],
     primaryCategory: "gramNegative",
     notes: "Gram-negative enterobacteriaceae"
   },
@@ -249,7 +300,7 @@ const pathogenToNorthwesternMap = {
 };
 
 // Northwestern category definitions and expected pathogens
-const northwesternCategoryDefinitions = {
+const northwesternCategoryDefinitions: NorthwesternCategoryDefinitionsType = {
   MRSA: {
     fullName: "Methicillin-resistant Staphylococcus aureus",
     description: "Staphylococcus aureus strains resistant to methicillin/oxacillin",
@@ -258,7 +309,7 @@ const northwesternCategoryDefinitions = {
   },
 
   VRE_faecium: {
-    fullName: "Vancomycin-resistant Enterococcus faecium", 
+    fullName: "Vancomycin-resistant Enterococcus faecium",
     description: "E. faecium strains with vancomycin resistance",
     keyFeatures: ["vanA or vanB genes", "High-level ampicillin resistance", "Healthcare-associated"],
     clinicalSignificance: "Challenging to treat, often requires linezolid or daptomycin"
@@ -304,22 +355,36 @@ const northwesternCategoryDefinitions = {
     description: "Typically vancomycin-sensitive enterococcal species",
     keyFeatures: ["Intrinsic ampicillin susceptibility", "Lower VRE potential", "Bile tolerant"],
     clinicalSignificance: "Usually treatable with ampicillin or vancomycin"
+  },
+
+  gramPositive: {
+    fullName: "Gram-positive bacteria",
+    description: "Gram-positive bacteria not specifically categorized in Northwestern 8",
+    keyFeatures: ["Thick peptidoglycan", "No outer membrane"],
+    clinicalSignificance: "Variable coverage by standard beta-lactams"
+  },
+
+  viral: {
+    fullName: "Viral pathogens",
+    description: "Viral organisms not covered by antibiotic therapy",
+    keyFeatures: ["No cell wall", "Requires antiviral therapy"],
+    clinicalSignificance: "Not covered by Northwestern antibiotic model"
   }
 };
 
 /**
  * Get Northwestern classification for a pathogen
  */
-export const getNorthwesternClassification = (pathogenId) => {
+export const getNorthwesternClassification = (pathogenId: number): PathogenClassification | null => {
   return pathogenToNorthwesternMap[pathogenId] || null;
 };
 
 /**
  * Get all pathogens in a specific Northwestern category
  */
-export const getPathogensInNorthwesternCategory = (category) => {
-  const results = [];
-  
+export const getPathogensInNorthwesternCategory = (category: NorthwesternCategory): PathogenInCategory[] => {
+  const results: PathogenInCategory[] = [];
+
   Object.entries(pathogenToNorthwesternMap).forEach(([pathogenId, data]) => {
     if (data.northwesternCategories.includes(category)) {
       results.push({
@@ -330,21 +395,21 @@ export const getPathogensInNorthwesternCategory = (category) => {
       });
     }
   });
-  
+
   return results;
 };
 
 /**
  * Get Northwestern category definition
  */
-export const getNorthwesternCategoryDefinition = (category) => {
+export const getNorthwesternCategoryDefinition = (category: NorthwesternCategory): NorthwesternCategoryDefinition | null => {
   return northwesternCategoryDefinitions[category] || null;
 };
 
 /**
  * Check if pathogen belongs to Northwestern category
  */
-export const isPathogenInNorthwesternCategory = (pathogenId, category) => {
+export const isPathogenInNorthwesternCategory = (pathogenId: number, category: NorthwesternCategory): boolean => {
   const classification = getNorthwesternClassification(pathogenId);
   return classification?.northwesternCategories.includes(category) || false;
 };
@@ -352,11 +417,19 @@ export const isPathogenInNorthwesternCategory = (pathogenId, category) => {
 /**
  * Get Northwestern coverage statistics by pathogen distribution
  */
-export const getNorthwesternPathogenStats = () => {
-  const stats = {};
-  const categories = ['MRSA', 'VRE_faecium', 'anaerobes', 'atypicals', 
-                     'pseudomonas', 'gramNegative', 'MSSA', 'enterococcus_faecalis'];
-  
+export const getNorthwesternPathogenStats = (): CategoryStatsMap => {
+  const stats: Partial<CategoryStatsMap> = {};
+  const categories: NorthwesternCategory[] = [
+    'MRSA',
+    'VRE_faecium',
+    'anaerobes',
+    'atypicals',
+    'pseudomonas',
+    'gramNegative',
+    'MSSA',
+    'enterococcus_faecalis'
+  ];
+
   categories.forEach(category => {
     stats[category] = {
       totalPathogens: 0,
@@ -364,31 +437,34 @@ export const getNorthwesternPathogenStats = () => {
       secondaryPathogens: 0
     };
   });
-  
+
   Object.values(pathogenToNorthwesternMap).forEach(data => {
     data.northwesternCategories.forEach(category => {
       if (stats[category]) {
-        stats[category].totalPathogens++;
+        stats[category]!.totalPathogens++;
         if (data.primaryCategory === category) {
-          stats[category].primaryPathogens++;
+          stats[category]!.primaryPathogens++;
         } else {
-          stats[category].secondaryPathogens++;
+          stats[category]!.secondaryPathogens++;
         }
       }
     });
   });
-  
-  return stats;
+
+  return stats as CategoryStatsMap;
 };
 
 /**
  * Convert pathogen to resistance context for Northwestern classification
  * Handles special cases like MSSA vs MRSA
  */
-export const getContextualNorthwesternCategory = (pathogenId, resistanceProfile = {}) => {
+export const getContextualNorthwesternCategory = (
+  pathogenId: number,
+  resistanceProfile: ResistanceProfile = {}
+): NorthwesternCategory | null => {
   const classification = getNorthwesternClassification(pathogenId);
   if (!classification) return null;
-  
+
   // Special handling for Staphylococcus aureus
   if (pathogenId === 1) { // S. aureus
     if (resistanceProfile.methicillinResistant || resistanceProfile.MRSA) {
@@ -397,7 +473,7 @@ export const getContextualNorthwesternCategory = (pathogenId, resistanceProfile 
       return "MSSA";
     }
   }
-  
+
   // Special handling for Enterococcus faecium
   if (pathogenId === 11) { // E. faecium
     if (resistanceProfile.vancomycinResistant || resistanceProfile.VRE) {
@@ -406,51 +482,53 @@ export const getContextualNorthwesternCategory = (pathogenId, resistanceProfile 
       return "VRE_faecium"; // E. faecium has high VRE potential regardless
     }
   }
-  
+
   return classification.primaryCategory;
 };
 
 /**
  * Validate pathogen classification data
  */
-export const validatePathogenClassification = () => {
-  const errors = [];
-  
+export const validatePathogenClassification = (): string[] | null => {
+  const errors: string[] = [];
+
   // Check all pathogens have classifications
   Object.entries(pathogenToNorthwesternMap).forEach(([pathogenId, data]) => {
     if (!data.pathogenName) {
       errors.push(`Pathogen ${pathogenId} missing name`);
     }
-    
+
     if (!data.northwesternCategories || data.northwesternCategories.length === 0) {
       errors.push(`Pathogen ${pathogenId} missing Northwestern categories`);
     }
-    
+
     if (!data.primaryCategory) {
       errors.push(`Pathogen ${pathogenId} missing primary category`);
     }
-    
+
     if (data.primaryCategory && !data.northwesternCategories.includes(data.primaryCategory)) {
       errors.push(`Pathogen ${pathogenId} primary category not in categories list`);
     }
   });
-  
+
   // Check Northwestern categories are valid
   const validCategories = Object.keys(northwesternCategoryDefinitions);
   Object.values(pathogenToNorthwesternMap).forEach(data => {
     data.northwesternCategories.forEach(category => {
-      if (!validCategories.includes(category) && 
+      if (!validCategories.includes(category) &&
           !['gramPositive', 'viral'].includes(category)) {
         errors.push(`Invalid Northwestern category: ${category}`);
       }
     });
   });
-  
+
   return errors.length === 0 ? null : errors;
 };
 
-// Export mapping objects
+// Export mapping objects and types
 export {
   pathogenToNorthwesternMap,
   northwesternCategoryDefinitions
 };
+
+export default pathogenToNorthwesternMap;
