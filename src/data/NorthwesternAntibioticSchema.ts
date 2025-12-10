@@ -1,3 +1,5 @@
+import { Antibiotic } from '../types/medical.types';
+
 /**
  * Northwestern 8-Segment Antibiotic Schema
  * Enhanced data structure supporting Northwestern pie chart visualization
