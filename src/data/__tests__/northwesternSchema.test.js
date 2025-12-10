@@ -32,7 +32,7 @@ import {
   convertToOriginalScale,
   getEffectivenessDistribution,
   validateConversionAlgorithm
-} from '../coverageConversionAlgorithm';
+} from '../coverageConversionAlgorithm.ts';
 
 import {
   initializeCompatibility,

@@ -4,7 +4,7 @@
  * Provides seamless integration between old and new data formats
  */
 
-import { convertToOriginalScale, convertToNorthwesternScale } from './coverageConversionAlgorithm.js';
+import { convertToOriginalScale, convertToNorthwesternScale } from './coverageConversionAlgorithm';
 import { getNorthwesternClassification, getContextualNorthwesternCategory } from './pathogenClassificationMap';
 
 /**
