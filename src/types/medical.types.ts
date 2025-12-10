@@ -119,7 +119,7 @@ export interface ClinicalGuideline {
 // QUIZ TYPES
 // ==========================================
 
-export type QuestionDifficulty = 'easy' | 'medium' | 'hard';
+export type QuestionDifficulty = 'beginner' | 'intermediate' | 'advanced' | 'easy' | 'medium' | 'hard';
 
 export interface QuizQuestion {
   id?: string;

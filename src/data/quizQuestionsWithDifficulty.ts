@@ -1,3 +1,5 @@
+import { QuizQuestion } from '../types/medical.types';
+
 /**
  * Validated and Enhanced Quiz Questions
  * Medical data validated for completeness and accuracy
@@ -8,7 +10,7 @@
  * Validation completed: 2025-07-16T22:52:12.159153
  */
 
-const quizQuestionsWithDifficulty = [
+const quizQuestionsWithDifficulty: QuizQuestion[] = [
   {
     "question": "Which of the following is a common pathogen causing urinary tract infection - pyelonephritis?",
     "options": [
