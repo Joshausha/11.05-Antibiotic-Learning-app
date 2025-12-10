@@ -28,7 +28,7 @@ import {
   ShieldOff
 } from 'lucide-react';
 import { DurationSummary } from './DurationIndicator';
-import { getPathogenDurationInfo } from '../data/durationMappings';
+import { getPathogenDurationInfo } from '../data/durationMappings.ts';
 
 const PathogenCard = ({ pathogen = null, onClose = () => {} }) => {
   // Get duration information for this pathogen

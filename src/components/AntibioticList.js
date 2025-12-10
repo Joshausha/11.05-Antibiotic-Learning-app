@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { getAntibioticById } from '../data/SimpleAntibioticData';
 import DurationIndicator from './DurationIndicator';
-import { enhancedPathogenAntibioticMap } from '../data/durationMappings';
+import { enhancedPathogenAntibioticMap } from '../data/durationMappings.ts';
 
 const AntibioticList = ({ 
   pathogen = null, 
