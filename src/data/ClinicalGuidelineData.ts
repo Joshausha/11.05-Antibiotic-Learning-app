@@ -1,5 +1,5 @@
 /**
- * ClinicalGuidelineData.js
+ * ClinicalGuidelineData.ts
  * Evidence-based pediatric antibiotic guidelines
  *
  * IMPORTANT: This data is compiled from peer-reviewed medical literature for EDUCATIONAL PURPOSES ONLY.
@@ -16,7 +16,34 @@
  * - Last verified: 2025-11-30
  */
 
-export const guidelinesByCondition = {
+interface DosingInfo {
+  amount?: string;
+  frequency?: string;
+  maxDose?: string;
+  [key: string]: string | undefined;
+}
+
+interface Guideline {
+  id: string;
+  organization: string;
+  condition: string;
+  pathogen: string;
+  firstLineRecommendation: string;
+  evidenceLevel: 'A' | 'B' | 'C';
+  dosing: DosingInfo;
+  duration: string;
+  ageGroup: string;
+  severity: string;
+  citation: string;
+  pubmedId: string;
+  lastUpdated: string;
+  rationale: string;
+  references: string[];
+  boardRelevance: string;
+  importance: 'high' | 'medium' | 'low';
+}
+
+export const guidelinesByCondition: Record<string, Guideline[]> = {
   'community-acquired-pneumonia': [
     {
       id: 'aap-cap-amoxicillin',
@@ -166,19 +193,19 @@ export const guidelinesByCondition = {
   ]
 };
 
-export const getGuidelinesForCondition = (condition) => {
+export const getGuidelinesForCondition = (condition: string): Guideline[] => {
   return guidelinesByCondition[condition] || [];
 };
 
-export const getGuidelinesForPathogen = (pathogenName, condition) => {
+export const getGuidelinesForPathogen = (pathogenName: string, condition: string): Guideline[] => {
   const conditionGuidelines = guidelinesByCondition[condition] || [];
   return conditionGuidelines.filter(
     guideline => guideline.pathogen && guideline.pathogen.includes(pathogenName)
   );
 };
 
-export const getGuidelinesForConditions = (conditions) => {
-  const guidelines = [];
+export const getGuidelinesForConditions = (conditions: string[]): Guideline[] => {
+  const guidelines: Guideline[] = [];
   conditions.forEach(condition => {
     const conditionGuidelines = getGuidelinesForCondition(condition);
     guidelines.push(...conditionGuidelines);
