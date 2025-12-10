@@ -2,14 +2,16 @@
  * Medical Conditions Data
  * Contains information about various infectious diseases and their treatment protocols
  * This data is used throughout the application for displaying condition details
- * 
+ *
  * Data source: RBO_JSON (Transformed)
  * Total conditions: 20
  * Categories: Bloodstream Infection in Nonneonates, Bone/Joint, Central Nervous System, Ear, Nose, and Throat, Genitourinary, Intra-abdominal, Neonatal Fever (Term Neonates), Ophthalmologic, Respiratory, Skin and Soft Tissue Infections
  * Last updated: 2025-06-28T11:41:50.755Z
  */
 
-const medicalConditions = [
+import { MedicalCondition } from '../types/medical.types';
+
+const medicalConditions: MedicalCondition[] = [
   {
     "id": "uncomplicated_bloodstream_infection_nonneonates",
     "category": "Bloodstream Infection in Nonneonates",
