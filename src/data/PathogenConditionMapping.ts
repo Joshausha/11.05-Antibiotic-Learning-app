@@ -1,9 +1,31 @@
 /**
- * PathogenConditionMapping.js
+ * PathogenConditionMapping.ts
  * Maps each pathogen to relevant clinical conditions and presentations
  */
 
-export const pathogenConditionMapping = {
+/**
+ * Type definitions for pathogen condition mapping
+ */
+
+interface PathogenMapping {
+  name: string;
+  gramStain: string;
+  conditions: string[];
+  commonPresentation: string;
+  boardRelevance: string;
+}
+
+interface PathogenSummary {
+  id: string;
+  name: string;
+  gramStain: string;
+}
+
+interface PathogenConditionMapType {
+  [key: string]: PathogenMapping;
+}
+
+export const pathogenConditionMapping: PathogenConditionMapType = {
   'streptococcus-pneumoniae': {
     name: 'Streptococcus pneumoniae',
     gramStain: 'Gram-positive diplococci',
@@ -50,17 +72,32 @@ export const pathogenConditionMapping = {
   }
 };
 
-export const getConditionsForPathogen = (pathogenId) => {
+/**
+ * Get condition mapping for a specific pathogen
+ * @param pathogenId - The pathogen identifier
+ * @returns Pathogen mapping object or null
+ */
+export const getConditionsForPathogen = (pathogenId: string): PathogenMapping | null => {
   return pathogenConditionMapping[pathogenId] || null;
 };
 
-export const getConditionKeys = (pathogenId) => {
+/**
+ * Get condition keys for a specific pathogen
+ * @param pathogenId - The pathogen identifier
+ * @returns Array of condition strings
+ */
+export const getConditionKeys = (pathogenId: string): string[] => {
   const mapping = getConditionsForPathogen(pathogenId);
   return mapping ? mapping.conditions : [];
 };
 
-export const getPathogensForCondition = (condition) => {
-  const pathogens = [];
+/**
+ * Get all pathogens associated with a condition
+ * @param condition - The clinical condition
+ * @returns Array of pathogen summaries
+ */
+export const getPathogensForCondition = (condition: string): PathogenSummary[] => {
+  const pathogens: PathogenSummary[] = [];
   Object.entries(pathogenConditionMapping).forEach(([pathogenId, mapping]) => {
     if (mapping.conditions.includes(condition)) {
       pathogens.push({
@@ -73,7 +110,12 @@ export const getPathogensForCondition = (condition) => {
   return pathogens;
 };
 
-export const getPathogenDetails = (pathogenId) => {
+/**
+ * Get detailed information for a pathogen
+ * @param pathogenId - The pathogen identifier
+ * @returns Complete pathogen mapping or null
+ */
+export const getPathogenDetails = (pathogenId: string): PathogenMapping | null => {
   return pathogenConditionMapping[pathogenId] || null;
 };
 
