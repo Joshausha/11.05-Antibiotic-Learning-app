@@ -3,7 +3,7 @@
  * Transforms pathogen-antibiotic effectiveness data into interactive heatmap visualization
  */
 
-import simpleAntibiotics from '../data/SimpleAntibioticData.js';
+import simpleAntibiotics from '../data/SimpleAntibioticData';
 import simplePathogens from '../data/SimplePathogenData.js';
 import pathogenAntibioticMap from '../data/pathogenAntibioticMap';
 

@@ -43,7 +43,7 @@ import {
   validateBackwardCompatibility
 } from '../backwardCompatibility.js';
 
-import simpleAntibiotics from '../SimpleAntibioticData.js';
+import simpleAntibiotics from '../SimpleAntibioticData';
 import simplePathogens from '../SimplePathogenData.js';
 import pathogenAntibioticMap from '../pathogenAntibioticMap';
 

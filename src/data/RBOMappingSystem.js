@@ -4,7 +4,7 @@
  * Updated: 2025-07-17 14:30:00
  */
 
-import simpleAntibiotics from './SimpleAntibioticData.js';
+import simpleAntibiotics from './SimpleAntibioticData';
 import simplePathogens from './SimplePathogenData.js';
 
 // RBO Clinical Conditions with mapped application data

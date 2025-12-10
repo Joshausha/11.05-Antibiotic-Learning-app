@@ -3,7 +3,7 @@
  * Transforms antibiotic properties into normalized scores for spider plot display
  */
 
-import simpleAntibiotics from '../data/SimpleAntibioticData.js';
+import simpleAntibiotics from '../data/SimpleAntibioticData';
 import pathogenAntibioticMap from '../data/pathogenAntibioticMap';
 import { calculateCategoryEffectiveness } from './pathogenCategorization.js';
 

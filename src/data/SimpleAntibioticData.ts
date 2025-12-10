@@ -4,7 +4,21 @@
  * Easy to understand and modify
  */
 
-const simpleAntibiotics = [
+export interface SimpleAntibiotic {
+  id: number;
+  name: string;
+  category: string;
+  class: string;
+  description: string;
+  mechanism: string;
+  spectrum: string;
+  route: string;
+  commonUses: string[];
+  resistance: string;
+  sideEffects: string;
+}
+
+const simpleAntibiotics: SimpleAntibiotic[] = [
   {
     id: 1,
     name: "Penicillin",
@@ -398,27 +412,27 @@ const simpleAntibiotics = [
 ];
 
 // Helper functions for sophomore developers
-export const getAntibioticById = (id) => {
+export const getAntibioticById = (id: number): SimpleAntibiotic | undefined => {
   return simpleAntibiotics.find(antibiotic => antibiotic.id === id);
 };
 
-export const getAntibioticByName = (name) => {
-  return simpleAntibiotics.find(antibiotic => 
+export const getAntibioticByName = (name: string): SimpleAntibiotic | undefined => {
+  return simpleAntibiotics.find(antibiotic =>
     antibiotic.name.toLowerCase() === name.toLowerCase()
   );
 };
 
-export const getAntibioticsByClass = (drugClass) => {
+export const getAntibioticsByClass = (drugClass: string): SimpleAntibiotic[] => {
   return simpleAntibiotics.filter(antibiotic => antibiotic.class === drugClass);
 };
 
-export const getAntibioticsByCategory = (category) => {
+export const getAntibioticsByCategory = (category: string): SimpleAntibiotic[] => {
   return simpleAntibiotics.filter(antibiotic => antibiotic.category === category);
 };
 
-export const searchAntibiotics = (searchTerm) => {
+export const searchAntibiotics = (searchTerm?: string): SimpleAntibiotic[] => {
   if (!searchTerm) return simpleAntibiotics;
-  
+
   const term = searchTerm.toLowerCase();
   return simpleAntibiotics.filter(antibiotic =>
     antibiotic.name.toLowerCase().includes(term) ||
@@ -427,26 +441,26 @@ export const searchAntibiotics = (searchTerm) => {
   );
 };
 
-export const getAllDrugClasses = () => {
+export const getAllDrugClasses = (): string[] => {
   const classes = simpleAntibiotics.map(antibiotic => antibiotic.class);
   return [...new Set(classes)].sort();
 };
 
-export const getAllCategories = () => {
+export const getAllCategories = (): string[] => {
   const categories = simpleAntibiotics.map(antibiotic => antibiotic.category);
   return [...new Set(categories)].sort();
 };
 
 // Data validation function
-export const validateAntibioticData = () => {
-  const errors = [];
-  
+export const validateAntibioticData = (): string[] | null => {
+  const errors: string[] = [];
+
   simpleAntibiotics.forEach(antibiotic => {
     if (!antibiotic.name) errors.push(`Antibiotic ${antibiotic.id} missing name`);
     if (!antibiotic.class) errors.push(`Antibiotic ${antibiotic.id} missing class`);
     if (!antibiotic.mechanism) errors.push(`Antibiotic ${antibiotic.id} missing mechanism`);
   });
-  
+
   return errors.length === 0 ? null : errors;
 };
 

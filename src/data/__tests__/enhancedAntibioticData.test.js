@@ -26,7 +26,7 @@ import enhancedAntibiotics, {
   getMigrationStats
 } from '../EnhancedAntibioticData.js';
 
-import simpleAntibiotics from '../SimpleAntibioticData.js';
+import simpleAntibiotics from '../SimpleAntibioticData';
 
 describe('Enhanced Antibiotic Data - Migration Validation', () => {
   

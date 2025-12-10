@@ -4,7 +4,7 @@
  */
 
 import enhancedAntibiotics from '../../data/EnhancedAntibioticData.js';
-import simpleAntibiotics from '../../data/SimpleAntibioticData.js';
+import simpleAntibiotics from '../../data/SimpleAntibioticData';
 
 describe('Performance Benchmark - Northwestern Enhancement Impact', () => {
   

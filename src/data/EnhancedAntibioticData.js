@@ -20,7 +20,7 @@
  * Coverage Scale: 0=no coverage, 1=poor/moderate coverage, 2=good coverage
  */
 
-import simpleAntibiotics from './SimpleAntibioticData.js';
+import simpleAntibiotics from './SimpleAntibioticData';
 import { createNorthwesternAntibioticData } from './NorthwesternAntibioticSchema';
 
 // Generate the enhanced dataset with Northwestern integration
