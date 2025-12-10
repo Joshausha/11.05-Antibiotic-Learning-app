@@ -16,7 +16,7 @@ import {
   generationMap,
   routeColorMap,
   northwesternPositionMap
-} from '../NorthwesternAntibioticSchema.js';
+} from '../NorthwesternAntibioticSchema';
 
 import {
   getNorthwesternClassification,

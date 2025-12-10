@@ -21,7 +21,7 @@
  */
 
 import simpleAntibiotics from './SimpleAntibioticData.js';
-import { createNorthwesternAntibioticData } from './NorthwesternAntibioticSchema.js';
+import { createNorthwesternAntibioticData } from './NorthwesternAntibioticSchema';
 
 // Generate the enhanced dataset with Northwestern integration
 const enhancedAntibiotics = createNorthwesternAntibioticData(simpleAntibiotics);
