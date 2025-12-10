@@ -5,7 +5,7 @@
  * Renders 8 segments representing different pathogen categories with coverage levels.
  * 
  * Created by: Agent 2.1 - Phase 2 Northwestern Foundation
- * Medical Accuracy: Validated against EnhancedAntibioticData.js
+ * Medical Accuracy: Validated against EnhancedAntibioticData.ts
  * Performance Target: <1000ms rendering, <200ms re-render
  * 
  * @component

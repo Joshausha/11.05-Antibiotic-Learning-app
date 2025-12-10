@@ -24,7 +24,7 @@ import enhancedAntibiotics, {
   getBroadSpectrumAntibiotics,
   getNarrowSpectrumAntibiotics,
   getMigrationStats
-} from '../EnhancedAntibioticData.js';
+} from '../EnhancedAntibioticData.ts';
 
 import simpleAntibiotics from '../SimpleAntibioticData';
 

@@ -3,7 +3,7 @@
  * Agent 1.3: Measure performance impact of Northwestern-enhanced data
  */
 
-import enhancedAntibiotics from '../../data/EnhancedAntibioticData.js';
+import enhancedAntibiotics from '../../data/EnhancedAntibioticData.ts';
 import simpleAntibiotics from '../../data/SimpleAntibioticData';
 
 describe('Performance Benchmark - Northwestern Enhancement Impact', () => {

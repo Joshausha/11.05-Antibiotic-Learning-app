@@ -29,7 +29,8 @@
       "Bash(done)",
       "Bash(cat:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(do sed -i '' 's/EnhancedAntibioticData\\.js/EnhancedAntibioticData.ts/g' \"$file\" echo \"Fixed: $file\" done)"
     ]
   }
 }

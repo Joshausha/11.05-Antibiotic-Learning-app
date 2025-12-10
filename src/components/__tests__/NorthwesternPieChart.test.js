@@ -20,7 +20,7 @@ import NorthwesternPieChart, {
   getStrokeStyle
 } from '../NorthwesternPieChart';
 
-// Mock antibiotic data matching EnhancedAntibioticData.js structure
+// Mock antibiotic data matching EnhancedAntibioticData.ts structure
 const mockAntibiotic = {
   id: 1,
   name: 'Penicillin G',

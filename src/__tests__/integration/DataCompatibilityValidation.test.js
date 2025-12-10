@@ -5,7 +5,7 @@
  * Focus on ensuring the enhanced data works with existing data access patterns
  */
 
-import enhancedAntibiotics from '../../data/EnhancedAntibioticData.js';
+import enhancedAntibiotics from '../../data/EnhancedAntibioticData.ts';
 import simpleAntibiotics from '../../data/SimpleAntibioticData';
 
 // Import data utilities
@@ -24,7 +24,7 @@ import {
   getAntibioticsByGeneration,
   getBroadSpectrumAntibiotics,
   getNarrowSpectrumAntibiotics
-} from '../../data/EnhancedAntibioticData.js';
+} from '../../data/EnhancedAntibioticData.ts';
 
 describe('Data Layer Compatibility Validation - Agent 1.3', () => {
   

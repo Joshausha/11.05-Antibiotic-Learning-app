@@ -5,7 +5,7 @@
  * Northwestern wheel comparison mode.
  *
  * Created by: Agent - Phase 7 Visualization Enhancement
- * Medical Accuracy: Integrates with EnhancedAntibioticData.js
+ * Medical Accuracy: Integrates with EnhancedAntibioticData.ts
  * Performance Target: <200ms filter response
  *
  * Features:

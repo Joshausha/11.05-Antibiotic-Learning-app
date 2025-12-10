@@ -2,7 +2,7 @@
  * Northwestern Pie Chart Demo Component
  * 
  * Demonstrates the NorthwesternPieChart component with real antibiotic data
- * from EnhancedAntibioticData.js. Shows responsive sizes and interactivity.
+ * from EnhancedAntibioticData.ts. Shows responsive sizes and interactivity.
  * 
  * Created by: Agent 2.1 - Phase 2 Northwestern Foundation  
  * Purpose: Integration demonstration and testing

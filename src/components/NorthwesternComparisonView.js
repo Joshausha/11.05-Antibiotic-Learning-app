@@ -6,7 +6,7 @@
  * medical education.
  *
  * Created by: Agent - Phase 7 Visualization Enhancement
- * Medical Accuracy: Validated against EnhancedAntibioticData.js
+ * Medical Accuracy: Validated against EnhancedAntibioticData.ts
  * Performance Target: <1000ms rendering, 60fps synchronized animations
  * Clinical Integration: <30 second emergency access maintained
  *
