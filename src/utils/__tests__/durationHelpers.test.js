@@ -12,7 +12,7 @@ import {
   getPathogenDurations,
   formatDurationDisplay,
   getDurationStats
-} from '../durationHelpers.js';
+} from '../durationHelpers';
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({

@@ -5,16 +5,79 @@
  * Created: 2025-08-03
  */
 
-import { Clock, Timer, AlarmClock, Calendar } from 'lucide-react';
-import { rboConditionsMap } from '../data/RBOMappingSystem.ts';
+import { Clock, Timer, AlarmClock, Calendar, LucideIcon } from 'lucide-react';
+import { rboConditionsMap } from '../data/RBOMappingSystem';
+
+/**
+ * Type definitions for duration helpers
+ */
+
+interface ParsedDuration {
+  type: 'unknown' | 'age-based' | 'conditional' | 'days' | 'weeks' | 'text';
+  display: string;
+  minDays: number | null;
+  maxDays: number | null;
+  category: 'unknown' | 'short' | 'medium' | 'long' | 'extended' | 'complex';
+  isComplex: boolean;
+  ageGroups?: AgeGroup[];
+  condition?: string;
+}
+
+interface AgeGroup {
+  ageRange: string;
+  duration: string;
+  days: number | null;
+}
+
+interface ColorScheme {
+  text: string;
+  bg: string;
+  border: string;
+  icon: string;
+}
+
+interface DurationContext {
+  conditionId: string;
+  conditionName: string;
+  category: string;
+  severity: string;
+  duration: string;
+  parsedDuration: ParsedDuration;
+}
+
+interface DurationStatistics {
+  total: number;
+  categories: {
+    short: number;
+    medium: number;
+    long: number;
+    extended: number;
+    complex: number;
+    unknown: number;
+  };
+  averageDays: number | null;
+  range: {
+    min: number | null;
+    max: number | null;
+  };
+}
+
+interface RBOCondition {
+  id: string;
+  name: string;
+  category: string;
+  severity: string;
+  duration: string;
+  mappedPathogens: string[];
+}
 
 /**
  * Parse duration string from RBO data into structured format
  * Handles various duration formats from clinical guidelines
- * @param {string} duration - Duration string from RBO data
- * @returns {Object} Parsed duration information
+ * @param duration - Duration string from RBO data
+ * @returns Parsed duration information
  */
-export const parseDurationString = (duration) => {
+export const parseDurationString = (duration: string | null | undefined): ParsedDuration => {
   if (!duration || typeof duration !== 'string') {
     return {
       type: 'unknown',
@@ -27,7 +90,7 @@ export const parseDurationString = (duration) => {
   }
 
   const durationLower = duration.toLowerCase().trim();
-  
+
   // Handle complex age-based durations
   if (durationLower.includes(':') || durationLower.includes('y:')) {
     return {
@@ -43,12 +106,13 @@ export const parseDurationString = (duration) => {
 
   // Handle conditional durations
   if (durationLower.includes('from') || durationLower.includes('after')) {
+    const extractedDays = extractDaysFromString(duration);
     return {
       type: 'conditional',
       display: duration,
-      minDays: extractDaysFromString(duration),
+      minDays: extractedDays,
       maxDays: null,
-      category: determineCategory(extractDaysFromString(duration)),
+      category: determineCategory(extractedDays),
       isComplex: true,
       condition: extractCondition(duration)
     };
@@ -57,9 +121,9 @@ export const parseDurationString = (duration) => {
   // Handle simple day ranges (e.g., "5-7 days")
   const dayMatch = durationLower.match(/(\d+)[-–]?(\d+)?\s*days?/);
   if (dayMatch) {
-    const minDays = parseInt(dayMatch[1]);
-    const maxDays = dayMatch[2] ? parseInt(dayMatch[2]) : minDays;
-    
+    const minDays = parseInt(dayMatch[1], 10);
+    const maxDays = dayMatch[2] ? parseInt(dayMatch[2], 10) : minDays;
+
     return {
       type: 'days',
       display: formatDayRange(minDays, maxDays),
@@ -73,11 +137,11 @@ export const parseDurationString = (duration) => {
   // Handle week ranges (e.g., "3-4 weeks")
   const weekMatch = durationLower.match(/(\d+)[-–]?(\d+)?\s*weeks?/);
   if (weekMatch) {
-    const minWeeks = parseInt(weekMatch[1]);
-    const maxWeeks = weekMatch[2] ? parseInt(weekMatch[2]) : minWeeks;
+    const minWeeks = parseInt(weekMatch[1], 10);
+    const maxWeeks = weekMatch[2] ? parseInt(weekMatch[2], 10) : minWeeks;
     const minDays = minWeeks * 7;
     const maxDays = maxWeeks * 7;
-    
+
     return {
       type: 'weeks',
       display: formatWeekRange(minWeeks, maxWeeks),
@@ -91,7 +155,7 @@ export const parseDurationString = (duration) => {
   // Handle single numbers with units
   const singleDayMatch = durationLower.match(/(\d+)\s*days?/);
   if (singleDayMatch) {
-    const days = parseInt(singleDayMatch[1]);
+    const days = parseInt(singleDayMatch[1], 10);
     return {
       type: 'days',
       display: `${days} day${days !== 1 ? 's' : ''}`,
@@ -104,7 +168,7 @@ export const parseDurationString = (duration) => {
 
   const singleWeekMatch = durationLower.match(/(\d+)\s*weeks?/);
   if (singleWeekMatch) {
-    const weeks = parseInt(singleWeekMatch[1]);
+    const weeks = parseInt(singleWeekMatch[1], 10);
     const days = weeks * 7;
     return {
       type: 'weeks',
@@ -129,13 +193,13 @@ export const parseDurationString = (duration) => {
 
 /**
  * Parse age-based duration groups
- * @param {string} duration - Duration string with age groups
- * @returns {Array} Array of age group objects
+ * @param duration - Duration string with age groups
+ * @returns Array of age group objects
  */
-const parseAgeGroups = (duration) => {
-  const groups = [];
+const parseAgeGroups = (duration: string): AgeGroup[] => {
+  const groups: AgeGroup[] = [];
   const parts = duration.split(',');
-  
+
   parts.forEach(part => {
     const trimmed = part.trim();
     if (trimmed.includes(':')) {
@@ -148,16 +212,16 @@ const parseAgeGroups = (duration) => {
       });
     }
   });
-  
+
   return groups;
 };
 
 /**
  * Extract condition information from duration string
- * @param {string} duration - Duration string
- * @returns {string} Condition description
+ * @param duration - Duration string
+ * @returns Condition description
  */
-const extractCondition = (duration) => {
+const extractCondition = (duration: string): string => {
   if (duration.includes('from')) {
     return duration.split('from')[1].trim();
   }
@@ -170,38 +234,38 @@ const extractCondition = (duration) => {
 /**
  * Extract number of days from duration string
  * For ranges, returns the minimum (start) value for conservative medical estimates
- * @param {string} duration - Duration string
- * @returns {number|null} Number of days or null if not found
+ * @param duration - Duration string
+ * @returns Number of days or null if not found
  */
-const extractDaysFromString = (duration) => {
+const extractDaysFromString = (duration: string): number | null => {
   // Handle day ranges first (e.g., "10-14 days") - return minimum for conservative estimate
   const dayRangeMatch = duration.match(/(\d+)[-–](\d+)\s*days?/);
-  if (dayRangeMatch) return parseInt(dayRangeMatch[1]); // Return minimum
-  
+  if (dayRangeMatch) return parseInt(dayRangeMatch[1], 10); // Return minimum
+
   // Handle single day values
   const dayMatch = duration.match(/(\d+)\s*days?/);
-  if (dayMatch) return parseInt(dayMatch[1]);
-  
+  if (dayMatch) return parseInt(dayMatch[1], 10);
+
   // Handle week ranges (e.g., "2-3 weeks") - return minimum for conservative estimate
   const weekRangeMatch = duration.match(/(\d+)[-–](\d+)\s*weeks?/);
-  if (weekRangeMatch) return parseInt(weekRangeMatch[1]) * 7; // Return minimum
-  
+  if (weekRangeMatch) return parseInt(weekRangeMatch[1], 10) * 7; // Return minimum
+
   // Handle single week values
   const weekMatch = duration.match(/(\d+)\s*weeks?/);
-  if (weekMatch) return parseInt(weekMatch[1]) * 7;
-  
+  if (weekMatch) return parseInt(weekMatch[1], 10) * 7;
+
   return null;
 };
 
 /**
  * Determine duration category based on number of days
  * Aligned with antimicrobial stewardship best practices
- * @param {number} days - Number of days
- * @returns {string} Category: short, medium, long, or extended
+ * @param days - Number of days
+ * @returns Category: short, medium, long, or extended
  */
-const determineCategory = (days) => {
+const determineCategory = (days: number | null): 'unknown' | 'short' | 'medium' | 'long' | 'extended' => {
   if (!days || days === null) return 'unknown';
-  
+
   if (days <= 14) return 'short';     // ≤2 weeks - most uncomplicated infections
   if (days <= 21) return 'medium';    // 15-21 days - some complex infections
   if (days <= 42) return 'long';      // 22-42 days - serious infections
@@ -210,11 +274,11 @@ const determineCategory = (days) => {
 
 /**
  * Format day range for display
- * @param {number} minDays - Minimum days
- * @param {number} maxDays - Maximum days
- * @returns {string} Formatted display string
+ * @param minDays - Minimum days
+ * @param maxDays - Maximum days
+ * @returns Formatted display string
  */
-const formatDayRange = (minDays, maxDays) => {
+const formatDayRange = (minDays: number, maxDays: number): string => {
   if (minDays === maxDays) {
     return `${minDays} day${minDays !== 1 ? 's' : ''}`;
   }
@@ -223,11 +287,11 @@ const formatDayRange = (minDays, maxDays) => {
 
 /**
  * Format week range for display
- * @param {number} minWeeks - Minimum weeks
- * @param {number} maxWeeks - Maximum weeks
- * @returns {string} Formatted display string
+ * @param minWeeks - Minimum weeks
+ * @param maxWeeks - Maximum weeks
+ * @returns Formatted display string
  */
-const formatWeekRange = (minWeeks, maxWeeks) => {
+const formatWeekRange = (minWeeks: number, maxWeeks: number): string => {
   if (minWeeks === maxWeeks) {
     return `${minWeeks} week${minWeeks !== 1 ? 's' : ''}`;
   }
@@ -236,10 +300,10 @@ const formatWeekRange = (minWeeks, maxWeeks) => {
 
 /**
  * Get appropriate icon component for duration
- * @param {Object} parsedDuration - Parsed duration object
- * @returns {Object} Lucide icon component
+ * @param parsedDuration - Parsed duration object
+ * @returns Lucide icon component
  */
-export const getDurationIcon = (parsedDuration) => {
+export const getDurationIcon = (parsedDuration: ParsedDuration | null | undefined): typeof Clock => {
   if (!parsedDuration || parsedDuration.category === 'unknown') {
     return Clock;
   }
@@ -263,10 +327,10 @@ export const getDurationIcon = (parsedDuration) => {
 
 /**
  * Get color scheme for duration indicator
- * @param {Object} parsedDuration - Parsed duration object
- * @returns {Object} Color scheme object
+ * @param parsedDuration - Parsed duration object
+ * @returns Color scheme object
  */
-export const getDurationColor = (parsedDuration) => {
+export const getDurationColor = (parsedDuration: ParsedDuration | null | undefined): ColorScheme => {
   if (!parsedDuration || parsedDuration.category === 'unknown') {
     return {
       text: 'text-gray-600',
@@ -326,24 +390,24 @@ export const getDurationColor = (parsedDuration) => {
 
 /**
  * Map pathogen name to RBO conditions
- * @param {string} pathogenName - Name of pathogen
- * @returns {Array} Array of matching RBO conditions
+ * @param pathogenName - Name of pathogen
+ * @returns Array of matching RBO conditions
  */
-export const mapPathogenToConditions = (pathogenName) => {
+export const mapPathogenToConditions = (pathogenName: string | null | undefined): RBOCondition[] => {
   if (!pathogenName) return [];
 
   const pathogenLower = pathogenName.toLowerCase();
-  
+
   // Handle common medical abbreviations
   const expandedPathogens = expandPathogenAbbreviations(pathogenLower);
-  
-  return rboConditionsMap.filter(condition => 
+
+  return (rboConditionsMap as RBOCondition[]).filter(condition =>
     condition.mappedPathogens.some(mappedPathogen => {
       const mappedLower = mappedPathogen.toLowerCase();
-      
+
       // Check exact match, partial match, or abbreviation match
-      return expandedPathogens.some(expanded => 
-        mappedLower.includes(expanded) || 
+      return expandedPathogens.some(expanded =>
+        mappedLower.includes(expanded) ||
         expanded.includes(mappedLower) ||
         matchesAbbreviation(expanded, mappedLower)
       );
@@ -353,11 +417,11 @@ export const mapPathogenToConditions = (pathogenName) => {
 
 /**
  * Expand common pathogen abbreviations to full names
- * @param {string} pathogen - Pathogen name (lowercase)
- * @returns {Array} Array of possible expanded names
+ * @param pathogen - Pathogen name (lowercase)
+ * @returns Array of possible expanded names
  */
-const expandPathogenAbbreviations = (pathogen) => {
-  const abbreviationMap = {
+const expandPathogenAbbreviations = (pathogen: string): string[] => {
+  const abbreviationMap: { [key: string]: string[] } = {
     'e. coli': ['escherichia coli', 'e. coli'],
     's. aureus': ['staphylococcus aureus', 's. aureus'],
     's. pneumoniae': ['streptococcus pneumoniae', 's. pneumoniae'],
@@ -367,53 +431,53 @@ const expandPathogenAbbreviations = (pathogen) => {
     'mrsa': ['methicillin-resistant staphylococcus aureus', 'staphylococcus aureus'],
     'mssa': ['methicillin-sensitive staphylococcus aureus', 'staphylococcus aureus']
   };
-  
+
   return abbreviationMap[pathogen] || [pathogen];
 };
 
 /**
  * Check if an abbreviated name matches a full pathogen name
- * @param {string} abbreviated - Abbreviated name
- * @param {string} fullName - Full pathogen name
- * @returns {boolean} True if they match
+ * @param abbreviated - Abbreviated name
+ * @param fullName - Full pathogen name
+ * @returns True if they match
  */
-const matchesAbbreviation = (abbreviated, fullName) => {
+const matchesAbbreviation = (abbreviated: string, fullName: string): boolean => {
   // Handle genus-species abbreviations (e.g., "e. coli" matches "escherichia coli")
   const abbrevParts = abbreviated.split(' ');
   const fullParts = fullName.split(' ');
-  
+
   if (abbrevParts.length === 2 && fullParts.length >= 2) {
     const [abbrevGenus, abbrevSpecies] = abbrevParts;
     const [fullGenus, fullSpecies] = fullParts;
-    
+
     // Check if abbreviated genus matches first letter + period, and species matches
     if (abbrevGenus.length === 2 && abbrevGenus.endsWith('.')) {
       const abbrevLetter = abbrevGenus.charAt(0);
       return fullGenus.startsWith(abbrevLetter) && abbrevSpecies === fullSpecies;
     }
   }
-  
+
   return false;
 };
 
 /**
  * Get duration for a specific condition ID
- * @param {string} conditionId - RBO condition ID
- * @returns {string|null} Duration string or null if not found
+ * @param conditionId - RBO condition ID
+ * @returns Duration string or null if not found
  */
-export const getConditionDuration = (conditionId) => {
-  const condition = rboConditionsMap.find(c => c.id === conditionId);
+export const getConditionDuration = (conditionId: string | null | undefined): string | null => {
+  const condition = (rboConditionsMap as RBOCondition[]).find(c => c.id === conditionId);
   return condition ? condition.duration : null;
 };
 
 /**
  * Get all durations for a pathogen across different conditions
- * @param {string} pathogenName - Name of pathogen
- * @returns {Array} Array of duration objects with condition context
+ * @param pathogenName - Name of pathogen
+ * @returns Array of duration objects with condition context
  */
-export const getPathogenDurations = (pathogenName) => {
+export const getPathogenDurations = (pathogenName: string | null | undefined): DurationContext[] => {
   const conditions = mapPathogenToConditions(pathogenName);
-  
+
   return conditions.map(condition => ({
     conditionId: condition.id,
     conditionName: condition.name,
@@ -426,35 +490,35 @@ export const getPathogenDurations = (pathogenName) => {
 
 /**
  * Format duration for user display with appropriate context
- * @param {Object} parsedDuration - Parsed duration object
- * @param {string} context - Display context ('compact', 'full', 'tooltip')
- * @returns {string} Formatted duration string
+ * @param parsedDuration - Parsed duration object
+ * @param context - Display context ('compact', 'full', 'tooltip')
+ * @returns Formatted duration string
  */
-export const formatDurationDisplay = (parsedDuration, context = 'compact') => {
+export const formatDurationDisplay = (parsedDuration: ParsedDuration | null | undefined, context: 'compact' | 'full' | 'tooltip' = 'compact'): string => {
   if (!parsedDuration) return 'Duration not specified';
 
   switch (context) {
     case 'compact':
       return parsedDuration.display;
-    
+
     case 'full':
       if (parsedDuration.isComplex) {
         return parsedDuration.display;
       }
       return `Treatment duration: ${parsedDuration.display}`;
-    
+
     case 'tooltip':
       if (parsedDuration.isComplex) {
         return `Complex duration: ${parsedDuration.display}`;
       }
-      const categoryDesc = {
+      const categoryDesc: { [key: string]: string } = {
         'short': 'Short-term treatment',
         'medium': 'Standard treatment',
         'long': 'Extended treatment',
         'extended': 'Long-term treatment'
       };
       return `${categoryDesc[parsedDuration.category] || 'Treatment'}: ${parsedDuration.display}`;
-    
+
     default:
       return parsedDuration.display;
   }
@@ -462,11 +526,11 @@ export const formatDurationDisplay = (parsedDuration, context = 'compact') => {
 
 /**
  * Get duration statistics for a set of conditions
- * @param {Array} conditions - Array of condition objects
- * @returns {Object} Duration statistics
+ * @param conditions - Array of condition objects
+ * @returns Duration statistics
  */
-export const getDurationStats = (conditions) => {
-  const stats = {
+export const getDurationStats = (conditions: Array<{ duration?: string }>): DurationStatistics => {
+  const stats: DurationStatistics = {
     total: conditions.length,
     categories: {
       short: 0,
@@ -480,19 +544,19 @@ export const getDurationStats = (conditions) => {
     range: { min: null, max: null }
   };
 
-  const daysList = [];
+  const daysList: number[] = [];
 
   conditions.forEach(condition => {
     const parsed = parseDurationString(condition.duration);
-    
+
     // Prioritize explicit category over isComplex flag
     if (parsed.category === 'unknown') {
       stats.categories.unknown++;
     } else if (parsed.category === 'complex' || parsed.isComplex) {
       stats.categories.complex++;
     } else {
-      stats.categories[parsed.category]++;
-      
+      stats.categories[parsed.category as 'short' | 'medium' | 'long' | 'extended']++;
+
       if (parsed.maxDays) {
         daysList.push(parsed.maxDays);
       }

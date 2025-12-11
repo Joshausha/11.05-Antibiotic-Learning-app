@@ -13,7 +13,7 @@ import {
   mapPathogenToConditions,
   getPathogenDurations,
   parseDurationString
-} from '../utils/durationHelpers.js';
+} from '../utils/durationHelpers';
 
 interface DurationContext {
   conditionName: string;

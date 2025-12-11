@@ -32,7 +32,8 @@
       "Bash(git commit:*)",
       "Bash(do sed -i '' 's/EnhancedAntibioticData\\.js/EnhancedAntibioticData.ts/g' \"$file\" echo \"Fixed: $file\" done)",
       "Bash(wc:*)",
-      "Bash(for:*)"
+      "Bash(for:*)",
+      "Bash(sort:*)"
     ]
   }
 }

@@ -7,12 +7,12 @@
 
 import React, { useMemo } from 'react';
 import { Clock, Timer, AlarmClock, Calendar, Info } from 'lucide-react';
-import { 
-  parseDurationString, 
-  getDurationIcon, 
-  getDurationColor, 
-  formatDurationDisplay 
-} from '../utils/durationHelpers.js';
+import {
+  parseDurationString,
+  getDurationIcon,
+  getDurationColor,
+  formatDurationDisplay
+} from '../utils/durationHelpers';
 
 const DurationIndicator = ({ 
   duration,
