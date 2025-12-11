@@ -44,7 +44,7 @@ import PropTypes from 'prop-types';
 import NorthwesternSpatialLayout from './NorthwesternSpatialLayout.js';
 import NorthwesternFilteringSystem from './NorthwesternFilteringSystem.js';
 import NorthwesternGroupOrganization from './NorthwesternGroupOrganization.js';
-import { NorthwesternPerformanceOptimizer } from '../utils/northwesternPerformanceOptimizer.js';
+import { NorthwesternPerformanceOptimizer } from '../utils/northwesternPerformanceOptimizer';
 import { useResponsive } from '../hooks/useResponsive.js';
 
 /**
