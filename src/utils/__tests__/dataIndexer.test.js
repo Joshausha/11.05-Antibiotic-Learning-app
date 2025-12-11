@@ -19,7 +19,7 @@ import {
   buildPathogenNetwork,
   findPathogenPaths,
   getPathogenRecommendations
-} from '../dataIndexer.js';
+} from '../dataIndexer';
 
 // Use first 3 real medical conditions for consistent test dataset
 const testConditions = medicalConditions.slice(0, 3);
