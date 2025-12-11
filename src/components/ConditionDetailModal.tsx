@@ -1,7 +1,7 @@
 /**
  * ConditionDetailModal Component
  * Displays detailed information about a selected medical condition in a modal
- * 
+ *
  * Props:
  * - condition: object - the medical condition to display (null if modal should be closed)
  * - onClose: function - function to call when modal should be closed
@@ -9,14 +9,53 @@
  * - onToggleBookmark: function - function to toggle bookmark status
  */
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, FC } from 'react';
 import { X, Target, BookOpen, Clock, AlertTriangle, Brain, Star, Microscope, Pill, ArrowRight } from 'lucide-react';
 import { buildIndexes } from '../utils/dataIndexer';
 
-const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onToggleBookmark, allConditions = [] }) => {
+// Types
+interface Condition {
+  name: string;
+  category?: string;
+  description?: string;
+  commonPathogens?: string[];
+  empiricTherapy?: Record<string, string>;
+  duration?: string;
+  keyPoints?: string[];
+  clinicalPearls?: string[];
+}
+
+interface CrossReferenceData {
+  relatedByPathogen: Map<string, string[]>;
+  relatedByAntibiotic: Map<string, string[]>;
+  currentPathogens: string[];
+  currentAntibiotics: string[];
+}
+
+interface ConditionDetailModalProps {
+  condition?: Condition | null;
+  onClose: () => void;
+  isBookmarked?: boolean;
+  onToggleBookmark?: () => void;
+  allConditions?: Condition[];
+}
+
+interface Indexes {
+  pathogenToConditions?: Map<string, string[]>;
+  antibioticToConditions?: Map<string, string[]>;
+  [key: string]: any;
+}
+
+const ConditionDetailModal: FC<ConditionDetailModalProps> = ({
+  condition,
+  onClose,
+  isBookmarked = false,
+  onToggleBookmark,
+  allConditions = [],
+}) => {
   // Handle escape key to close modal
   useEffect(() => {
-    const handleEscape = (e) => {
+    const handleEscape = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         onClose();
       }
@@ -35,15 +74,15 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
   }, [condition, onClose]);
 
   // Process cross-reference data with comprehensive error handling
-  const crossReferences = useMemo(() => {
+  const crossReferences = useMemo((): CrossReferenceData | null => {
     // Early return if essential data is missing
     if (!condition || !allConditions || !Array.isArray(allConditions) || allConditions.length === 0) {
       return null;
     }
-    
+
     try {
       // Safe index building with error handling
-      let indexes;
+      let indexes: Indexes;
       try {
         indexes = buildIndexes(allConditions);
       } catch (indexError) {
@@ -56,29 +95,26 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
         console.warn('Invalid indexes structure');
         return null;
       }
-      
+
       // Safe pathogen extraction
-      const currentConditionPathogens = Array.isArray(condition.commonPathogens) 
-        ? condition.commonPathogens 
-        : [];
-      const currentConditionAntibiotics = [];
-      
+      const currentConditionPathogens = Array.isArray(condition.commonPathogens) ? condition.commonPathogens : [];
+      const currentConditionAntibiotics: string[] = [];
+
       // Safe antibiotic extraction from empiric therapy
       try {
         if (condition.empiricTherapy && typeof condition.empiricTherapy === 'object') {
-          Object.values(condition.empiricTherapy).forEach(therapy => {
+          Object.values(condition.empiricTherapy).forEach((therapy) => {
             if (typeof therapy === 'string') {
               const antibiotics = therapy.split(/\s+(?:OR|or|PLUS|plus|\+)\s+/i);
-              antibiotics.forEach(antibiotic => {
+              antibiotics.forEach((antibiotic) => {
                 try {
                   const cleaned = antibiotic
                     .replace(/Consider surgical.*?\./i, '')
                     .replace(/Choice depends.*?\./i, '')
                     .replace(/\([^)]*\)/g, '')
                     .trim();
-                  
-                  if (cleaned && cleaned.length > 2 && 
-                      !cleaned.match(/^(if|for|consider|add|days?|weeks?)/i)) {
+
+                  if (cleaned && cleaned.length > 2 && !cleaned.match(/^(if|for|consider|add|days?|weeks?)/i)) {
                     currentConditionAntibiotics.push(cleaned);
                   }
                 } catch (cleanError) {
@@ -91,19 +127,17 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
       } catch (antibioticError) {
         console.warn('Error extracting antibiotics:', antibioticError);
       }
-      
+
       // Safe pathogen relationship building
-      const relatedByPathogen = new Map();
+      const relatedByPathogen = new Map<string, string[]>();
       try {
-        currentConditionPathogens.forEach(pathogen => {
+        currentConditionPathogens.forEach((pathogen) => {
           if (typeof pathogen === 'string') {
             const cleanPathogen = pathogen.replace(/\[cite.*?\]/g, '').trim();
             if (cleanPathogen && indexes.pathogenToConditions && indexes.pathogenToConditions.has(cleanPathogen)) {
               const relatedConditions = indexes.pathogenToConditions.get(cleanPathogen);
               if (Array.isArray(relatedConditions)) {
-                const filteredConditions = relatedConditions.filter(cond => 
-                  cond && cond !== condition.name
-                );
+                const filteredConditions = relatedConditions.filter((cond) => cond && cond !== condition.name);
                 if (filteredConditions.length > 0) {
                   relatedByPathogen.set(cleanPathogen, filteredConditions);
                 }
@@ -114,17 +148,15 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
       } catch (pathogenError) {
         console.warn('Error building pathogen relationships:', pathogenError);
       }
-      
+
       // Safe antibiotic relationship building
-      const relatedByAntibiotic = new Map();
+      const relatedByAntibiotic = new Map<string, string[]>();
       try {
-        currentConditionAntibiotics.forEach(antibiotic => {
+        currentConditionAntibiotics.forEach((antibiotic) => {
           if (typeof antibiotic === 'string' && indexes.antibioticToConditions && indexes.antibioticToConditions.has(antibiotic)) {
             const relatedConditions = indexes.antibioticToConditions.get(antibiotic);
             if (Array.isArray(relatedConditions)) {
-              const filteredConditions = relatedConditions.filter(cond => 
-                cond && cond !== condition.name
-              );
+              const filteredConditions = relatedConditions.filter((cond) => cond && cond !== condition.name);
               if (filteredConditions.length > 0) {
                 relatedByAntibiotic.set(antibiotic, filteredConditions);
               }
@@ -134,12 +166,12 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
       } catch (antibioticError) {
         console.warn('Error building antibiotic relationships:', antibioticError);
       }
-      
+
       return {
         relatedByPathogen,
         relatedByAntibiotic,
         currentPathogens: currentConditionPathogens,
-        currentAntibiotics: currentConditionAntibiotics
+        currentAntibiotics: currentConditionAntibiotics,
       };
     } catch (error) {
       console.warn('Error building cross-references:', error);
@@ -151,14 +183,21 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
   if (!condition) return null;
 
   // Handle backdrop click to close modal
-  const handleBackdropClick = (e) => {
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>): void => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
+  const handleCloseKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>): void => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClose();
+    }
+  };
+
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
       role="dialog"
@@ -174,11 +213,9 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
           <div className="flex items-center gap-2">
             {/* Bookmark Button */}
             {onToggleBookmark && (
-              <button 
+              <button
                 className={`p-2 rounded-lg transition-colors ${
-                  isBookmarked 
-                    ? 'text-yellow-600 bg-yellow-100 hover:bg-yellow-200' 
-                    : 'text-gray-500 hover:text-yellow-600 hover:bg-yellow-50'
+                  isBookmarked ? 'text-yellow-600 bg-yellow-100 hover:bg-yellow-200' : 'text-gray-500 hover:text-yellow-600 hover:bg-yellow-50'
                 }`}
                 onClick={onToggleBookmark}
                 aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
@@ -186,17 +223,12 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
                 <Star size={20} fill={isBookmarked ? 'currentColor' : 'none'} />
               </button>
             )}
-            
+
             {/* Close Button */}
-            <button 
+            <button
               className="text-gray-500 hover:text-gray-700 p-1"
               onClick={onClose}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onClose();
-                }
-              }}
+              onKeyDown={handleCloseKeyDown}
               aria-label="Close modal"
             >
               <X size={24} />
@@ -213,11 +245,9 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
               <div className="text-blue-900">{condition.category}</div>
             </div>
           )}
-          
+
           {condition.description && (
-            <div className="text-gray-700 text-lg leading-relaxed">
-              {condition.description}
-            </div>
+            <div className="text-gray-700 text-lg leading-relaxed">{condition.description}</div>
           )}
 
           {/* Common Pathogens Section */}
@@ -240,12 +270,13 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
               Empiric Antibiotic Therapy
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
-              {condition.empiricTherapy && Object.entries(condition.empiricTherapy).map(([key, value]) => (
-                <div key={key} className="bg-gray-50 p-4 rounded-lg border">
-                  <div className="font-semibold text-blue-700 mb-2">{key}</div>
-                  <div className="text-gray-700">{value}</div>
-                </div>
-              ))}
+              {condition.empiricTherapy &&
+                Object.entries(condition.empiricTherapy).map(([key, value]) => (
+                  <div key={key} className="bg-gray-50 p-4 rounded-lg border">
+                    <div className="font-semibold text-blue-700 mb-2">{key}</div>
+                    <div className="text-gray-700">{value}</div>
+                  </div>
+                ))}
             </div>
           </section>
 
@@ -268,7 +299,9 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
             </h3>
             <ul className="list-disc list-inside space-y-2 text-gray-700">
               {(condition.keyPoints || []).map((point, index) => (
-                <li key={index} className="leading-relaxed">{point}</li>
+                <li key={index} className="leading-relaxed">
+                  {point}
+                </li>
               ))}
             </ul>
           </section>
@@ -282,9 +315,7 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
             <div className="space-y-3">
               {(condition.clinicalPearls || []).map((pearl, index) => (
                 <div key={index} className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="font-semibold text-green-800 mb-1">
-                    Pearl {index + 1}
-                  </div>
+                  <div className="font-semibold text-green-800 mb-1">Pearl {index + 1}</div>
                   <div className="text-green-700 leading-relaxed">{pearl}</div>
                 </div>
               ))}
@@ -295,7 +326,7 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
           {crossReferences && (crossReferences.relatedByPathogen.size > 0 || crossReferences.relatedByAntibiotic.size > 0) && (
             <section>
               <h3 className="text-lg font-semibold mb-4">Related Conditions</h3>
-              
+
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Related by Pathogen */}
                 {crossReferences.relatedByPathogen.size > 0 && (
@@ -305,26 +336,26 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
                       Shared Pathogens
                     </h4>
                     <div className="space-y-3">
-                      {Array.from(crossReferences.relatedByPathogen.entries()).slice(0, 3).map(([pathogen, conditions]) => (
-                        <div key={pathogen} className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                          <div className="font-medium text-purple-800 text-sm mb-2">
-                            {pathogen}
+                      {Array.from(crossReferences.relatedByPathogen.entries())
+                        .slice(0, 3)
+                        .map(([pathogen, conditions]) => (
+                          <div key={pathogen} className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                            <div className="font-medium text-purple-800 text-sm mb-2">{pathogen}</div>
+                            <div className="space-y-1">
+                              {conditions.slice(0, 3).map((conditionName, index) => (
+                                <div key={index} className="flex items-center justify-between text-sm">
+                                  <span className="text-purple-700">{conditionName}</span>
+                                  <ArrowRight size={12} className="text-purple-400" />
+                                </div>
+                              ))}
+                              {conditions.length > 3 && (
+                                <div className="text-xs text-purple-600">
+                                  +{conditions.length - 3} more conditions
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            {conditions.slice(0, 3).map((conditionName, index) => (
-                              <div key={index} className="flex items-center justify-between text-sm">
-                                <span className="text-purple-700">{conditionName}</span>
-                                <ArrowRight size={12} className="text-purple-400" />
-                              </div>
-                            ))}
-                            {conditions.length > 3 && (
-                              <div className="text-xs text-purple-600">
-                                +{conditions.length - 3} more conditions
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </div>
                 )}
@@ -337,26 +368,26 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
                       Shared Antibiotics
                     </h4>
                     <div className="space-y-3">
-                      {Array.from(crossReferences.relatedByAntibiotic.entries()).slice(0, 3).map(([antibiotic, conditions]) => (
-                        <div key={antibiotic} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                          <div className="font-medium text-blue-800 text-sm mb-2">
-                            {antibiotic}
+                      {Array.from(crossReferences.relatedByAntibiotic.entries())
+                        .slice(0, 3)
+                        .map(([antibiotic, conditions]) => (
+                          <div key={antibiotic} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <div className="font-medium text-blue-800 text-sm mb-2">{antibiotic}</div>
+                            <div className="space-y-1">
+                              {conditions.slice(0, 3).map((conditionName, index) => (
+                                <div key={index} className="flex items-center justify-between text-sm">
+                                  <span className="text-blue-700">{conditionName}</span>
+                                  <ArrowRight size={12} className="text-blue-400" />
+                                </div>
+                              ))}
+                              {conditions.length > 3 && (
+                                <div className="text-xs text-blue-600">
+                                  +{conditions.length - 3} more conditions
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            {conditions.slice(0, 3).map((conditionName, index) => (
-                              <div key={index} className="flex items-center justify-between text-sm">
-                                <span className="text-blue-700">{conditionName}</span>
-                                <ArrowRight size={12} className="text-blue-400" />
-                              </div>
-                            ))}
-                            {conditions.length > 3 && (
-                              <div className="text-xs text-blue-600">
-                                +{conditions.length - 3} more conditions
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </div>
                 )}
@@ -365,8 +396,8 @@ const ConditionDetailModal = ({ condition, onClose, isBookmarked = false, onTogg
               {/* Summary Stats */}
               <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
                 <div className="text-sm text-gray-600">
-                  <strong>Cross-Reference Summary:</strong>{' '}
-                  {crossReferences.relatedByPathogen.size} shared pathogen(s), {crossReferences.relatedByAntibiotic.size} shared antibiotic(s)
+                  <strong>Cross-Reference Summary:</strong> {crossReferences.relatedByPathogen.size} shared pathogen(s),{' '}
+                  {crossReferences.relatedByAntibiotic.size} shared antibiotic(s)
                 </div>
               </div>
             </section>
