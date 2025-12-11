@@ -4,15 +4,75 @@
  * Allows users to trace connections between pathogens and explore learning paths
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Map, Navigation, ArrowRight, Target, Zap, 
-  MapPin, RotateCcw, Play, Pause,
-  ChevronRight, Star, TrendingUp
+import React, { useState, useEffect, useMemo, FC } from 'react';
+import {
+  Map,
+  Navigation,
+  ArrowRight,
+  Target,
+  Zap,
+  MapPin,
+  RotateCcw,
+  Play,
+  Pause,
+  ChevronRight,
+  Star,
+  TrendingUp,
 } from 'lucide-react';
 import { findPathogenPaths, getPathogenRecommendations } from '../utils/dataIndexer';
 
-const PathogenConnectionExplorer = ({
+// Types
+interface Pathogen {
+  id?: string;
+  name: string;
+  conditions?: any[];
+  connections?: number;
+}
+
+interface Indexes {
+  pathogens: Pathogen[];
+  [key: string]: any;
+}
+
+interface ExplorationHistoryEntry {
+  pathogen: Pathogen;
+  timestamp: number;
+  step: number;
+  reason: string;
+  similarity?: number | null;
+}
+
+interface ExplorationStats {
+  pathogensExplored: number;
+  stepsTotal: number;
+  averageSimilarity: number;
+  explorationTime: number;
+}
+
+interface PathData {
+  path: string[];
+  length: number;
+  score?: number;
+}
+
+interface RecommendationData {
+  pathogen: string;
+  reasoning: string;
+  weight: number;
+}
+
+interface PathogenConnectionExplorerProps {
+  indexes?: Indexes;
+  selectedPathogen?: Pathogen | null;
+  targetPathogen?: Pathogen | null;
+  onSelectPathogen?: (pathogen: Pathogen) => void;
+  onShowPathDetails?: () => void;
+  recentlyViewed?: string[];
+  userPreferences?: Record<string, any>;
+  className?: string;
+}
+
+const PathogenConnectionExplorer: FC<PathogenConnectionExplorerProps> = ({
   indexes,
   selectedPathogen,
   targetPathogen,
@@ -20,43 +80,37 @@ const PathogenConnectionExplorer = ({
   onShowPathDetails,
   recentlyViewed = [],
   userPreferences = {},
-  className = ''
+  className = '',
 }) => {
-  const [explorationMode, setExplorationMode] = useState('guided'); // 'guided', 'freeform', 'recommendations'
-  const [currentPath, setCurrentPath] = useState([]);
-  const [explorationHistory, setExplorationHistory] = useState([]);
-  const [availablePaths, setAvailablePaths] = useState([]);
+  const [explorationMode, setExplorationMode] = useState<'guided' | 'freeform' | 'recommendations'>('guided');
+  const [currentPath, setCurrentPath] = useState<string[]>([]);
+  const [explorationHistory, setExplorationHistory] = useState<ExplorationHistoryEntry[]>([]);
+  const [availablePaths, setAvailablePaths] = useState<PathData[]>([]);
   const [isExploring, setIsExploring] = useState(false);
   const [explorationStep, setExplorationStep] = useState(0);
-  const [pathFilter, setPathFilter] = useState('shortest'); // 'shortest', 'strongest', 'most_diverse'
-  const [recommendations, setRecommendations] = useState([]);
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
+  const [pathFilter, setPathFilter] = useState<'shortest' | 'strongest' | 'most_diverse'>('shortest');
+  const [recommendations, setRecommendations] = useState<RecommendationData[]>([]);
+  const [breadcrumbs, setBreadcrumbs] = useState<string[]>([]);
 
   // Calculate available paths when target changes
   useEffect(() => {
     if (selectedPathogen && targetPathogen && indexes) {
       const paths = findPathogenPaths(indexes, selectedPathogen.name, targetPathogen.name, 4);
       setAvailablePaths(paths);
-      
+
       if (paths.length > 0) {
         // Select best path based on filter
-        let selectedPath;
+        let selectedPath: PathData;
         switch (pathFilter) {
           case 'strongest':
-            selectedPath = paths.reduce((best, current) => 
-              current.score > best.score ? current : best
-            );
+            selectedPath = paths.reduce((best, current) => (current.score! > best.score! ? current : best));
             break;
           case 'most_diverse':
-            selectedPath = paths.reduce((best, current) => 
-              current.length > best.length ? current : best
-            );
+            selectedPath = paths.reduce((best, current) => (current.length > best.length ? current : best));
             break;
           case 'shortest':
           default:
-            selectedPath = paths.reduce((best, current) => 
-              current.length < best.length ? current : best
-            );
+            selectedPath = paths.reduce((best, current) => (current.length < best.length ? current : best));
         }
         setCurrentPath(selectedPath.path);
       }
@@ -66,66 +120,63 @@ const PathogenConnectionExplorer = ({
   // Update recommendations when pathogen changes
   useEffect(() => {
     if (selectedPathogen && indexes) {
-      const recs = getPathogenRecommendations(
-        indexes, 
-        selectedPathogen.name, 
-        recentlyViewed, 
-        userPreferences
-      );
+      const recs = getPathogenRecommendations(indexes, selectedPathogen.name, recentlyViewed, userPreferences);
       setRecommendations(recs);
     }
   }, [selectedPathogen, indexes, recentlyViewed, userPreferences]);
 
   // Calculate exploration statistics
-  const explorationStats = useMemo(() => {
+  const explorationStats: ExplorationStats | null = useMemo(() => {
     if (!explorationHistory.length) return null;
-    
-    const uniquePathogens = new Set(explorationHistory.map(h => h.pathogen.name));
+
+    const uniquePathogens = new Set(explorationHistory.map((h) => h.pathogen.name));
     const totalSimilarity = explorationHistory.reduce((sum, h) => sum + (h.similarity || 0), 0);
     const avgSimilarity = totalSimilarity / explorationHistory.length;
-    
+
     return {
       pathogensExplored: uniquePathogens.size,
       stepsTotal: explorationHistory.length,
       averageSimilarity: avgSimilarity,
-      explorationTime: Date.now() - (explorationHistory[0]?.timestamp || Date.now())
+      explorationTime: Date.now() - (explorationHistory[0]?.timestamp || Date.now()),
     };
   }, [explorationHistory]);
 
-  const startExploration = (mode = 'guided') => {
+  const startExploration = (mode: 'guided' | 'freeform' | 'recommendations' = 'guided'): void => {
     setExplorationMode(mode);
     setIsExploring(true);
     setExplorationStep(0);
-    
+
     if (selectedPathogen) {
-      const newHistory = [{
-        pathogen: selectedPathogen,
-        timestamp: Date.now(),
-        step: 0,
-        reason: 'Starting pathogen'
-      }];
+      const newHistory: ExplorationHistoryEntry[] = [
+        {
+          pathogen: selectedPathogen,
+          timestamp: Date.now(),
+          step: 0,
+          reason: 'Starting pathogen',
+        },
+      ];
       setExplorationHistory(newHistory);
       setBreadcrumbs([selectedPathogen.name]);
     }
   };
 
-  const addToExploration = (pathogen, reason = '', similarity = null) => {
-    const newStep = {
+  const addToExploration = (pathogen: Pathogen, reason: string = '', similarity: number | null = null): void => {
+    const newStep: ExplorationHistoryEntry = {
       pathogen,
       timestamp: Date.now(),
       step: explorationHistory.length,
       reason,
-      similarity
+      similarity,
     };
-    
-    setExplorationHistory(prev => [...prev, newStep]);
-    setBreadcrumbs(prev => [...prev, pathogen.name]);
-    setExplorationStep(prev => prev + 1);
-    
-    onSelectPathogen(pathogen);
+
+    setExplorationHistory((prev) => [...prev, newStep]);
+    setBreadcrumbs((prev) => [...prev, pathogen.name]);
+    setExplorationStep((prev) => prev + 1);
+
+    onSelectPathogen?.(pathogen);
   };
 
-  const resetExploration = () => {
+  const resetExploration = (): void => {
     setIsExploring(false);
     setExplorationHistory([]);
     setCurrentPath([]);
@@ -133,16 +184,16 @@ const PathogenConnectionExplorer = ({
     setBreadcrumbs([]);
   };
 
-  const navigateToStep = (stepIndex) => {
+  const navigateToStep = (stepIndex: number): void => {
     if (stepIndex < explorationHistory.length) {
       const targetStep = explorationHistory[stepIndex];
       setExplorationStep(stepIndex);
-      onSelectPathogen(targetStep.pathogen);
-      setBreadcrumbs(explorationHistory.slice(0, stepIndex + 1).map(h => h.pathogen.name));
+      onSelectPathogen?.(targetStep.pathogen);
+      setBreadcrumbs(explorationHistory.slice(0, stepIndex + 1).map((h) => h.pathogen.name));
     }
   };
 
-  const renderPathVisualization = () => {
+  const renderPathVisualization = (): JSX.Element | null => {
     if (!currentPath || currentPath.length === 0) return null;
 
     return (
@@ -151,46 +202,48 @@ const PathogenConnectionExplorer = ({
           <Map size={18} className="text-blue-600" />
           Exploration Path ({currentPath.length} steps)
         </h4>
-        
+
         <div className="flex items-center gap-2 overflow-x-auto pb-2">
-          {currentPath.map((pathogenName, index) => (
-            <React.Fragment key={pathogenName}>
-              <button
-                onClick={() => {
-                  const pathogen = indexes.pathogens.find(p => p.name === pathogenName);
-                  if (pathogen) addToExploration(pathogen, `Path step ${index + 1}`);
-                }}
-                className={`flex-shrink-0 px-3 py-2 rounded-lg border font-medium text-sm transition-colors ${
-                  explorationHistory.some(h => h.pathogen.name === pathogenName)
-                    ? 'bg-blue-100 border-blue-300 text-blue-800'
-                    : 'bg-white border-gray-300 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
-                }`}
-              >
-                <div className="flex items-center gap-1">
-                  {explorationHistory.some(h => h.pathogen.name === pathogenName) && (
-                    <Star size={12} className="text-blue-600" />
-                  )}
-                  {pathogenName.split(' ').slice(0, 2).join(' ')}
-                </div>
-              </button>
-              
-              {index < currentPath.length - 1 && (
-                <ArrowRight size={16} className="text-gray-400 flex-shrink-0" />
-              )}
-            </React.Fragment>
-          ))}
+          {currentPath.map((pathogenName, index) => {
+            const pathogenInIndex = indexes?.pathogens?.find((p) => p.name === pathogenName);
+            return (
+              <React.Fragment key={pathogenName}>
+                <button
+                  onClick={() => {
+                    if (pathogenInIndex) {
+                      addToExploration(pathogenInIndex, `Path step ${index + 1}`);
+                    }
+                  }}
+                  className={`flex-shrink-0 px-3 py-2 rounded-lg border font-medium text-sm transition-colors ${
+                    explorationHistory.some((h) => h.pathogen.name === pathogenName)
+                      ? 'bg-blue-100 border-blue-300 text-blue-800'
+                      : 'bg-white border-gray-300 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-1">
+                    {explorationHistory.some((h) => h.pathogen.name === pathogenName) && (
+                      <Star size={12} className="text-blue-600" />
+                    )}
+                    {pathogenName.split(' ').slice(0, 2).join(' ')}
+                  </div>
+                </button>
+
+                {index < currentPath.length - 1 && (
+                  <ArrowRight size={16} className="text-gray-400 flex-shrink-0" />
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
-        
+
         {availablePaths.length > 1 && (
-          <div className="mt-3 text-xs text-gray-600">
-            {availablePaths.length - 1} alternative paths available
-          </div>
+          <div className="mt-3 text-xs text-gray-600">{availablePaths.length - 1} alternative paths available</div>
         )}
       </div>
     );
   };
 
-  const renderExplorationHistory = () => {
+  const renderExplorationHistory = (): JSX.Element | null => {
     if (!isExploring || explorationHistory.length === 0) return null;
 
     return (
@@ -258,7 +311,7 @@ const PathogenConnectionExplorer = ({
     );
   };
 
-  const renderRecommendations = () => {
+  const renderRecommendations = (): JSX.Element | null => {
     if (recommendations.length === 0) return null;
 
     return (
@@ -270,7 +323,7 @@ const PathogenConnectionExplorer = ({
 
         <div className="space-y-2">
           {recommendations.slice(0, 5).map((rec, index) => {
-            const pathogen = indexes.pathogens.find(p => p.name === rec.pathogen);
+            const pathogen = indexes?.pathogens?.find((p) => p.name === rec.pathogen);
             if (!pathogen) return null;
 
             return (
@@ -285,9 +338,7 @@ const PathogenConnectionExplorer = ({
                     <div className="text-sm text-gray-600">{rec.reasoning}</div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="text-sm font-medium text-blue-600">
-                      {(rec.weight * 100).toFixed(0)}%
-                    </div>
+                    <div className="text-sm font-medium text-blue-600">{(rec.weight * 100).toFixed(0)}%</div>
                     <ArrowRight size={14} className="text-gray-400" />
                   </div>
                 </div>
@@ -319,9 +370,7 @@ const PathogenConnectionExplorer = ({
               <Navigation className="text-blue-600" size={20} />
               Connection Explorer
             </h3>
-            <p className="text-gray-600 mt-1">
-              Discover pathogen relationships and learning pathways
-            </p>
+            <p className="text-gray-600 mt-1">Discover pathogen relationships and learning pathways</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -357,9 +406,7 @@ const PathogenConnectionExplorer = ({
                 >
                   {crumb.split(' ').slice(0, 2).join(' ')}
                 </button>
-                {index < breadcrumbs.length - 1 && (
-                  <ChevronRight size={12} className="text-gray-400" />
-                )}
+                {index < breadcrumbs.length - 1 && <ChevronRight size={12} className="text-gray-400" />}
               </React.Fragment>
             ))}
           </div>
@@ -368,7 +415,7 @@ const PathogenConnectionExplorer = ({
         {/* Mode selector */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">Mode:</span>
-          {['guided', 'freeform', 'recommendations'].map(mode => (
+          {(['guided', 'freeform', 'recommendations'] as const).map((mode) => (
             <button
               key={mode}
               onClick={() => setExplorationMode(mode)}
@@ -417,8 +464,10 @@ const PathogenConnectionExplorer = ({
             onClick={() => {
               if (recommendations.length > 0) {
                 const randomRec = recommendations[Math.floor(Math.random() * recommendations.length)];
-                const pathogen = indexes.pathogens.find(p => p.name === randomRec.pathogen);
-                if (pathogen) addToExploration(pathogen, 'Random discovery', randomRec.weight);
+                const pathogen = indexes?.pathogens?.find((p) => p.name === randomRec.pathogen);
+                if (pathogen) {
+                  addToExploration(pathogen, 'Random discovery', randomRec.weight);
+                }
               }
             }}
             className="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 transition-colors"
@@ -426,17 +475,19 @@ const PathogenConnectionExplorer = ({
             <Zap size={14} className="inline mr-1" />
             Random Discovery
           </button>
-          
+
           <button
             onClick={() => {
               // Find the most connected pathogen not yet explored
-              const unexplored = indexes.pathogens.filter(p => 
-                !explorationHistory.some(h => h.pathogen.name === p.name)
+              const unexplored = (indexes?.pathogens || []).filter(
+                (p) => !explorationHistory.some((h) => h.pathogen.name === p.name)
               );
-              const mostConnected = unexplored.reduce((best, current) => 
-                current.connections > (best?.connections || 0) ? current : best
-              , null);
-              
+              const mostConnected = unexplored.reduce((best, current) => {
+                const bestConnections = best?.connections || 0;
+                const currentConnections = current?.connections || 0;
+                return currentConnections > bestConnections ? current : best;
+              }, null as Pathogen | null);
+
               if (mostConnected) {
                 addToExploration(mostConnected, 'High connectivity target');
               }

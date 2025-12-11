@@ -4,8 +4,7 @@
  * Provides both simple and advanced pathogen exploration features
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useMemo, useCallback, FC } from 'react';
 import { Search, Filter, BarChart3, Network, AlertTriangle, X } from 'lucide-react';
 import PathogenList from './PathogenList';
 import PathogenCard from './PathogenCard';
@@ -13,70 +12,121 @@ import AntibioticList from './AntibioticList';
 import SimpleNetworkView from './SimpleNetworkView';
 import simplePathogens, { searchPathogens } from '../data/SimplePathogenData';
 
-const ConsolidatedPathogenExplorer = ({ 
-  pathogenData, 
-  onPathogenSelect, 
+// Types
+interface Pathogen {
+  id?: string;
+  name: string;
+  gramStain?: string;
+  severity?: string;
+  treatmentDuration?: string;
+  duration?: string;
+  commonName?: string;
+  category?: string;
+  conditions?: any[];
+}
+
+interface Antibiotic {
+  antibioticId?: string;
+  name: string;
+  class?: string;
+  mechanism?: string;
+  route?: string;
+}
+
+interface ConsolidatedPathogenExplorerProps {
+  pathogenData?: Pathogen[] | { pathogens?: Pathogen[] };
+  onPathogenSelect?: (pathogen: Pathogen | null) => void;
+  onSelectCondition?: (pathogen: Pathogen | null) => void;
+  onSelectPathogen?: (pathogen: Pathogen | null) => void;
+  selectedPathogen?: Pathogen | null;
+  className?: string;
+}
+
+interface FilterOptions {
+  gramStatus?: string;
+  severity?: string;
+  duration?: string;
+}
+
+const ConsolidatedPathogenExplorer: FC<ConsolidatedPathogenExplorerProps> = ({
+  pathogenData,
+  onPathogenSelect,
   onSelectCondition,
   onSelectPathogen,
-  selectedPathogen: propSelectedPathogen, 
-  className = '' 
+  selectedPathogen: propSelectedPathogen,
+  className = '',
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [gramFilter, setGramFilter] = useState('all');
   const [severityFilter, setSeverityFilter] = useState('all');
   const [durationFilter, setDurationFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
-  const [view, setView] = useState('list');
-  const [internalSelectedPathogen, setInternalSelectedPathogen] = useState(null);
-  const [selectedAntibiotic, setSelectedAntibiotic] = useState(null);
+  const [view, setView] = useState<'list' | 'network'>('list');
+  const [internalSelectedPathogen, setInternalSelectedPathogen] = useState<Pathogen | null>(null);
+  const [selectedAntibiotic, setSelectedAntibiotic] = useState<Antibiotic | null>(null);
   const [showResistanceAlert, setShowResistanceAlert] = useState(true);
 
   // Create unified callback function from any of the provided prop names
   const hasCallback = !!(onPathogenSelect || onSelectCondition || onSelectPathogen);
-  const unifiedOnSelectPathogen = onPathogenSelect || onSelectCondition || onSelectPathogen || (() => {});
+  const unifiedOnSelectPathogen = useCallback(
+    (pathogen: Pathogen | null) => {
+      (onPathogenSelect || onSelectCondition || onSelectPathogen)?.(pathogen);
+    },
+    [onPathogenSelect, onSelectCondition, onSelectPathogen]
+  );
 
   // Use controlled prop if provided, otherwise use internal state
   const selectedPathogen = propSelectedPathogen !== undefined ? propSelectedPathogen : internalSelectedPathogen;
 
   // Comprehensive search function that works with both prop data and imported data
-  const searchPathogensConditionally = useCallback((searchTerm, filters = {}) => {
-    if (pathogenData) {
-      // Use prop data - apply manual filtering since searchPathogens expects imported data
-      let filtered = pathogenData;
-      
-      if (searchTerm) {
-        const lowerSearch = searchTerm.toLowerCase();
-        filtered = filtered.filter(p => 
-          p.name?.toLowerCase().includes(lowerSearch) ||
-          p.commonName?.toLowerCase().includes(lowerSearch) ||
-          p.category?.toLowerCase().includes(lowerSearch)
-        );
+  const searchPathogensConditionally = useCallback(
+    (searchTermInput: string, filters: FilterOptions = {}) => {
+      if (pathogenData) {
+        // Use prop data - apply manual filtering since searchPathogens expects imported data
+        let filtered = Array.isArray(pathogenData) ? pathogenData : pathogenData.pathogens || [];
+
+        if (searchTermInput) {
+          const lowerSearch = searchTermInput.toLowerCase();
+          filtered = filtered.filter(
+            (p) =>
+              p.name?.toLowerCase().includes(lowerSearch) ||
+              p.commonName?.toLowerCase().includes(lowerSearch) ||
+              p.category?.toLowerCase().includes(lowerSearch)
+          );
+        }
+
+        if (filters.gramStatus && filters.gramStatus !== 'all') {
+          filtered = filtered.filter((p) => p.gramStain?.toLowerCase() === filters.gramStatus);
+        }
+
+        if (filters.severity && filters.severity !== 'all') {
+          filtered = filtered.filter((p) => p.severity?.toLowerCase() === filters.severity);
+        }
+
+        if (filters.duration && filters.duration !== 'all') {
+          filtered = filtered.filter((p) => {
+            const duration = p.treatmentDuration || p.duration;
+            if (filters.duration === 'short' && duration && duration.includes('7')) return true;
+            if (filters.duration === 'medium' && duration && duration.includes('14')) return true;
+            if (
+              filters.duration === 'long' &&
+              duration &&
+              !duration.includes('7') &&
+              !duration.includes('14')
+            )
+              return true;
+            return false;
+          });
+        }
+
+        return filtered;
+      } else {
+        // Use imported data - leverage existing search functions
+        return searchPathogens(searchTermInput);
       }
-      
-      if (filters.gramStatus && filters.gramStatus !== 'all') {
-        filtered = filtered.filter(p => p.gramStain?.toLowerCase() === filters.gramStatus);
-      }
-      
-      if (filters.severity && filters.severity !== 'all') {
-        filtered = filtered.filter(p => p.severity?.toLowerCase() === filters.severity);
-      }
-      
-      if (filters.duration && filters.duration !== 'all') {
-        filtered = filtered.filter(p => {
-          const duration = p.treatmentDuration || p.duration;
-          if (filters.duration === 'short' && duration && duration.includes('7')) return true;
-          if (filters.duration === 'medium' && duration && duration.includes('14')) return true;
-          if (filters.duration === 'long' && duration && !duration.includes('7') && !duration.includes('14')) return true;
-          return false;
-        });
-      }
-      
-      return filtered;
-    } else {
-      // Use imported data - leverage existing search functions
-      return searchPathogens(searchTerm, filters);
-    }
-  }, [pathogenData]);
+    },
+    [pathogenData]
+  );
 
   // Safe pathogen access - handle both array and object with pathogens property
   const safePathogens = useMemo(() => {
@@ -91,15 +141,13 @@ const ConsolidatedPathogenExplorer = ({
     return searchPathogensConditionally(searchTerm, {
       gramStatus: gramFilter,
       severity: severityFilter,
-      duration: durationFilter
+      duration: durationFilter,
     });
   }, [searchTerm, gramFilter, severityFilter, durationFilter, searchPathogensConditionally]);
 
   // Get gram status counts from the safe data source
-  const getGramStatusCount = (status) => {
-    return safePathogens.filter(p => 
-      p.gramStain?.toLowerCase().includes(status.toLowerCase())
-    ).length;
+  const getGramStatusCount = (status: string): number => {
+    return safePathogens.filter((p) => p.gramStain?.toLowerCase().includes(status.toLowerCase())).length;
   };
 
   // Gram status counts
@@ -110,7 +158,7 @@ const ConsolidatedPathogenExplorer = ({
   const hasActiveFilters = searchTerm || gramFilter !== 'all' || severityFilter !== 'all' || durationFilter !== 'all';
 
   // Clear all filters
-  const clearFilters = () => {
+  const clearFilters = (): void => {
     setSearchTerm('');
     setGramFilter('all');
     setSeverityFilter('all');
@@ -118,8 +166,26 @@ const ConsolidatedPathogenExplorer = ({
   };
 
   // Search handler
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchTerm(e.target.value);
+  };
+
+  const handlePathogenSelect = (pathogen: Pathogen | null): void => {
+    if (hasCallback) {
+      unifiedOnSelectPathogen(pathogen);
+    } else {
+      setInternalSelectedPathogen(pathogen);
+    }
+    setSelectedAntibiotic(null);
+  };
+
+  const handleClosePathogen = (): void => {
+    if (hasCallback) {
+      unifiedOnSelectPathogen(null);
+    } else {
+      setInternalSelectedPathogen(null);
+    }
+    setSelectedAntibiotic(null);
   };
 
   return (
@@ -146,14 +212,14 @@ const ConsolidatedPathogenExplorer = ({
               />
             </div>
           </div>
-          
+
           <div className="flex gap-2">
             {/* Filters Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`px-3 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
-                hasActiveFilters 
-                  ? 'bg-blue-50 border-blue-200 text-blue-700' 
+                hasActiveFilters
+                  ? 'bg-blue-50 border-blue-200 text-blue-700'
                   : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -161,7 +227,8 @@ const ConsolidatedPathogenExplorer = ({
               <span className="hidden sm:inline">Filters</span>
               {hasActiveFilters && (
                 <span className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {[searchTerm, gramFilter !== 'all', severityFilter !== 'all', durationFilter !== 'all'].filter(Boolean).length}
+                  {[searchTerm, gramFilter !== 'all', severityFilter !== 'all', durationFilter !== 'all'].filter(Boolean)
+                    .length}
                 </span>
               )}
             </button>
@@ -171,9 +238,7 @@ const ConsolidatedPathogenExplorer = ({
               <button
                 onClick={() => setView('list')}
                 className={`px-3 py-2 flex items-center gap-2 transition-colors ${
-                  view === 'list' 
-                    ? 'bg-blue-500 text-white' 
-                    : 'text-gray-700 hover:bg-gray-50'
+                  view === 'list' ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <BarChart3 className="w-4 h-4" />
@@ -182,9 +247,7 @@ const ConsolidatedPathogenExplorer = ({
               <button
                 onClick={() => setView('network')}
                 className={`px-3 py-2 flex items-center gap-2 transition-colors border-l border-gray-300 ${
-                  view === 'network' 
-                    ? 'bg-blue-500 text-white' 
-                    : 'text-gray-700 hover:bg-gray-50'
+                  view === 'network' ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <Network className="w-4 h-4" />
@@ -250,7 +313,7 @@ const ConsolidatedPathogenExplorer = ({
               </select>
             </div>
           </div>
-          
+
           {hasActiveFilters && (
             <div className="mt-3 pt-3 border-t border-gray-200">
               <button
@@ -292,7 +355,7 @@ const ConsolidatedPathogenExplorer = ({
         <div className="w-1/2 border-r border-gray-200 flex flex-col">
           <div className="p-4 bg-gray-50 border-b border-gray-200">
             <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-              🦠 Pathogens 
+              🦠 Pathogens
               <span className="text-sm text-gray-500">({filteredPathogens.length})</span>
             </h2>
           </div>
@@ -312,14 +375,7 @@ const ConsolidatedPathogenExplorer = ({
               <PathogenList
                 pathogens={filteredPathogens}
                 selectedPathogen={selectedPathogen}
-                onPathogenSelect={(pathogen) => {
-                  if (hasCallback) {
-                    unifiedOnSelectPathogen(pathogen);
-                  } else {
-                    setInternalSelectedPathogen(pathogen);
-                  }
-                  setSelectedAntibiotic(null);
-                }}
+                onPathogenSelect={handlePathogenSelect}
                 className="p-0"
                 data-testid="pathogen-list"
               />
@@ -327,14 +383,7 @@ const ConsolidatedPathogenExplorer = ({
               <SimpleNetworkView
                 pathogens={filteredPathogens}
                 selectedPathogen={selectedPathogen}
-                onPathogenSelect={(pathogen) => {
-                  if (hasCallback) {
-                    unifiedOnSelectPathogen(pathogen);
-                  } else {
-                    setInternalSelectedPathogen(pathogen);
-                  }
-                  setSelectedAntibiotic(null);
-                }}
+                onPathogenSelect={handlePathogenSelect}
                 className="p-4"
                 data-testid="network-view"
               />
@@ -352,41 +401,17 @@ const ConsolidatedPathogenExplorer = ({
               <div data-testid="pathogen-card-empty">No pathogen selected</div>
             ) : (
               <div data-testid="pathogen-card">
-                <PathogenCard 
-                  pathogen={selectedPathogen} 
-                  onClose={() => {
-                    if (hasCallback) {
-                      unifiedOnSelectPathogen(null);
-                    } else {
-                      setInternalSelectedPathogen(null);
-                    }
-                    setSelectedAntibiotic(null);
-                  }}
-                />
+                <PathogenCard pathogen={selectedPathogen} onClose={handleClosePathogen} />
                 <div className="mt-2 flex gap-2">
                   <button
-                    onClick={() => {
-                      if (onPathogenSelect) {
-                        onPathogenSelect(null);
-                      } else {
-                        setInternalSelectedPathogen(null);
-                      }
-                      setSelectedAntibiotic(null);
-                    }}
+                    onClick={handleClosePathogen}
                     data-testid="close-pathogen-card"
                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                   >
                     Close
                   </button>
                   <button
-                    onClick={() => {
-                      if (onPathogenSelect) {
-                        onPathogenSelect(null);
-                      } else {
-                        setInternalSelectedPathogen(null);
-                      }
-                      setSelectedAntibiotic(null);
-                    }}
+                    onClick={handleClosePathogen}
                     className="px-4 py-2 bg-red-200 text-red-700 rounded hover:bg-red-300"
                   >
                     Clear Selection
@@ -403,9 +428,7 @@ const ConsolidatedPathogenExplorer = ({
             <h2 className="font-semibold text-gray-900 flex items-center gap-2">
               💊 Antibiotics
               {selectedPathogen && (
-                <span className="text-sm text-gray-500">
-                  for {selectedPathogen.name}
-                </span>
+                <span className="text-sm text-gray-500">for {selectedPathogen.name}</span>
               )}
             </h2>
           </div>
@@ -418,15 +441,25 @@ const ConsolidatedPathogenExplorer = ({
                 <AntibioticList
                   pathogen={selectedPathogen}
                   selectedAntibiotic={selectedAntibiotic}
-                  onAntibioticSelect={setSelectedAntibiotic}
+                  onSelectAntibiotic={setSelectedAntibiotic}
                 />
                 {selectedAntibiotic && (
                   <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4><strong>Selected Antibiotic:</strong></h4>
-                    <p><strong>Vancomycin</strong></p>
-                    <p><strong>Class:</strong> Glycopeptide</p>
-                    <p><strong>Mechanism:</strong> Cell wall synthesis inhibition</p>
-                    <p><strong>Route:</strong> IV</p>
+                    <h4>
+                      <strong>Selected Antibiotic:</strong>
+                    </h4>
+                    <p>
+                      <strong>{selectedAntibiotic.name}</strong>
+                    </p>
+                    <p>
+                      <strong>Class:</strong> {selectedAntibiotic.class}
+                    </p>
+                    <p>
+                      <strong>Mechanism:</strong> {selectedAntibiotic.mechanism}
+                    </p>
+                    <p>
+                      <strong>Route:</strong> {selectedAntibiotic.route}
+                    </p>
                     <button
                       onClick={() => setSelectedAntibiotic(null)}
                       className="mt-2 px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
@@ -460,26 +493,6 @@ const ConsolidatedPathogenExplorer = ({
       </div>
     </div>
   );
-};
-
-// PropTypes for comprehensive prop validation and documentation
-ConsolidatedPathogenExplorer.propTypes = {
-  pathogenData: PropTypes.arrayOf(PropTypes.object),
-  onPathogenSelect: PropTypes.func,
-  onSelectCondition: PropTypes.func,
-  onSelectPathogen: PropTypes.func,
-  selectedPathogen: PropTypes.object,
-  className: PropTypes.string
-};
-
-// Default props for safety and backwards compatibility
-ConsolidatedPathogenExplorer.defaultProps = {
-  pathogenData: null,
-  onPathogenSelect: () => {},
-  onSelectCondition: () => {},
-  onSelectPathogen: () => {},
-  selectedPathogen: undefined,
-  className: ''
 };
 
 export default ConsolidatedPathogenExplorer;

@@ -4,7 +4,7 @@
  * Sophomore-level React component with state management
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, FC } from 'react';
 import { Grid, Network, List, Eye } from 'lucide-react';
 
 import PathogenList from './PathogenList';
@@ -16,32 +16,51 @@ import simplePathogens, { searchPathogens, getPathogensByGramStatus, getPathogen
 import simpleAntibiotics, { getAntibioticById } from '../data/SimpleAntibioticData';
 import pathogenAntibioticMap, { getAntibioticsForPathogen } from '../data/pathogenAntibioticMap';
 
-const SimplePathogenExplorer = () => {
+// Types
+interface Pathogen {
+  id: string;
+  name: string;
+  gramStatus?: string;
+  severity?: string;
+  conditions: any[];
+}
+
+interface Antibiotic {
+  antibioticId: string;
+  name: string;
+  class: string;
+  mechanism: string;
+  route: string;
+  description?: string;
+}
+
+interface AntibioticWithDetails extends Antibiotic {
+  [key: string]: any;
+}
+
+const SimplePathogenExplorer: FC = () => {
   // State for pathogen selection and filtering
-  const [selectedPathogen, setSelectedPathogen] = useState(null);
-  const [selectedAntibiotic, setSelectedAntibiotic] = useState(null);
+  const [selectedPathogen, setSelectedPathogen] = useState<Pathogen | null>(null);
+  const [selectedAntibiotic, setSelectedAntibiotic] = useState<AntibioticWithDetails | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [gramFilter, setGramFilter] = useState('all');
   const [severityFilter, setSeverityFilter] = useState('all');
-  const [viewMode, setViewMode] = useState('list'); // 'list', 'network'
+  const [viewMode, setViewMode] = useState<'list' | 'network'>('list');
 
   // Filter pathogens based on search and filters
   const filteredPathogens = useMemo(() => {
     let pathogens = simplePathogens;
 
-    // Apply search filter
     if (searchTerm) {
       pathogens = searchPathogens(searchTerm);
     }
 
-    // Apply gram status filter
     if (gramFilter !== 'all') {
-      pathogens = pathogens.filter(pathogen => pathogen.gramStatus === gramFilter);
+      pathogens = pathogens.filter((pathogen) => pathogen.gramStatus === gramFilter);
     }
 
-    // Apply severity filter
     if (severityFilter !== 'all') {
-      pathogens = pathogens.filter(pathogen => pathogen.severity === severityFilter);
+      pathogens = pathogens.filter((pathogen) => pathogen.severity === severityFilter);
     }
 
     return pathogens;
@@ -52,36 +71,35 @@ const SimplePathogenExplorer = () => {
     if (!selectedPathogen) return [];
 
     const antibiotics = getAntibioticsForPathogen(selectedPathogen.id);
-    
-    // Add full antibiotic details
-    return antibiotics.map(antibiotic => {
+
+    return antibiotics.map((antibiotic) => {
       const fullAntibiotic = getAntibioticById(antibiotic.antibioticId);
       return {
         ...antibiotic,
-        ...fullAntibiotic
+        ...fullAntibiotic,
       };
     });
   }, [selectedPathogen]);
 
   // Handle pathogen selection
-  const handlePathogenSelect = (pathogen) => {
+  const handlePathogenSelect = (pathogen: Pathogen): void => {
     setSelectedPathogen(pathogen);
-    setSelectedAntibiotic(null); // Clear antibiotic selection when changing pathogen
+    setSelectedAntibiotic(null);
   };
 
   // Handle antibiotic selection
-  const handleAntibioticSelect = (antibiotic) => {
+  const handleAntibioticSelect = (antibiotic: AntibioticWithDetails): void => {
     setSelectedAntibiotic(antibiotic);
   };
 
   // Clear all selections
-  const clearSelections = () => {
+  const clearSelections = (): void => {
     setSelectedPathogen(null);
     setSelectedAntibiotic(null);
   };
 
   // Clear all filters
-  const clearFilters = () => {
+  const clearFilters = (): void => {
     setSearchTerm('');
     setGramFilter('all');
     setSeverityFilter('all');
@@ -93,12 +111,8 @@ const SimplePathogenExplorer = () => {
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Pathogen Explorer
-            </h1>
-            <p className="text-gray-600">
-              Explore pathogens, antibiotics, and their relationships
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900">Pathogen Explorer</h1>
+            <p className="text-gray-600">Explore pathogens, antibiotics, and their relationships</p>
           </div>
 
           {/* View Mode Toggle */}
@@ -195,10 +209,7 @@ const SimplePathogenExplorer = () => {
 
           {/* Pathogen Details */}
           <div className="lg:col-span-1">
-            <PathogenCard
-              pathogen={selectedPathogen}
-              onClose={() => setSelectedPathogen(null)}
-            />
+            <PathogenCard pathogen={selectedPathogen} onClose={() => setSelectedPathogen(null)} />
           </div>
 
           {/* Antibiotic List */}
@@ -225,11 +236,8 @@ const SimplePathogenExplorer = () => {
 
           {/* Side Panel */}
           <div className="space-y-6">
-            <PathogenCard
-              pathogen={selectedPathogen}
-              onClose={() => setSelectedPathogen(null)}
-            />
-            
+            <PathogenCard pathogen={selectedPathogen} onClose={() => setSelectedPathogen(null)} />
+
             {selectedPathogen && (
               <AntibioticList
                 pathogen={selectedPathogen}
@@ -281,11 +289,10 @@ const SimplePathogenExplorer = () => {
       {/* Footer */}
       <div className="bg-gray-50 rounded-lg p-4 text-center text-sm text-gray-600">
         <p>
-          Simple Pathogen Explorer • {filteredPathogens.length} of {simplePathogens.length} pathogens shown
+          Simple Pathogen Explorer • {filteredPathogens.length} of {simplePathogens.length} pathogens
+          shown
         </p>
-        <p className="text-xs mt-1">
-          Educational tool for learning pathogen-antibiotic relationships
-        </p>
+        <p className="text-xs mt-1">Educational tool for learning pathogen-antibiotic relationships</p>
       </div>
     </div>
   );
