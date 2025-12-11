@@ -4,15 +4,151 @@
  * @created 2025-07-28 06:49:33
  */
 
-import React from 'react';
-import { render, screen } from '@testing-library/react';
+import React, { ReactElement } from 'react';
+import { render, RenderOptions, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { AppProvider } from '../contexts/AppContext';
 
 /**
+ * Type definitions for test utilities
+ */
+
+interface MedicalCondition {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  commonPathogens: string[];
+  antibiotics: string[];
+  [key: string]: any;
+}
+
+interface Pathogen {
+  id: string;
+  name: string;
+  gramStatus: string;
+  category: string;
+  conditions: string[];
+  [key: string]: any;
+}
+
+interface PathogenData {
+  pathogens: Pathogen[];
+  selectedPathogen: Pathogen | null;
+  isLoading: boolean;
+}
+
+interface Antibiotic {
+  id: string;
+  name: string;
+  drugClass: string;
+  spectrum: string;
+  conditions: string[];
+  pathogens: string[];
+  [key: string]: any;
+}
+
+interface AntibioticData {
+  antibiotics: Antibiotic[];
+  selectedAntibiotic: Antibiotic | null;
+  isLoading: boolean;
+}
+
+interface QuizStats {
+  totalQuizzes: number;
+  averageScore: number;
+  lastQuizScore: number;
+  correctAnswers: number;
+  totalQuestions: number;
+}
+
+interface QuizProgress {
+  stats: QuizStats;
+  recentQuizzes: any[];
+  clearHistory: jest.Mock;
+  submitQuiz: jest.Mock;
+}
+
+interface Bookmarks {
+  bookmarkedConditions: string[];
+  isBookmarked: jest.Mock;
+  toggleBookmark: jest.Mock;
+}
+
+interface SearchData {
+  searchTerm: string;
+  setSearchTerm: jest.Mock;
+  filteredItems: MedicalCondition[];
+}
+
+interface UserProgress {
+  completedModules: string[];
+  currentLevel: string;
+  totalScore: number;
+}
+
+interface Preferences {
+  theme: string;
+  notifications: boolean;
+  difficulty: string;
+}
+
+interface MockContextValue {
+  activeTab: string;
+  setActiveTab: jest.Mock;
+  selectedCondition: MedicalCondition | null;
+  setSelectedCondition: jest.Mock;
+  showMobileMenu: boolean;
+  setShowMobileMenu: jest.Mock;
+  isMobile: boolean;
+  quizProgress: QuizProgress;
+  bookmarks: Bookmarks;
+  pathogenData: PathogenData;
+  antibioticData: AntibioticData;
+  searchData: SearchData;
+  userProgress: UserProgress;
+  preferences: Preferences;
+  addBookmark: jest.Mock;
+  removeBookmark: jest.Mock;
+  updatePreferences: jest.Mock;
+  medicalConditions: MedicalCondition[];
+  [key: string]: any;
+}
+
+interface TestUser {
+  id: string;
+  name: string;
+  level: string;
+  progress: {
+    completedModules: number;
+    totalModules: number;
+    currentScore: number;
+    totalQuizzes: number;
+    averageScore: number;
+  };
+  preferences: {
+    systematicLearning: boolean;
+    difficultyLevel: string;
+    difficulty: string;
+  };
+  history: any[];
+  [key: string]: any;
+}
+
+interface LocalStorageAPI {
+  store: { [key: string]: string };
+  getItem: (key: string) => string | null;
+  setItem: (key: string, value: string) => void;
+  removeItem: (key: string) => void;
+  clear: () => void;
+  key: (index: number) => string | null;
+  length: number;
+}
+
+/**
  * Mock Data for Testing
  */
-export const mockMedicalConditions = [
+export const mockMedicalConditions: MedicalCondition[] = [
   {
     id: 'pneumonia',
     name: 'Pneumonia',
@@ -31,7 +167,7 @@ export const mockMedicalConditions = [
   }
 ];
 
-export const mockPathogenData = {
+export const mockPathogenData: PathogenData = {
   pathogens: [
     {
       id: 'strep-pneumoniae',
@@ -52,7 +188,7 @@ export const mockPathogenData = {
   isLoading: false
 };
 
-export const mockAntibioticData = {
+export const mockAntibioticData: AntibioticData = {
   antibiotics: [
     {
       id: 'amoxicillin',
@@ -75,7 +211,7 @@ export const mockAntibioticData = {
   isLoading: false
 };
 
-export const mockQuizProgress = {
+export const mockQuizProgress: QuizProgress = {
   stats: {
     totalQuizzes: 5,
     averageScore: 75,
@@ -96,16 +232,15 @@ export const mockQuizProgress = {
   submitQuiz: jest.fn()
 };
 
-export const mockBookmarks = {
+export const mockBookmarks: Bookmarks = {
   bookmarkedConditions: ['pneumonia'],
-  isBookmarked: jest.fn().mockImplementation((id) => id === 'pneumonia'),
+  isBookmarked: jest.fn().mockImplementation((id: string) => id === 'pneumonia'),
   toggleBookmark: jest.fn()
 };
 
-// Immediately restore implementation after declaration to ensure it persists
-mockBookmarks.isBookmarked.mockImplementation((id) => id === 'pneumonia');
+mockBookmarks.isBookmarked.mockImplementation((id: string) => id === 'pneumonia');
 
-export const mockSearchData = {
+export const mockSearchData: SearchData = {
   searchTerm: '',
   setSearchTerm: jest.fn(),
   filteredItems: mockMedicalConditions
@@ -122,7 +257,7 @@ export const mockHooks = {
   useAntibioticData: () => mockAntibioticData,
   useSearch: () => mockSearchData,
   useErrorHandler: () => ({
-    withErrorHandling: (fn, fallback) => {
+    withErrorHandling: (fn: () => any, fallback: any) => {
       try {
         return fn();
       } catch {
@@ -142,14 +277,20 @@ export const mockHooks = {
 /**
  * Enhanced Custom Render with Context Provider
  */
-export const renderWithContext = (ui, options = {}) => {
+interface RenderWithContextOptions extends Omit<RenderOptions, 'wrapper'> {
+  initialState?: any;
+}
+
+export const renderWithContext = (
+  ui: ReactElement,
+  options: RenderWithContextOptions = {}
+) => {
   const {
     initialState = {},
     ...renderOptions
   } = options;
 
-  // Create wrapper with AppProvider
-  const Wrapper = ({ children }) => {
+  const Wrapper = ({ children }: { children: React.ReactNode }) => {
     return (
       <AppProvider>
         {children}
@@ -159,41 +300,35 @@ export const renderWithContext = (ui, options = {}) => {
 
   return {
     ...render(ui, { wrapper: Wrapper, ...renderOptions }),
-    // Return additional utilities
-    rerender: (newUi) => render(newUi, { wrapper: Wrapper, container: document.body.firstChild })
+    rerender: (newUi: ReactElement) =>
+      render(newUi, {
+        wrapper: Wrapper,
+        container: document.body.firstChild as HTMLElement
+      })
   };
 };
 
 /**
  * Mock Context Value Factory
  */
-export const createMockContextValue = (overrides = {}) => ({
-  // Core state
+export const createMockContextValue = (overrides: Partial<MockContextValue> = {}): MockContextValue => ({
   activeTab: 'home',
   setActiveTab: jest.fn(),
   selectedCondition: null,
   setSelectedCondition: jest.fn(),
   showMobileMenu: false,
   setShowMobileMenu: jest.fn(),
-  
-  // Device state
   isMobile: false,
-  
-  // Data and functionality
   quizProgress: mockQuizProgress,
   bookmarks: mockBookmarks,
   pathogenData: mockPathogenData,
   antibioticData: mockAntibioticData,
   searchData: mockSearchData,
-  
-  // User progress tracking
   userProgress: {
     completedModules: [],
     currentLevel: 'beginner',
     totalScore: 0
   },
-  
-  // User preferences and actions
   preferences: {
     theme: 'light',
     notifications: true,
@@ -202,18 +337,19 @@ export const createMockContextValue = (overrides = {}) => ({
   addBookmark: jest.fn(),
   removeBookmark: jest.fn(),
   updatePreferences: jest.fn(),
-  
-  // Static data
   medicalConditions: mockMedicalConditions,
-  
-  // Apply overrides
   ...overrides
 });
 
 /**
  * Error Boundary Test Helper
  */
-export const ThrowError = ({ shouldThrow, children }) => {
+interface ThrowErrorProps {
+  shouldThrow: boolean;
+  children: React.ReactNode;
+}
+
+export const ThrowError = ({ shouldThrow, children }: ThrowErrorProps): React.ReactNode => {
   if (shouldThrow) {
     throw new Error('Test error for ErrorBoundary');
   }
@@ -223,13 +359,15 @@ export const ThrowError = ({ shouldThrow, children }) => {
 /**
  * Component Test Helpers
  */
-export const createMockComponent = (name, props = {}) => {
-  const MockComponent = React.forwardRef((componentProps, ref) => (
-    <div data-testid={`mock-${name.toLowerCase()}`} ref={ref} {...componentProps}>
-      Mock {name}: Component
-      {props.children && <div>{props.children}</div>}
-    </div>
-  ));
+export const createMockComponent = (name: string, props: any = {}) => {
+  const MockComponent = React.forwardRef<HTMLDivElement, any>(
+    (componentProps, ref) => (
+      <div data-testid={`mock-${name.toLowerCase()}`} ref={ref} {...componentProps}>
+        Mock {name}: Component
+        {props.children && <div>{props.children}</div>}
+      </div>
+    )
+  );
   MockComponent.displayName = `Mock${name}`;
   return MockComponent;
 };
@@ -238,39 +376,33 @@ export const createMockComponent = (name, props = {}) => {
  * Accessibility Test Helpers
  */
 export const testAccessibility = {
-  // Test keyboard navigation
-  testKeyboardNavigation: (elements) => {
+  testKeyboardNavigation: (elements: HTMLElement[]): void => {
     elements.forEach((element) => {
       expect(element).toHaveAttribute('tabIndex');
-      expect(parseInt(element.getAttribute('tabIndex'))).toBeGreaterThanOrEqual(0);
+      expect(parseInt(element.getAttribute('tabIndex') || '0')).toBeGreaterThanOrEqual(0);
     });
   },
-  
-  // Test ARIA labels
-  testAriaLabels: (elements) => {
+
+  testAriaLabels: (elements: HTMLElement[]): void => {
     elements.forEach((element) => {
-      const hasAriaLabel = element.hasAttribute('aria-label') || 
+      const hasAriaLabel = element.hasAttribute('aria-label') ||
                           element.hasAttribute('aria-labelledby') ||
                           element.hasAttribute('aria-describedby');
       expect(hasAriaLabel).toBe(true);
     });
   },
-  
-  // Test semantic roles
-  testSemanticRoles: (expectedRoles) => {
+
+  testSemanticRoles: (expectedRoles: string[]): void => {
     expectedRoles.forEach((role) => {
       expect(screen.getByRole(role)).toBeInTheDocument();
     });
   },
-  
-  // Async accessibility checks for use in tests
-  checkAriaLabels: async () => {
-    // Basic check that passes for tests
+
+  checkAriaLabels: async (): Promise<void> => {
     return Promise.resolve();
   },
-  
-  checkKeyboardNavigation: async () => {
-    // Basic check that passes for tests
+
+  checkKeyboardNavigation: async (): Promise<void> => {
     return Promise.resolve();
   }
 };
@@ -278,8 +410,7 @@ export const testAccessibility = {
 /**
  * Async Test Helpers
  */
-export const waitForLoadingToFinish = async () => {
-  // Wait for any loading spinners to disappear
+export const waitForLoadingToFinish = async (): Promise<void> => {
   await screen.findByText(/loading/i).catch(() => {});
   await new Promise(resolve => setTimeout(resolve, 100));
 };
@@ -287,32 +418,32 @@ export const waitForLoadingToFinish = async () => {
 /**
  * Performance Test Helpers
  */
-export const measureRenderTime = (renderFn) => {
+export const measureRenderTime = (renderFn: () => void): number => {
   const startTime = performance.now();
   renderFn();
   const endTime = performance.now();
-  
+
   return endTime - startTime;
 };
 
 /**
  * Mock Local Storage
  */
-export const mockLocalStorage = (() => {
-  const store = {};
+export const mockLocalStorage: LocalStorageAPI = (() => {
+  const store: { [key: string]: string } = {};
   return {
     store,
-    getItem: (key) => store[key] || null,
-    setItem: (key, value) => {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
       store[key] = value;
     },
-    removeItem: (key) => {
+    removeItem: (key: string) => {
       delete store[key];
     },
     clear: () => {
       Object.keys(store).forEach(key => delete store[key]);
     },
-    key: (index) => {
+    key: (index: number) => {
       const keys = Object.keys(store);
       return keys[index] || null;
     },
@@ -325,29 +456,24 @@ export const mockLocalStorage = (() => {
 /**
  * Setup and Teardown Helpers
  */
-// Function to restore mock implementations after jest.clearAllMocks()
-export const restoreMockImplementations = () => {
-  mockBookmarks.isBookmarked.mockImplementation((id) => id === 'pneumonia');
-  // Add other mocks that need restoration here if needed
+export const restoreMockImplementations = (): void => {
+  mockBookmarks.isBookmarked.mockImplementation((id: string) => id === 'pneumonia');
 };
 
-export const setupTestEnvironment = () => {
-  // Mock console methods to reduce noise
+export const setupTestEnvironment = (): (() => void) => {
   const originalConsole = { ...console };
   console.log = jest.fn();
   console.warn = jest.fn();
   console.error = jest.fn();
-  
-  // Mock localStorage
+
   Object.defineProperty(window, 'localStorage', {
     value: mockLocalStorage,
     writable: true
   });
-  
-  // Mock matchMedia for responsive hooks
+
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: jest.fn().mockImplementation(query => ({
+    value: jest.fn().mockImplementation((query: string) => ({
       matches: false,
       media: query,
       onchange: null,
@@ -358,7 +484,7 @@ export const setupTestEnvironment = () => {
       dispatchEvent: jest.fn(),
     })),
   });
-  
+
   return () => {
     Object.assign(console, originalConsole);
     jest.restoreAllMocks();
@@ -369,7 +495,7 @@ export const setupTestEnvironment = () => {
 /**
  * Test Data Factories
  */
-export const createTestCondition = (overrides = {}) => ({
+export const createTestCondition = (overrides: Partial<MedicalCondition> = {}): MedicalCondition => ({
   id: 'test-condition',
   name: 'Test Condition',
   category: 'Test Category',
@@ -379,7 +505,7 @@ export const createTestCondition = (overrides = {}) => ({
   ...overrides
 });
 
-export const createTestPathogen = (overrides = {}) => ({
+export const createTestPathogen = (overrides: Partial<Pathogen> = {}): Pathogen => ({
   id: 'test-pathogen',
   name: 'Test Pathogen',
   gramStatus: 'Positive',
@@ -388,7 +514,7 @@ export const createTestPathogen = (overrides = {}) => ({
   ...overrides
 });
 
-export const createTestUser = (overrides = {}) => ({
+export const createTestUser = (overrides: Partial<TestUser> = {}): TestUser => ({
   id: 'test-user',
   name: 'Test User',
   level: 'intermediate',
@@ -407,7 +533,6 @@ export const createTestUser = (overrides = {}) => ({
   history: [],
   ...overrides
 });
-
 
 export default {
   renderWithContext,
