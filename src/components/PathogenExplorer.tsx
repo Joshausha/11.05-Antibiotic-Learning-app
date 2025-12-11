@@ -4,13 +4,32 @@
  * Provides comprehensive pathogen discovery through multiple interconnected views
  */
 
-import React, { memo, useState, useMemo, Suspense, lazy } from 'react';
-import { 
-  Search, Microscope, ArrowRight,
-  Network, RotateCcw, Zap, Grid, Eye
+import React, {
+  memo,
+  useState,
+  useMemo,
+  Suspense,
+  lazy,
+  FC,
+  ReactNode,
+  useCallback,
+} from 'react';
+import {
+  Search,
+  Microscope,
+  ArrowRight,
+  Network,
+  RotateCcw,
+  Zap,
+  Grid,
+  Eye,
 } from 'lucide-react';
 import usePathogenRecommendations from '../hooks/usePathogenRecommendations';
-import { buildPathogenNetwork, getConditionsForPathogen, getAntibioticsForPathogen } from '../utils/dataIndexer';
+import {
+  buildPathogenNetwork,
+  getConditionsForPathogen,
+  getAntibioticsForPathogen,
+} from '../utils/dataIndexer';
 import ResearchIntegration from './research/ResearchIntegration';
 
 // Lazy load heavy components
@@ -18,14 +37,94 @@ const PathogenNetworkVisualization = lazy(() => import('./PathogenNetworkVisuali
 const PathogenDetailPanel = lazy(() => import('./PathogenDetailPanel'));
 const PathogenConnectionExplorer = lazy(() => import('./PathogenConnectionExplorer'));
 
-const PathogenExplorer = ({ 
-  pathogenData, 
-  onSelectCondition,
-  userBehavior = {}
+// Types
+interface Pathogen {
+  name: string;
+  gramStatus?: 'positive' | 'negative' | 'unknown';
+  type?: string;
+  details?: string;
+  conditions: any[];
+  commonConditions?: string[];
+}
+
+interface PathogenStats {
+  total: number;
+  gramPositive: number;
+  gramNegative: number;
+  avgConditions: number;
+}
+
+interface FilteredStats {
+  total: number;
+  gramPositive: number;
+  gramNegative: number;
+  unknown: number;
+}
+
+interface ExplorationHistoryEntry {
+  pathogen: Pathogen;
+  timestamp: number;
+  fromView: string;
+}
+
+interface PathogenDataContextType {
+  pathogens: Pathogen[];
+  selectedPathogen: Pathogen | null;
+  selectedPathogenConditions: any[];
+  selectedPathogenAntibiotics: any[];
+  pathogenStats: PathogenStats | null;
+  filteredStats: FilteredStats | null;
+  searchQuery: string;
+  gramFilter: string;
+  typeFilter: string;
+  sortBy: string;
+  searchPathogens: (query: string) => void;
+  filterByGramStatus: (status: string) => void;
+  filterByType: (type: string) => void;
+  setSortOrder: (order: string) => void;
+  selectPathogen: (pathogen: Pathogen) => void;
+  clearSelection: () => void;
+  clearFilters: () => void;
+  findSimilarPathogens: (pathogen: Pathogen) => Pathogen[];
+  isLoading: boolean;
+  indexes: any;
+}
+
+interface PathogenExplorerProps {
+  pathogenData?: PathogenDataContextType | null;
+  onSelectCondition?: (condition: any) => void;
+  userBehavior?: Record<string, any>;
+}
+
+const PathogenExplorer: FC<PathogenExplorerProps> = ({
+  pathogenData,
+  onSelectCondition = () => {},
+  userBehavior = {},
 }) => {
   // Defensive programming: Handle case where pathogenData prop is not provided
-  const safePathogenData = pathogenData || {};
-  
+  const safePathogenData: PathogenDataContextType = pathogenData || {
+    pathogens: [],
+    selectedPathogen: null,
+    selectedPathogenConditions: [],
+    selectedPathogenAntibiotics: [],
+    pathogenStats: null,
+    filteredStats: null,
+    searchQuery: '',
+    gramFilter: 'all',
+    typeFilter: 'all',
+    sortBy: 'name',
+    searchPathogens: () => {},
+    filterByGramStatus: () => {},
+    filterByType: () => {},
+    setSortOrder: () => {},
+    selectPathogen: () => {},
+    clearSelection: () => {},
+    clearFilters: () => {},
+    findSimilarPathogens: () => [],
+    isLoading: false,
+    indexes: null,
+  };
+
   const {
     pathogens = [],
     selectedPathogen = null,
@@ -46,14 +145,14 @@ const PathogenExplorer = ({
     clearFilters = () => {},
     findSimilarPathogens = () => [],
     isLoading = false,
-    indexes = null
+    indexes = null,
   } = safePathogenData;
 
   // New state for enhanced exploration
-  const [viewMode, setViewMode] = useState('grid'); // 'grid', 'network', 'explorer'
-  const [selectedTarget, setSelectedTarget] = useState(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'network' | 'explorer'>('grid');
+  const [selectedTarget, setSelectedTarget] = useState<Pathogen | null>(null);
   const [showRecommendations, setShowRecommendations] = useState(true);
-  const [explorationHistory, setExplorationHistory] = useState([]);
+  const [explorationHistory, setExplorationHistory] = useState<ExplorationHistoryEntry[]>([]);
 
   // Agent 25's Defensive Programming: Enhanced pathogen recommendations with null safety
   const recommendations = usePathogenRecommendations(indexes, selectedPathogen, userBehavior || {});
@@ -70,51 +169,53 @@ const PathogenExplorer = ({
 
     const conditions = getConditionsForPathogen(indexes, selectedPathogen.name);
     const antibiotics = getAntibioticsForPathogen(indexes, selectedPathogen.name);
-    // Agent 25's Defensive Programming: Safe similar pathogen processing with null safety
     const similarPathogens = (findSimilarPathogens(selectedPathogen) || []).slice(0, 8);
 
     return {
       pathogen: selectedPathogen,
       associatedConditions: conditions,
       treatmentOptions: antibiotics,
-      similarPathogens: similarPathogens.map(similar => ({
+      similarPathogens: similarPathogens.map((similar) => ({
         pathogen: similar,
-        similarity: indexes ? indexes.pathogens.find(p => p.name === similar.name) : null,
-        weight: Math.random() * 0.8 + 0.2, // Placeholder - would be calculated properly
-        reasoning: 'Similar pathogen based on shared characteristics'
-      }))
+        similarity: indexes ? indexes.pathogens.find((p: Pathogen) => p.name === similar.name) : null,
+        weight: Math.random() * 0.8 + 0.2,
+        reasoning: 'Similar pathogen based on shared characteristics',
+      })),
     };
   }, [selectedPathogen, indexes, findSimilarPathogens]);
 
   // Handle pathogen selection with tracking
-  const handlePathogenSelect = (pathogen) => {
-    selectPathogen(pathogen);
-    
-    // Track the selection
-    setExplorationHistory(prev => [
-      ...prev.slice(-9), // Keep last 10 items
-      {
-        pathogen,
-        timestamp: Date.now(),
-        fromView: viewMode
-      }
-    ]);
+  const handlePathogenSelect = useCallback(
+    (pathogen: Pathogen): void => {
+      selectPathogen(pathogen);
 
-    // Agent 25's Defensive Programming: Safe recommendation interaction recording
-    if (recommendations && typeof recommendations.recordInteraction === 'function') {
-      recommendations.recordInteraction(pathogen, 'select');
-    }
-  };
+      setExplorationHistory((prev) => [
+        ...prev.slice(-9),
+        {
+          pathogen,
+          timestamp: Date.now(),
+          fromView: viewMode,
+        },
+      ]);
+
+      if (recommendations && typeof recommendations.recordInteraction === 'function') {
+        recommendations.recordInteraction(pathogen, 'select');
+      }
+    },
+    [selectPathogen, viewMode, recommendations]
+  );
 
   // Handle view mode changes
-  const handleViewModeChange = (mode) => {
-    setViewMode(mode);
-    
-    // Auto-select pathogen for network view if none selected
-    if (mode === 'network' && !selectedPathogen && pathogens.length > 0) {
-      handlePathogenSelect(pathogens[0]);
-    }
-  };
+  const handleViewModeChange = useCallback(
+    (mode: 'grid' | 'network' | 'explorer'): void => {
+      setViewMode(mode);
+
+      if (mode === 'network' && !selectedPathogen && pathogens.length > 0) {
+        handlePathogenSelect(pathogens[0]);
+      }
+    },
+    [selectedPathogen, pathogens, handlePathogenSelect]
+  );
 
   if (isLoading) {
     return (
@@ -124,19 +225,25 @@ const PathogenExplorer = ({
     );
   }
 
-  const getGramStatusColor = (gramStatus) => {
+  const getGramStatusColor = (gramStatus?: string): string => {
     switch (gramStatus) {
-      case 'positive': return 'text-purple-600 bg-purple-100';
-      case 'negative': return 'text-pink-600 bg-pink-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'positive':
+        return 'text-purple-600 bg-purple-100';
+      case 'negative':
+        return 'text-pink-600 bg-pink-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
     }
   };
 
-  const getGramStatusLabel = (gramStatus) => {
+  const getGramStatusLabel = (gramStatus?: string): string => {
     switch (gramStatus) {
-      case 'positive': return 'Gram(+)';
-      case 'negative': return 'Gram(-)';
-      default: return 'Unknown';
+      case 'positive':
+        return 'Gram(+)';
+      case 'negative':
+        return 'Gram(-)';
+      default:
+        return 'Unknown';
     }
   };
 
@@ -149,26 +256,22 @@ const PathogenExplorer = ({
             <Microscope className="text-blue-600" size={24} />
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Pathogen Explorer</h1>
-              <p className="text-gray-600">
-                Interactive exploration of pathogen relationships and connections
-              </p>
+              <p className="text-gray-600">Interactive exploration of pathogen relationships and connections</p>
             </div>
           </div>
 
           {/* View Mode Selector */}
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
             {[
-              { id: 'grid', icon: Grid, label: 'Grid View' },
-              { id: 'network', icon: Network, label: 'Network View' },
-              { id: 'explorer', icon: Eye, label: 'Explorer View' }
+              { id: 'grid' as const, icon: Grid, label: 'Grid View' },
+              { id: 'network' as const, icon: Network, label: 'Network View' },
+              { id: 'explorer' as const, icon: Eye, label: 'Explorer View' },
             ].map(({ id, icon: Icon, label }) => (
               <button
                 key={id}
                 onClick={() => handleViewModeChange(id)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === id
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                  viewMode === id ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
                 }`}
                 title={label}
                 aria-label={label}
@@ -179,7 +282,7 @@ const PathogenExplorer = ({
             ))}
           </div>
         </div>
-        
+
         {/* Enhanced Statistics */}
         {pathogenStats && (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
@@ -215,13 +318,13 @@ const PathogenExplorer = ({
             <RotateCcw size={14} />
             Reset
           </button>
-          
+
           {recommendations?.length > 0 && (
             <button
               onClick={() => setShowRecommendations(!showRecommendations)}
               className={`flex items-center gap-1 px-3 py-1 text-sm border rounded-lg transition-colors ${
-                showRecommendations 
-                  ? 'bg-blue-100 text-blue-600 border-blue-300' 
+                showRecommendations
+                  ? 'bg-blue-100 text-blue-600 border-blue-300'
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -242,7 +345,6 @@ const PathogenExplorer = ({
               <h2 className="text-lg font-semibold">Search & Filter</h2>
             </div>
 
-            {/* Search Input */}
             <div className="mb-4">
               <input
                 type="text"
@@ -254,12 +356,9 @@ const PathogenExplorer = ({
               />
             </div>
 
-            {/* Filters */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Gram Status
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Gram Status</label>
                 <select
                   value={gramFilter}
                   onChange={(e) => filterByGramStatus(e.target.value)}
@@ -274,9 +373,7 @@ const PathogenExplorer = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Pathogen Type
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Pathogen Type</label>
                 <select
                   value={typeFilter}
                   onChange={(e) => filterByType(e.target.value)}
@@ -290,9 +387,7 @@ const PathogenExplorer = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Sort By
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortOrder(e.target.value)}
@@ -340,12 +435,12 @@ const PathogenExplorer = ({
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="font-medium text-gray-900">{pathogen.name}</div>
-                      {pathogen.details && (
-                        <div className="text-xs text-gray-500 mt-1">{pathogen.details}</div>
-                      )}
+                      {pathogen.details && <div className="text-xs text-gray-500 mt-1">{pathogen.details}</div>}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getGramStatusColor(pathogen.gramStatus)}`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getGramStatusColor(pathogen.gramStatus)}`}
+                      >
                         {getGramStatusLabel(pathogen.gramStatus)}
                       </span>
                       <span className="text-sm text-gray-600">{pathogen.conditions.length}</span>
@@ -378,20 +473,24 @@ const PathogenExplorer = ({
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg border overflow-hidden">
-              <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse flex items-center justify-center">
-                <Network className="h-12 w-12 text-gray-400" />
-              </div>}>
+              <Suspense
+                fallback={
+                  <div className="h-96 bg-gray-100 animate-pulse flex items-center justify-center">
+                    <Network className="h-12 w-12 text-gray-400" />
+                  </div>
+                }
+              >
                 <PathogenNetworkVisualization
                   network={indexes ? buildPathogenNetwork(indexes) : null}
                   selectedPathogen={selectedPathogen}
                   onSelectPathogen={handlePathogenSelect}
-                  onShowPathDetails={(pathogen) => {/* Network pathogen details shown */}}
+                  onShowPathDetails={() => {}}
                   className="h-96"
                 />
               </Suspense>
             </div>
           </div>
-          
+
           <div>
             <Suspense fallback={<div className="h-64 bg-gray-100 rounded-lg animate-pulse" />}>
               <PathogenDetailPanel
@@ -417,13 +516,13 @@ const PathogenExplorer = ({
               selectedPathogen={selectedPathogen}
               targetPathogen={selectedTarget}
               onSelectPathogen={handlePathogenSelect}
-              onShowPathDetails={(details) => {/* Connection details shown */}}
-              recentlyViewed={explorationHistory.map(h => h.pathogen.name)}
-              userPreferences={recommendations.userPreferences}
+              onShowPathDetails={() => {}}
+              recentlyViewed={explorationHistory.map((h) => h.pathogen.name)}
+              userPreferences={recommendations?.userPreferences || {}}
               className="h-96"
             />
           </Suspense>
-          
+
           <div>
             <Suspense fallback={<div className="h-64 bg-gray-100 rounded-lg animate-pulse" />}>
               <PathogenDetailPanel
@@ -455,10 +554,10 @@ const PathogenExplorer = ({
               ✕
             </button>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recommendations?.slice(0, 6)?.map((rec, index) => {
-              const pathogen = indexes?.pathogens.find(p => p.name === rec.pathogen);
+            {recommendations?.slice(0, 6)?.map((rec: any, index: number) => {
+              const pathogen = indexes?.pathogens.find((p: Pathogen) => p.name === rec.pathogen);
               if (!pathogen) return null;
 
               return (
@@ -470,7 +569,9 @@ const PathogenExplorer = ({
                   data-animate="fade-in"
                 >
                   <div className="font-medium text-gray-900 mb-1">{pathogen.name}</div>
-                  <div className="text-sm text-gray-600 mb-2">{rec.personalizedReasoning || rec.reasoning}</div>
+                  <div className="text-sm text-gray-600 mb-2">
+                    {rec.personalizedReasoning || rec.reasoning}
+                  </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-blue-600">
                       {(rec.personalizedScore * 100).toFixed(0)}% match
@@ -492,7 +593,6 @@ const PathogenExplorer = ({
           className="mt-6"
         />
       )}
-
     </div>
   );
 };
