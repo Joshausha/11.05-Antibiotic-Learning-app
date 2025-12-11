@@ -4,7 +4,7 @@
  * Enables efficient lookup of conditions by pathogen, antibiotic, drug class, etc.
  */
 
-import { processConditionsData } from './dataParser.js';
+import { processConditionsData } from './dataParser';
 
 /**
  * Build comprehensive indexes from processed condition data
