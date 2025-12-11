@@ -45,7 +45,7 @@ import {
   getGroupBoundaries,
   performanceUtils,
   validationUtils
-} from '../utils/northwesternSpatialAlgorithms.js';
+} from '../utils/northwesternSpatialAlgorithms';
 
 /**
  * View mode configuration for comparison vs exploration views
