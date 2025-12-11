@@ -10,7 +10,7 @@ import {
   ScrollAnimationController,
   useAnimations,
   defaultAnimationController
-} from '../animations.js';
+} from '../animations';
 
 // Mock DOM methods - Agent T3: Enhanced with all required properties
 const createMockElement = () => ({
