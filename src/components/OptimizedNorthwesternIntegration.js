@@ -17,7 +17,7 @@ import { useResponsive } from '../hooks/useResponsive.js';
 import { useErrorHandler } from '../hooks/useErrorHandler.js';
 import useNorthwesternErrorRecovery from '../hooks/useNorthwesternErrorRecovery';
 import NorthwesternPerformanceOptimizer from '../utils/northwesternPerformanceOptimizer.js';
-import ClinicalPerformanceMonitor from '../utils/clinicalPerformanceMonitor.js';
+import ClinicalPerformanceMonitor from '../utils/clinicalPerformanceMonitor';
 import {
   ACCESSIBILITY_CONFIG,
   getLoadingPriority
