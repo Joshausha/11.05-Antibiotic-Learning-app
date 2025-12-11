@@ -35,7 +35,7 @@ import {
   COVERAGE_LEVELS, 
   CLINICAL_SCENARIOS,
   FilterState 
-} from '../utils/northwesternFilterLogic.js';
+} from '../utils/northwesternFilterLogic';
 import { 
   EMERGENCY_SCENARIOS, 
   STANDARD_SCENARIOS,

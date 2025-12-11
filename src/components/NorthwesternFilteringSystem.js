@@ -42,7 +42,7 @@ import {
   exportFilterState,
   importFilterState,
   filterCache
-} from '../utils/northwesternFilterLogic.js';
+} from '../utils/northwesternFilterLogic';
 import { 
   applyClinicalScenario,
   generateClinicalDecisionSupport,

@@ -19,7 +19,7 @@
  * @module clinicalScenarioFilters
  */
 
-import { NORTHWESTERN_CATEGORIES, COVERAGE_LEVELS } from './northwesternFilterLogic.js';
+import { NORTHWESTERN_CATEGORIES, COVERAGE_LEVELS } from './northwesternFilterLogic';
 
 /**
  * Emergency clinical scenarios with <30 second access protocols
