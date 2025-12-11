@@ -29,7 +29,7 @@
 
 import React, { useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { ROUTE_CLASSIFICATIONS, MECHANISM_CLASSIFICATIONS } from '../utils/medicalGroupingLogic.js';
+import { ROUTE_CLASSIFICATIONS, MECHANISM_CLASSIFICATIONS } from '../utils/medicalGroupingLogic';
 
 /**
  * Group Header Component

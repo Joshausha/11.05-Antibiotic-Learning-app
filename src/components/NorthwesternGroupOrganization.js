@@ -39,7 +39,7 @@ import {
   classifyByRoute,
   getMedicalGroupingData,
   validateMedicalAccuracy 
-} from '../utils/medicalGroupingLogic.js';
+} from '../utils/medicalGroupingLogic';
 import GroupVisualElements from './GroupVisualElements.js';
 import '../styles/NorthwesternGroupOrganization.css';
 
