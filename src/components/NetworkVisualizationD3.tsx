@@ -18,58 +18,114 @@
  * - Node size reflects relationship count
  * - Edge width reflects similarity coefficient
  * - Gram stain grouping supports pattern recognition learning
- *
- * @component
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, FC, ReactElement } from 'react';
 import * as d3 from 'd3';
 import { NetworkLayoutEngine } from '../utils/NetworkLayoutEngine';
 import { getPathogenRelationships } from '../data/PathogenRelationshipData';
 import simplePathogens from '../data/SimplePathogenData';
 import '../styles/NetworkVisualizationD3.css';
 
-/**
- * NetworkVisualizationD3 Component
- * Renders interactive pathogen network with D3.js
- *
- * @param {Object} props - Component props
- * @param {string} props.layoutType - Initial layout type ('force', 'hierarchical', 'circular')
- * @param {boolean} props.showMetrics - Display performance metrics (default: true)
- * @param {number} props.width - Canvas width (default: 800)
- * @param {number} props.height - Canvas height (default: 600)
- * @param {function} props.onNodeClick - Callback when a node is clicked (receives node data)
- * @returns {React.ReactElement} Rendered network visualization
- */
-const NetworkVisualizationD3 = ({
+// Types
+interface Pathogen {
+  id: string;
+  name: string;
+  gramStain: string;
+  severity: 'high' | 'medium' | 'low';
+  tier?: string;
+  sector?: string;
+  x?: number;
+  y?: number;
+}
+
+interface Edge {
+  source: string | Pathogen;
+  sourceId?: string;
+  target: string | Pathogen;
+  targetId?: string;
+  similarity?: number;
+  strength?: number;
+  relationshipType: 'strong' | 'medium' | 'weak';
+  sharedAntibiotics?: string[];
+  clinicalRationale?: string;
+  medicalSource?: string;
+}
+
+interface Layout {
+  nodes: Pathogen[];
+  edges: Edge[];
+}
+
+interface PerformanceMetrics {
+  forceDirected?: number;
+  hierarchical?: number;
+  circular?: number;
+  summary?: {
+    averageTime?: number;
+    fastestLayout?: string;
+  };
+}
+
+interface Tooltip {
+  x: number;
+  y: number;
+  content: ReactElement;
+  type: 'node' | 'edge';
+  edge?: Edge;
+  source?: Pathogen;
+  target?: Pathogen;
+}
+
+interface SeverityFilters {
+  [key: string]: boolean;
+}
+
+interface GramStainFilters {
+  [key: string]: boolean;
+}
+
+interface NetworkVisualizationD3Props {
+  layoutType?: 'force' | 'hierarchical' | 'circular';
+  showMetrics?: boolean;
+  width?: number;
+  height?: number;
+  onNodeClick?: (node: Pathogen) => void;
+}
+
+const NetworkVisualizationD3: FC<NetworkVisualizationD3Props> = ({
   layoutType = 'force',
   showMetrics = true,
   width = 800,
   height = 600,
-  onNodeClick = null
+  onNodeClick = null,
 }) => {
-  const svgRef = useRef(null);
-  const [currentLayout, setCurrentLayout] = useState(layoutType);
-  const [layout, setLayout] = useState(null);
-  const [selectedNode, setSelectedNode] = useState(null);
-  const [hoveredNode, setHoveredNode] = useState(null);
-  const [metrics, setMetrics] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [similarityThreshold, setSimilarityThreshold] = useState(0.3);
-  const [severityFilters, setSeverityFilters] = useState({
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [currentLayout, setCurrentLayout] = useState<'force' | 'hierarchical' | 'circular'>(layoutType);
+  const [layout, setLayout] = useState<Layout | null>(null);
+  const [selectedNode, setSelectedNode] = useState<Pathogen | null>(null);
+  const [hoveredNode, setHoveredNode] = useState<Pathogen | null>(null);
+  const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [similarityThreshold, setSimilarityThreshold] = useState<number>(0.3);
+  const [severityFilters, setSeverityFilters] = useState<SeverityFilters>({
     high: true,
     medium: true,
-    low: true
+    low: true,
   });
-  const [gramStainFilters, setGramStainFilters] = useState({
+  const [gramStainFilters, setGramStainFilters] = useState<GramStainFilters>({
     'Gram+': true,
     'Gram-': true,
     'Atypical': true,
-    'Other': true
+    'Other': true,
   });
-  const [tooltip, setTooltip] = useState(null);
-  const [expandedTooltip, setExpandedTooltip] = useState(null);
-  const engineRef = useRef(null);
+  const [tooltip, setTooltip] = useState<Tooltip | null>(null);
+  const [expandedTooltip, setExpandedTooltip] = useState<{
+    edge: Edge;
+    source?: Pathogen;
+    target?: Pathogen;
+  } | null>(null);
+  const engineRef = useRef<any>(null);
 
   /**
    * Initialize layout engine and compute initial layout
@@ -84,12 +140,11 @@ const NetworkVisualizationD3 = ({
 
   /**
    * Compute layout using specified algorithm
-   * @param {string} type - Layout type ('force', 'hierarchical', 'circular')
    */
-  const computeLayout = (type) => {
+  const computeLayout = (type: 'force' | 'hierarchical' | 'circular'): void => {
     if (!engineRef.current) return;
 
-    let newLayout;
+    let newLayout: Layout;
     switch (type) {
       case 'hierarchical':
         newLayout = engineRef.current.hierarchicalLayout();
@@ -100,7 +155,7 @@ const NetworkVisualizationD3 = ({
       case 'force':
       default:
         newLayout = engineRef.current.forceDirectedLayout({
-          iterations: 300
+          iterations: 300,
         });
         break;
     }
@@ -115,7 +170,7 @@ const NetworkVisualizationD3 = ({
   /**
    * Handle layout type change
    */
-  const handleLayoutChange = (newType) => {
+  const handleLayoutChange = (newType: 'force' | 'hierarchical' | 'circular'): void => {
     if (newType !== currentLayout) {
       computeLayout(newType);
     }
@@ -124,39 +179,50 @@ const NetworkVisualizationD3 = ({
   /**
    * Handle severity filter change
    */
-  const handleSeverityFilterChange = (severity) => {
-    setSeverityFilters(prev => ({
+  const handleSeverityFilterChange = (severity: string): void => {
+    setSeverityFilters((prev) => ({
       ...prev,
-      [severity]: !prev[severity]
+      [severity]: !prev[severity],
     }));
   };
 
   /**
    * Handle Gram stain filter change
    */
-  const handleGramStainFilterChange = (gramStain) => {
-    setGramStainFilters(prev => ({
+  const handleGramStainFilterChange = (gramStain: string): void => {
+    setGramStainFilters((prev) => ({
       ...prev,
-      [gramStain]: !prev[gramStain]
+      [gramStain]: !prev[gramStain],
     }));
   };
 
   /**
    * Reset all filters to default state
    */
-  const resetFilters = () => {
+  const resetFilters = (): void => {
     setSeverityFilters({ high: true, medium: true, low: true });
-    setGramStainFilters({ 'Gram+': true, 'Gram-': true, 'Atypical': true, 'Other': true });
+    setGramStainFilters({
+      'Gram+': true,
+      'Gram-': true,
+      'Atypical': true,
+      'Other': true,
+    });
     setSimilarityThreshold(0.3);
   };
 
   /**
    * Show node hover tooltip
    */
-  const showNodeTooltip = (event, node, layout, filteredEdges) => {
-    const degree = filteredEdges.filter(e =>
-      (e.source === node.id || e.sourceId === node.id) ||
-      (e.target === node.id || e.targetId === node.id)
+  const showNodeTooltip = (
+    event: React.MouseEvent,
+    node: Pathogen,
+    layout: Layout,
+    filteredEdges: Edge[]
+  ): void => {
+    const degree = filteredEdges.filter(
+      (e) =>
+        (e.source === node.id || e.sourceId === node.id) ||
+        (e.target === node.id || e.targetId === node.id)
     ).length;
 
     setTooltip({
@@ -170,17 +236,17 @@ const NetworkVisualizationD3 = ({
           <p>Relationships: {degree}</p>
         </div>
       ),
-      type: 'node'
+      type: 'node',
     });
   };
 
   /**
    * Show edge hover tooltip
    */
-  const showEdgeTooltip = (event, edge, layout) => {
-    const source = layout.nodes.find(n => n.id === (edge.source || edge.sourceId));
-    const target = layout.nodes.find(n => n.id === (edge.target || edge.targetId));
-    const similarity = (edge.similarity || edge.strength || 0).toFixed(2);
+  const showEdgeTooltip = (event: React.MouseEvent, edge: Edge, layout: Layout): void => {
+    const source = layout.nodes.find((n) => n.id === (edge.source || edge.sourceId));
+    const target = layout.nodes.find((n) => n.id === (edge.target || edge.targetId));
+    const similarity = ((edge.similarity || edge.strength || 0) as number).toFixed(2);
     const sharedCount = (edge.sharedAntibiotics || []).length;
 
     setTooltip({
@@ -188,7 +254,9 @@ const NetworkVisualizationD3 = ({
       y: event.pageY + 10,
       content: (
         <div className="tooltip-content">
-          <strong>{source?.name} ↔ {target?.name}</strong>
+          <strong>
+            {source?.name} ↔ {target?.name}
+          </strong>
           <p>Similarity: {similarity}</p>
           <p>Type: {edge.relationshipType}</p>
           <p>Shared Antibiotics: {sharedCount}</p>
@@ -201,14 +269,14 @@ const NetworkVisualizationD3 = ({
       type: 'edge',
       edge: edge,
       source: source,
-      target: target
+      target: target,
     });
   };
 
   /**
    * Hide tooltip
    */
-  const hideTooltip = () => {
+  const hideTooltip = (): void => {
     setTooltip(null);
   };
 
@@ -225,118 +293,130 @@ const NetworkVisualizationD3 = ({
     const g = svg.append('g');
 
     // Add zoom behavior
-    const zoom = d3.zoom().on('zoom', (event) => {
+    const zoom = d3.zoom<SVGSVGElement, unknown>().on('zoom', (event: any) => {
       g.attr('transform', event.transform);
     });
     svg.call(zoom);
 
     // Filter nodes based on severity and Gram stain
-    const filteredNodes = layout.nodes.filter(node => {
+    const filteredNodes = layout.nodes.filter((node) => {
       if (!severityFilters[node.severity]) return false;
       if (!gramStainFilters[node.gramStain]) return false;
       return true;
     });
 
     // Get visible node IDs for edge filtering
-    const visibleNodeIds = filteredNodes.map(n => n.id);
+    const visibleNodeIds = filteredNodes.map((n) => n.id);
 
     // Filter edges based on similarity threshold and visible nodes
-    const filteredEdges = layout.edges.filter(edge => {
-      if ((edge.similarity || edge.strength || 0) < similarityThreshold) return false;
-      const sourceId = edge.source || edge.sourceId;
-      const targetId = edge.target || edge.targetId;
-      return visibleNodeIds.includes(sourceId) && visibleNodeIds.includes(targetId);
+    const filteredEdges = layout.edges.filter((edge) => {
+      if (((edge.similarity || edge.strength || 0) as number) < similarityThreshold)
+        return false;
+      const sourceId = (edge.source as string) || edge.sourceId;
+      const targetId = (edge.target as string) || edge.targetId;
+      return visibleNodeIds.includes(sourceId as string) && visibleNodeIds.includes(targetId as string);
     });
 
     // Draw edges (links)
-    const links = g.selectAll('.link')
+    g.selectAll('.link')
       .data(filteredEdges)
       .enter()
       .append('line')
       .attr('class', 'network-link')
-      .attr('x1', d => {
-        const source = layout.nodes.find(n => n.id === d.source || n.id === d.sourceId);
+      .attr('x1', (d) => {
+        const source = layout.nodes.find(
+          (n) => n.id === (d.source as string) || n.id === d.sourceId
+        );
         return source?.x || 0;
       })
-      .attr('y1', d => {
-        const source = layout.nodes.find(n => n.id === d.source || n.id === d.sourceId);
+      .attr('y1', (d) => {
+        const source = layout.nodes.find(
+          (n) => n.id === (d.source as string) || n.id === d.sourceId
+        );
         return source?.y || 0;
       })
-      .attr('x2', d => {
-        const target = layout.nodes.find(n => n.id === d.target || n.id === d.targetId);
+      .attr('x2', (d) => {
+        const target = layout.nodes.find(
+          (n) => n.id === (d.target as string) || n.id === d.targetId
+        );
         return target?.x || 0;
       })
-      .attr('y2', d => {
-        const target = layout.nodes.find(n => n.id === d.target || n.id === d.targetId);
+      .attr('y2', (d) => {
+        const target = layout.nodes.find(
+          (n) => n.id === (d.target as string) || n.id === d.targetId
+        );
         return target?.y || 0;
       })
-      .attr('stroke-width', d => {
-        const similarity = d.similarity || d.strength || 0.5;
+      .attr('stroke-width', (d) => {
+        const similarity = (d.similarity || d.strength || 0.5) as number;
         return 1 + similarity * 3;
       })
-      .attr('stroke', d => {
+      .attr('stroke', (d) => {
         if (d.relationshipType === 'strong') return '#c41e3a';
         if (d.relationshipType === 'medium') return '#f39c12';
         return '#95a5a6';
       })
       .attr('opacity', 0.6)
       .style('cursor', 'pointer')
-      .on('mouseenter', (event, d) => {
+      .on('mouseenter', (event: any, d: Edge) => {
         showEdgeTooltip(event, d, layout);
-        d3.select(event.currentTarget)
-          .attr('stroke-width', w => w + 2)
-          .attr('opacity', 0.9);
+        d3.select(event.currentTarget).attr('stroke-width', (w: any) => w + 2).attr('opacity', 0.9);
       })
-      .on('mouseleave', (event, d) => {
+      .on('mouseleave', (event: any, d: Edge) => {
         hideTooltip();
         d3.select(event.currentTarget)
-          .attr('stroke-width', d => {
-            const similarity = d.similarity || d.strength || 0.5;
+          .attr('stroke-width', (d: Edge) => {
+            const similarity = (d.similarity || d.strength || 0.5) as number;
             return 1 + similarity * 3;
           })
           .attr('opacity', 0.6);
       })
-      .on('click', (event, d) => {
+      .on('click', (event: any, d: Edge) => {
         event.stopPropagation();
-        const source = layout.nodes.find(n => n.id === (d.source || d.sourceId));
-        const target = layout.nodes.find(n => n.id === (d.target || d.targetId));
+        const source = layout.nodes.find(
+          (n) => n.id === ((d.source as string) || d.sourceId)
+        );
+        const target = layout.nodes.find(
+          (n) => n.id === ((d.target as string) || d.targetId)
+        );
         setExpandedTooltip({
           edge: d,
           source: source,
-          target: target
+          target: target,
         });
       });
 
     // Draw nodes
-    const nodes = g.selectAll('.node')
+    g.selectAll('.node')
       .data(filteredNodes)
       .enter()
       .append('circle')
       .attr('class', 'network-node')
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y)
-      .attr('r', d => {
+      .attr('cx', (d) => d.x || 0)
+      .attr('cy', (d) => d.y || 0)
+      .attr('r', (d) => {
         // Size based on degree (relationship count in filtered edges)
-        const degree = filteredEdges.filter(e =>
-          (e.source === d.id || e.sourceId === d.id) ||
-          (e.target === d.id || e.targetId === d.id)
+        const degree = filteredEdges.filter(
+          (e) =>
+            (e.source === d.id || e.sourceId === d.id) ||
+            (e.target === d.id || e.targetId === d.id)
         ).length;
-        return 8 + (degree * 0.5);
+        return 8 + degree * 0.5;
       })
-      .attr('fill', d => {
+      .attr('fill', (d) => {
         if (selectedNode?.id === d.id) return '#2c3e50';
         if (hoveredNode?.id === d.id) return '#3498db';
         if (d.severity === 'high') return '#e74c3c';
         if (d.severity === 'medium') return '#f39c12';
         return '#27ae60';
       })
-      .attr('stroke', d => {
+      .attr('stroke', (d) => {
         if (selectedNode?.id === d.id) return '#2980b9';
         return '#34495e';
       })
-      .attr('stroke-width', d => selectedNode?.id === d.id ? 3 : 1.5)
+      .attr('stroke-width', (d) => (selectedNode?.id === d.id ? 3 : 1.5))
       .style('cursor', 'pointer')
-      .on('click', (event, d) => {
+      .on('click', (event: any, d: Pathogen) => {
         event.stopPropagation();
         setSelectedNode(d);
         // Call onNodeClick callback if provided (for ClinicalDecisionTree integration)
@@ -344,42 +424,43 @@ const NetworkVisualizationD3 = ({
           onNodeClick(d);
         }
       })
-      .on('mouseenter', (event, d) => {
+      .on('mouseenter', (event: any, d: Pathogen) => {
         setHoveredNode(d);
         showNodeTooltip(event, d, layout, filteredEdges);
         d3.select(event.currentTarget)
           .transition()
           .duration(100)
-          .attr('r', current => current + 3);
+          .attr('r', (current: any) => current + 3);
       })
-      .on('mouseleave', (event, d) => {
+      .on('mouseleave', (event: any, d: Pathogen) => {
         setHoveredNode(null);
         hideTooltip();
         d3.select(event.currentTarget)
           .transition()
           .duration(100)
-          .attr('r', current => {
-            const degree = filteredEdges.filter(e =>
-              (e.source === d.id || e.sourceId === d.id) ||
-              (e.target === d.id || e.targetId === d.id)
+          .attr('r', (current: any) => {
+            const degree = filteredEdges.filter(
+              (e) =>
+                (e.source === d.id || e.sourceId === d.id) ||
+                (e.target === d.id || e.targetId === d.id)
             ).length;
-            return 8 + (degree * 0.5);
+            return 8 + degree * 0.5;
           });
       });
 
     // Add node labels
-    const labels = g.selectAll('.node-label')
+    g.selectAll('.node-label')
       .data(filteredNodes)
       .enter()
       .append('text')
       .attr('class', 'node-label')
-      .attr('x', d => d.x)
-      .attr('y', d => d.y + 4)
+      .attr('x', (d) => d.x || 0)
+      .attr('y', (d) => (d.y || 0) + 4)
       .attr('text-anchor', 'middle')
       .attr('font-size', '9px')
       .attr('fill', '#2c3e50')
       .attr('pointer-events', 'none')
-      .text(d => d.name.substring(0, 10))
+      .text((d) => d.name.substring(0, 10))
       .attr('opacity', 0.8);
 
     // Click to deselect
@@ -387,18 +468,30 @@ const NetworkVisualizationD3 = ({
       setSelectedNode(null);
       hideTooltip();
     });
-
-  }, [layout, selectedNode, hoveredNode, similarityThreshold, severityFilters, gramStainFilters, tooltip, onNodeClick]);
+  }, [
+    layout,
+    selectedNode,
+    hoveredNode,
+    similarityThreshold,
+    severityFilters,
+    gramStainFilters,
+    tooltip,
+    onNodeClick,
+  ]);
 
   /**
    * Get severity color for consistency
    */
-  const getSeverityColor = (severity) => {
+  const getSeverityColor = (severity: string): string => {
     switch (severity) {
-      case 'high': return '#e74c3c';
-      case 'medium': return '#f39c12';
-      case 'low': return '#27ae60';
-      default: return '#95a5a6';
+      case 'high':
+        return '#e74c3c';
+      case 'medium':
+        return '#f39c12';
+      case 'low':
+        return '#27ae60';
+      default:
+        return '#95a5a6';
     }
   };
 
@@ -438,7 +531,8 @@ const NetworkVisualizationD3 = ({
         {/* Similarity Threshold Slider */}
         <div className="similarity-filter">
           <label htmlFor="threshold-slider">
-            Similarity Threshold: <span className="threshold-value">{similarityThreshold.toFixed(2)}</span>
+            Similarity Threshold:{' '}
+            <span className="threshold-value">{similarityThreshold.toFixed(2)}</span>
           </label>
           <input
             id="threshold-slider"
@@ -500,7 +594,7 @@ const NetworkVisualizationD3 = ({
           <div className="filter-section">
             <h4>Filter by Gram Stain</h4>
             <div className="filter-checkboxes">
-              {['Gram+', 'Gram-', 'Atypical', 'Other'].map(gramStain => (
+              {['Gram+', 'Gram-', 'Atypical', 'Other'].map((gramStain) => (
                 <label key={gramStain}>
                   <input
                     type="checkbox"
@@ -537,29 +631,35 @@ const NetworkVisualizationD3 = ({
       </div>
 
       {/* SVG Canvas */}
-      <svg
-        ref={svgRef}
-        className="network-svg"
-        width={width}
-        height={height}
-      />
+      <svg ref={svgRef} className="network-svg" width={width} height={height} />
 
       {/* Selected Node Info Panel */}
       {selectedNode && (
         <div className="node-info-panel">
-          <button
-            className="close-btn"
-            onClick={() => setSelectedNode(null)}
-          >
+          <button className="close-btn" onClick={() => setSelectedNode(null)}>
             ✕
           </button>
           <h3>{selectedNode.name}</h3>
           <div className="node-details">
-            <p><strong>ID:</strong> {selectedNode.id}</p>
-            <p><strong>Gram Stain:</strong> {selectedNode.gramStain}</p>
-            <p><strong>Severity:</strong> {selectedNode.severity}</p>
-            {selectedNode.tier && <p><strong>Tier:</strong> {selectedNode.tier}</p>}
-            {selectedNode.sector && <p><strong>Sector:</strong> {selectedNode.sector}</p>}
+            <p>
+              <strong>ID:</strong> {selectedNode.id}
+            </p>
+            <p>
+              <strong>Gram Stain:</strong> {selectedNode.gramStain}
+            </p>
+            <p>
+              <strong>Severity:</strong> {selectedNode.severity}
+            </p>
+            {selectedNode.tier && (
+              <p>
+                <strong>Tier:</strong> {selectedNode.tier}
+              </p>
+            )}
+            {selectedNode.sector && (
+              <p>
+                <strong>Sector:</strong> {selectedNode.sector}
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -569,17 +669,13 @@ const NetworkVisualizationD3 = ({
         <div className="metrics-panel">
           <h4>Performance Metrics</h4>
           <div className="metrics-content">
-            <p>Force-Directed: {metrics.forceDirected?.toFixed(1)}ms</p>
-            <p>Hierarchical: {metrics.hierarchical?.toFixed(1)}ms</p>
-            <p>Circular: {metrics.circular?.toFixed(1)}ms</p>
+            <p>Force-Directed: {(metrics.forceDirected || 0).toFixed(1)}ms</p>
+            <p>Hierarchical: {(metrics.hierarchical || 0).toFixed(1)}ms</p>
+            <p>Circular: {(metrics.circular || 0).toFixed(1)}ms</p>
             {metrics.summary && (
               <>
-                <p className="metric-average">
-                  Avg: {metrics.summary.averageTime?.toFixed(1)}ms
-                </p>
-                <p className="metric-fastest">
-                  Fastest: {metrics.summary.fastestLayout}
-                </p>
+                <p className="metric-average">Avg: {(metrics.summary.averageTime || 0).toFixed(1)}ms</p>
+                <p className="metric-fastest">Fastest: {metrics.summary.fastestLayout}</p>
               </>
             )}
           </div>
@@ -592,7 +688,7 @@ const NetworkVisualizationD3 = ({
           className="network-tooltip"
           style={{
             left: `${tooltip.x}px`,
-            top: `${tooltip.y}px`
+            top: `${tooltip.y}px`,
           }}
         >
           {tooltip.content}
@@ -602,19 +698,30 @@ const NetworkVisualizationD3 = ({
       {/* Expanded Tooltip Panel */}
       {expandedTooltip && (
         <div className="expanded-tooltip-panel">
-          <button
-            className="close-btn"
-            onClick={() => setExpandedTooltip(null)}
-          >
+          <button className="close-btn" onClick={() => setExpandedTooltip(null)}>
             ✕
           </button>
           <h3>Pathogen Relationship Details</h3>
           <div className="expanded-tooltip-content">
-            <p><strong>Source:</strong> {expandedTooltip.source?.name}</p>
-            <p><strong>Target:</strong> {expandedTooltip.target?.name}</p>
-            <p><strong>Similarity Coefficient:</strong> {(expandedTooltip.edge.similarity || expandedTooltip.edge.strength || 0).toFixed(3)}</p>
-            <p><strong>Relationship Type:</strong> {expandedTooltip.edge.relationshipType}</p>
-            <p><strong>Shared Antibiotics:</strong> {(expandedTooltip.edge.sharedAntibiotics || []).join(', ') || 'None'}</p>
+            <p>
+              <strong>Source:</strong> {expandedTooltip.source?.name}
+            </p>
+            <p>
+              <strong>Target:</strong> {expandedTooltip.target?.name}
+            </p>
+            <p>
+              <strong>Similarity Coefficient:</strong>{' '}
+              {((expandedTooltip.edge.similarity ||
+                expandedTooltip.edge.strength ||
+                0) as number).toFixed(3)}
+            </p>
+            <p>
+              <strong>Relationship Type:</strong> {expandedTooltip.edge.relationshipType}
+            </p>
+            <p>
+              <strong>Shared Antibiotics:</strong>{' '}
+              {(expandedTooltip.edge.sharedAntibiotics || []).join(', ') || 'None'}
+            </p>
             {expandedTooltip.edge.clinicalRationale && (
               <>
                 <h4>Clinical Rationale</h4>

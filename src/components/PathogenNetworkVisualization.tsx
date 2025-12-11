@@ -1,17 +1,17 @@
 /**
  * PathogenNetworkVisualization Component
  * Interactive network visualization showing pathogen relationships
- * Refactored in Phase 4 to use extracted modules
+ * Refactored to use extracted modules with TypeScript support
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, FC } from 'react';
 import { Network, AlertTriangle, Zap } from 'lucide-react';
 import simplePathogens from '../data/SimplePathogenData';
 import {
   getPathogenResistanceInfo,
   filterNodes,
   filterEdges,
-  DEFAULT_FILTERS
+  DEFAULT_FILTERS,
 } from '../utils/networkFilterUtils';
 import {
   getNodeStyle,
@@ -20,41 +20,105 @@ import {
   EDGE_STROKE_COLORS,
   EDGE_STROKE_WIDTHS,
   shouldShowResistanceWarning,
-  shouldShowSeverityIndicator
+  shouldShowSeverityIndicator,
 } from '../utils/networkNodeStyles';
 import NetworkFilterControls from './network/NetworkFilterControls';
 import NetworkLegend from './network/NetworkLegend';
 import PathogenInfoPanel from './network/PathogenInfoPanel';
 
-const PathogenNetworkVisualization = ({
+// Types
+interface Pathogen {
+  id: string;
+  commonName: string;
+  name: string;
+  gramStatus: 'positive' | 'negative' | 'other';
+  shape: 'circle' | 'rectangle';
+  severity: 'high' | 'medium' | 'low';
+  resistance?: string;
+  commonSites?: string[];
+  description?: string;
+  pathogenId?: string | number;
+  connections?: number;
+  centralityScore?: number;
+  resistanceInfo?: {
+    resistancePercentage: number;
+    highEffective: number;
+  };
+}
+
+interface NetworkEdge {
+  source: string;
+  target: string;
+  weight: number;
+  type: 'strong' | 'medium' | 'weak';
+}
+
+interface NetworkData {
+  nodes: Pathogen[];
+  edges: NetworkEdge[];
+}
+
+interface NodePosition {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  fx?: number;
+  fy?: number;
+}
+
+interface NodeStyle {
+  fill: string;
+  stroke: string;
+  strokeWidth: number;
+  opacity: number;
+  filter?: string;
+}
+
+interface Filters {
+  [key: string]: any;
+}
+
+interface PathogenNetworkVisualizationProps {
+  network?: NetworkData;
+  selectedPathogen?: Pathogen | null;
+  onSelectPathogen?: (pathogen: Pathogen) => void;
+  onShowPathDetails?: (pathogen: Pathogen) => void;
+  className?: string;
+}
+
+const PathogenNetworkVisualization: FC<PathogenNetworkVisualizationProps> = ({
   network,
   selectedPathogen,
   onSelectPathogen,
   onShowPathDetails,
-  className = ''
+  className = '',
 }) => {
-  const svgRef = useRef(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [hoveredNode, setHoveredNode] = useState(null);
-  const [showLabels, setShowLabels] = useState(true);
-  const [nodePositions, setNodePositions] = useState({});
-  const [isLayoutStable, setIsLayoutStable] = useState(false);
-  const animationRef = useRef(null);
-  const layoutIterations = useRef(0);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [dimensions, setDimensions] = useState<{ width: number; height: number }>({
+    width: 800,
+    height: 600,
+  });
+  const [hoveredNode, setHoveredNode] = useState<Pathogen | null>(null);
+  const [showLabels, setShowLabels] = useState<boolean>(true);
+  const [nodePositions, setNodePositions] = useState<Record<string, NodePosition>>({});
+  const [isLayoutStable, setIsLayoutStable] = useState<boolean>(false);
+  const animationRef = useRef<number>();
+  const layoutIterations = useRef<number>(0);
 
   // Filter states
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  const [selectedNodeDetails, setSelectedNodeDetails] = useState(null);
-  const [showInfoPanel, setShowInfoPanel] = useState(false);
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const [selectedNodeDetails, setSelectedNodeDetails] = useState<Pathogen | null>(null);
+  const [showInfoPanel, setShowInfoPanel] = useState<boolean>(false);
 
   // Handle window resize
   useEffect(() => {
-    const handleResize = () => {
+    const handleResize = (): void => {
       if (svgRef.current) {
         const rect = svgRef.current.getBoundingClientRect();
         setDimensions({
           width: Math.max(600, rect?.width || 800),
-          height: Math.max(400, rect?.height || 600)
+          height: Math.max(400, rect?.height || 600),
         });
       }
     };
@@ -66,9 +130,11 @@ const PathogenNetworkVisualization = ({
   }, []);
 
   // Enhanced network data with real pathogen information
-  const allNetworkData = network || {
-    nodes: (simplePathogens || []).map(pathogen => ({
+  const allNetworkData: NetworkData = network || {
+    nodes: (simplePathogens || []).map((pathogen: any) => ({
       id: pathogen.commonName,
+      commonName: pathogen.commonName,
+      name: pathogen.name,
       pathogenId: pathogen.id,
       gramStatus: pathogen.gramStatus,
       shape: pathogen.shape,
@@ -78,36 +144,40 @@ const PathogenNetworkVisualization = ({
       description: pathogen.description,
       connections: 5,
       centralityScore: 0.8,
-      resistanceInfo: getPathogenResistanceInfo(pathogen.id)
+      resistanceInfo: getPathogenResistanceInfo(pathogen.id),
     })),
     edges: [
       { source: 'Staph aureus', target: 'Pneumococcus', weight: 0.7, type: 'strong' },
       { source: 'E. coli', target: 'Pseudomonas', weight: 0.6, type: 'medium' },
       { source: 'Staph aureus', target: 'E. coli', weight: 0.3, type: 'weak' },
       { source: 'Group A Strep', target: 'Pneumococcus', weight: 0.8, type: 'strong' },
-      { source: 'Klebsiella', target: 'E. coli', weight: 0.5, type: 'medium' }
-    ]
+      { source: 'Klebsiella', target: 'E. coli', weight: 0.5, type: 'medium' },
+    ],
   };
 
   // Create filtered network data
   const filteredNodes = filterNodes(allNetworkData.nodes, filters);
-  const networkData = {
+  const networkData: NetworkData = {
     nodes: filteredNodes,
-    edges: filterEdges(allNetworkData.edges, filteredNodes, filters.connectionFilter)
+    edges: filterEdges(
+      allNetworkData.edges,
+      filteredNodes,
+      filters.connectionFilter
+    ),
   };
 
   // Handle filter changes
-  const handleFilterChange = useCallback((filterName, value) => {
-    setFilters(prev => ({ ...prev, [filterName]: value }));
+  const handleFilterChange = useCallback((filterName: string, value: any): void => {
+    setFilters((prev) => ({ ...prev, [filterName]: value }));
   }, []);
 
-  const clearAllFilters = useCallback(() => {
+  const clearAllFilters = useCallback((): void => {
     setFilters(DEFAULT_FILTERS);
   }, []);
 
   // Initialize node positions randomly
-  const initializeNodePositions = useCallback(() => {
-    const positions = {};
+  const initializeNodePositions = useCallback((): Record<string, NodePosition> => {
+    const positions: Record<string, NodePosition> = {};
     const centerX = dimensions.width / 2;
     const centerY = dimensions.height / 2;
     const maxRadius = Math.min(dimensions.width, dimensions.height) * 0.2;
@@ -120,7 +190,7 @@ const PathogenNetworkVisualization = ({
         x: centerX + radius * Math.cos(angle),
         y: centerY + radius * Math.sin(angle),
         vx: 0,
-        vy: 0
+        vy: 0,
       };
     });
 
@@ -128,108 +198,111 @@ const PathogenNetworkVisualization = ({
   }, [dimensions, networkData.nodes]);
 
   // Force-directed layout simulation
-  const simulateForces = useCallback((positions) => {
-    const newPositions = { ...positions };
-    const nodes = networkData.nodes;
-    const edges = networkData.edges;
+  const simulateForces = useCallback(
+    (positions: Record<string, NodePosition>): { newPositions: Record<string, NodePosition>; totalMovement: number } => {
+      const newPositions = { ...positions };
+      const nodes = networkData.nodes;
+      const edges = networkData.edges;
 
-    // Physics parameters
-    const repulsionStrength = 1000;
-    const attractionStrength = 0.1;
-    const centeringStrength = 0.02;
-    const damping = 0.8;
-    const minDistance = 50;
+      // Physics parameters
+      const repulsionStrength = 1000;
+      const attractionStrength = 0.1;
+      const centeringStrength = 0.02;
+      const damping = 0.8;
+      const minDistance = 50;
 
-    // Clear forces
-    Object.keys(newPositions).forEach(nodeId => {
-      newPositions[nodeId].fx = 0;
-      newPositions[nodeId].fy = 0;
-    });
+      // Clear forces
+      Object.keys(newPositions).forEach((nodeId) => {
+        newPositions[nodeId].fx = 0;
+        newPositions[nodeId].fy = 0;
+      });
 
-    // Repulsion forces
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const nodeA = nodes[i];
-        const nodeB = nodes[j];
-        const posA = newPositions[nodeA.id];
-        const posB = newPositions[nodeB.id];
+      // Repulsion forces
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const nodeA = nodes[i];
+          const nodeB = nodes[j];
+          const posA = newPositions[nodeA.id];
+          const posB = newPositions[nodeB.id];
 
-        if (!posA || !posB) continue;
+          if (!posA || !posB) continue;
 
-        const dx = posA.x - posB.x;
-        const dy = posA.y - posB.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+          const dx = posA.x - posB.x;
+          const dy = posA.y - posB.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance > 0 && distance < 150) {
-          const force = repulsionStrength / (distance * distance);
-          const fx = (dx / distance) * force;
-          const fy = (dy / distance) * force;
+          if (distance > 0 && distance < 150) {
+            const force = repulsionStrength / (distance * distance);
+            const fx = (dx / distance) * force;
+            const fy = (dy / distance) * force;
 
-          posA.fx += fx;
-          posA.fy += fy;
-          posB.fx -= fx;
-          posB.fy -= fy;
+            posA.fx! += fx;
+            posA.fy! += fy;
+            posB.fx! -= fx;
+            posB.fy! -= fy;
+          }
         }
       }
-    }
 
-    // Attraction forces
-    edges.forEach(edge => {
-      const posA = newPositions[edge.source];
-      const posB = newPositions[edge.target];
+      // Attraction forces
+      edges.forEach((edge) => {
+        const posA = newPositions[edge.source];
+        const posB = newPositions[edge.target];
 
-      if (posA && posB) {
-        const dx = posB.x - posA.x;
-        const dy = posB.y - posA.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (posA && posB) {
+          const dx = posB.x - posA.x;
+          const dy = posB.y - posA.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance > minDistance) {
-          const force = attractionStrength * (distance - minDistance);
-          const fx = (dx / distance) * force;
-          const fy = (dy / distance) * force;
+          if (distance > minDistance) {
+            const force = attractionStrength * (distance - minDistance);
+            const fx = (dx / distance) * force;
+            const fy = (dy / distance) * force;
 
-          posA.fx += fx;
-          posA.fy += fy;
-          posB.fx -= fx;
-          posB.fy -= fy;
+            posA.fx! += fx;
+            posA.fy! += fy;
+            posB.fx! -= fx;
+            posB.fy! -= fy;
+          }
         }
-      }
-    });
+      });
 
-    // Centering force
-    const centerX = dimensions.width / 2;
-    const centerY = dimensions.height / 2;
+      // Centering force
+      const centerX = dimensions.width / 2;
+      const centerY = dimensions.height / 2;
 
-    Object.keys(newPositions).forEach(nodeId => {
-      const pos = newPositions[nodeId];
-      pos.fx += (centerX - pos.x) * centeringStrength;
-      pos.fy += (centerY - pos.y) * centeringStrength;
-    });
+      Object.keys(newPositions).forEach((nodeId) => {
+        const pos = newPositions[nodeId];
+        pos.fx! += (centerX - pos.x) * centeringStrength;
+        pos.fy! += (centerY - pos.y) * centeringStrength;
+      });
 
-    // Apply forces and update positions
-    let totalMovement = 0;
-    Object.keys(newPositions).forEach(nodeId => {
-      const pos = newPositions[nodeId];
-      pos.vx = (pos.vx + pos.fx) * damping;
-      pos.vy = (pos.vy + pos.fy) * damping;
-      pos.x += pos.vx;
-      pos.y += pos.vy;
+      // Apply forces and update positions
+      let totalMovement = 0;
+      Object.keys(newPositions).forEach((nodeId) => {
+        const pos = newPositions[nodeId];
+        pos.vx = (pos.vx + pos.fx!) * damping;
+        pos.vy = (pos.vy + pos.fy!) * damping;
+        pos.x += pos.vx;
+        pos.y += pos.vy;
 
-      // Keep within bounds
-      const margin = 50;
-      pos.x = Math.max(margin, Math.min(dimensions.width - margin, pos.x));
-      pos.y = Math.max(margin, Math.min(dimensions.height - margin, pos.y));
+        // Keep within bounds
+        const margin = 50;
+        pos.x = Math.max(margin, Math.min(dimensions.width - margin, pos.x));
+        pos.y = Math.max(margin, Math.min(dimensions.height - margin, pos.y));
 
-      totalMovement += Math.abs(pos.vx) + Math.abs(pos.vy);
-    });
+        totalMovement += Math.abs(pos.vx) + Math.abs(pos.vy);
+      });
 
-    return { newPositions, totalMovement };
-  }, [dimensions, networkData.nodes, networkData.edges]);
+      return { newPositions, totalMovement };
+    },
+    [dimensions, networkData.nodes, networkData.edges]
+  );
 
   // Animation loop for force-directed layout
   useEffect(() => {
     if (!isLayoutStable && Object.keys(nodePositions).length > 0) {
-      const animate = () => {
+      const animate = (): void => {
         const { newPositions, totalMovement } = simulateForces(nodePositions);
         setNodePositions(newPositions);
 
@@ -259,31 +332,31 @@ const PathogenNetworkVisualization = ({
       setIsLayoutStable(false);
       layoutIterations.current = 0;
     }
-  }, [dimensions.width, dimensions.height, networkData.nodes.length]);
+  }, [dimensions.width, dimensions.height, networkData.nodes.length, initializeNodePositions]);
 
   // Get node position
-  const getNodePosition = (nodeId) => {
+  const getNodePosition = (nodeId: string): NodePosition | { x: number; y: number } => {
     return nodePositions[nodeId] || { x: dimensions.width / 2, y: dimensions.height / 2 };
   };
 
   // Handle node click
-  const handleNodeClick = (node) => {
+  const handleNodeClick = (node: Pathogen): void => {
     setSelectedNodeDetails(node);
     setShowInfoPanel(true);
     if (onSelectPathogen) onSelectPathogen(node);
   };
 
   // Handle node hover
-  const handleNodeMouseEnter = (node) => {
+  const handleNodeMouseEnter = (node: Pathogen): void => {
     setHoveredNode(node);
   };
 
-  const handleNodeMouseLeave = () => {
+  const handleNodeMouseLeave = (): void => {
     setHoveredNode(null);
   };
 
   // Reset layout
-  const handleResetLayout = useCallback(() => {
+  const handleResetLayout = useCallback((): void => {
     setNodePositions(initializeNodePositions());
     setIsLayoutStable(false);
     layoutIterations.current = 0;
@@ -298,7 +371,8 @@ const PathogenNetworkVisualization = ({
             <Network className="text-blue-600" size={20} />
             <h3 className="text-lg font-semibold">Pathogen Network</h3>
             <span className="text-sm text-gray-500">
-              ({networkData.nodes.length} pathogens, {networkData.edges.length} connections)
+              ({networkData.nodes.length} pathogens, {networkData.edges.length}{' '}
+              connections)
             </span>
           </div>
         </div>
@@ -325,7 +399,7 @@ const PathogenNetworkVisualization = ({
           {/* Background grid */}
           <defs>
             <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#f3f4f6" strokeWidth="1"/>
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#f3f4f6" strokeWidth="1" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
@@ -333,12 +407,13 @@ const PathogenNetworkVisualization = ({
           {/* Edges */}
           <g className="edges">
             {networkData.edges.map((edge, index) => {
-              const sourcePos = getNodePosition(edge.source);
-              const targetPos = getNodePosition(edge.target);
+              const sourcePos = getNodePosition(edge.source) as NodePosition | { x: number; y: number };
+              const targetPos = getNodePosition(edge.target) as NodePosition | { x: number; y: number };
 
               if (!sourcePos || !targetPos) return null;
 
-              const isHovered = hoveredNode &&
+              const isHovered =
+                hoveredNode &&
                 (hoveredNode.id === edge.source || hoveredNode.id === edge.target);
 
               return (
@@ -363,7 +438,9 @@ const PathogenNetworkVisualization = ({
                     opacity={isHovered ? 0.9 : 0.7}
                     strokeDasharray={edge.type === 'weak' ? '5,5' : 'none'}
                     className="transition-all duration-200 hover:opacity-100"
-                    style={{ filter: isHovered ? 'drop-shadow(0 0 4px rgba(0,0,0,0.3))' : 'none' }}
+                    style={{
+                      filter: isHovered ? 'drop-shadow(0 0 4px rgba(0,0,0,0.3))' : 'none',
+                    }}
                   />
                   {edge.type === 'strong' && (
                     <circle
@@ -382,7 +459,7 @@ const PathogenNetworkVisualization = ({
           {/* Nodes */}
           <g className="nodes">
             {networkData.nodes.map((node) => {
-              const pos = getNodePosition(node.id);
+              const pos = getNodePosition(node.id) as NodePosition | { x: number; y: number };
               const style = getNodeStyle(node, selectedPathogen, hoveredNode);
               const radius = getNodeRadius(node);
               const shape = getNodeShape(node);
@@ -507,22 +584,30 @@ const PathogenNetworkVisualization = ({
               </div>
               <div className="text-gray-600">
                 <span className="font-medium">Severity:</span>
-                <span className={`ml-1 font-medium ${
-                  hoveredNode.severity === 'high' ? 'text-red-600' :
-                  hoveredNode.severity === 'medium' ? 'text-yellow-600' :
-                  'text-green-600'
-                }`}>
+                <span
+                  className={`ml-1 font-medium ${
+                    hoveredNode.severity === 'high'
+                      ? 'text-red-600'
+                      : hoveredNode.severity === 'medium'
+                        ? 'text-yellow-600'
+                        : 'text-green-600'
+                  }`}
+                >
                   {hoveredNode.severity}
                 </span>
               </div>
               <div className="text-gray-600">
                 <span className="font-medium">Resistance:</span>
-                <span className={`ml-1 font-medium ${
-                  hoveredNode.resistanceInfo.resistancePercentage > 50 ? 'text-red-600' :
-                  hoveredNode.resistanceInfo.resistancePercentage > 25 ? 'text-yellow-600' :
-                  'text-green-600'
-                }`}>
-                  {hoveredNode.resistanceInfo.resistancePercentage.toFixed(0)}%
+                <span
+                  className={`ml-1 font-medium ${
+                    (hoveredNode.resistanceInfo?.resistancePercentage || 0) > 50
+                      ? 'text-red-600'
+                      : (hoveredNode.resistanceInfo?.resistancePercentage || 0) > 25
+                        ? 'text-yellow-600'
+                        : 'text-green-600'
+                  }`}
+                >
+                  {((hoveredNode.resistanceInfo?.resistancePercentage || 0).toFixed(0))}%
                 </span>
               </div>
             </div>
@@ -534,12 +619,10 @@ const PathogenNetworkVisualization = ({
 
             <div className="text-xs text-gray-500 mb-2">
               <div className="font-medium">Effective antibiotics:</div>
-              <div>{hoveredNode.resistanceInfo.highEffective} highly effective</div>
+              <div>{hoveredNode.resistanceInfo?.highEffective} highly effective</div>
             </div>
 
-            <div className="text-xs text-gray-400 pt-2 border-t">
-              {hoveredNode.description}
-            </div>
+            <div className="text-xs text-gray-400 pt-2 border-t">{hoveredNode.description}</div>
           </div>
         )}
       </div>

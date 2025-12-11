@@ -1,19 +1,76 @@
-import React, { useState, useEffect, useRef } from 'react';
+/**
+ * PathogenNetworkVisualizationCytoscape Component
+ * Interactive network visualization using Cytoscape.js library
+ * Provides comprehensive filtering and layout controls for pathogen-antibiotic relationships
+ */
+
+import React, { useState, useEffect, useRef, FC, ReactElement } from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import { nodes, edges } from '../data/PathogenRelationshipData';
 import { cytoscapeStylesheet } from '../styles/cytoscapeStylesheet';
 import { formatAllNodeLabels } from '../utils/textFormatting';
 import { ChevronDown, ChevronUp, Menu, X } from 'lucide-react';
 
-const PathogenNetworkVisualizationCytoscape = () => {
-  const [layout, setLayout] = useState({ name: 'cose' });
-  const [elements, setElements] = useState([]);
-  const [showLegend, setShowLegend] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const cyRef = useRef(null);
+// Types
+interface CytoscapeElement {
+  data: {
+    id: string;
+    label?: string;
+    source?: string;
+    target?: string;
+    type?: string;
+    gramStain?: string;
+    class?: string;
+    [key: string]: any;
+  };
+}
+
+interface CytoscapeLayout {
+  name: 'cose' | 'concentric' | 'grid' | 'circle' | 'dagre';
+  animate?: boolean;
+  animationDuration?: number;
+}
+
+interface GramStainFilters {
+  [key: string]: boolean;
+}
+
+interface AntibioticClassFilters {
+  [key: string]: boolean;
+}
+
+interface EdgeTypeFilters {
+  [key: string]: boolean;
+}
+
+interface AllFilters {
+  showPathogens: boolean;
+  showAntibiotics: boolean;
+  gramStain: GramStainFilters;
+  antibioticClasses: AntibioticClassFilters;
+  edgeTypes: EdgeTypeFilters;
+}
+
+interface CytoscapeInstance {
+  elements: () => any;
+  nodes: (selector: string) => any;
+  edges: (selector?: string | ((edge: any) => boolean)) => any;
+  on: (event: string, handler: (evt: any) => void) => void;
+}
+
+interface PathogenNetworkVisualizationCytoscapeProps {
+  [key: string]: any;
+}
+
+const PathogenNetworkVisualizationCytoscape: FC<PathogenNetworkVisualizationCytoscapeProps> = () => {
+  const [layout, setLayout] = useState<CytoscapeLayout>({ name: 'cose' });
+  const [elements, setElements] = useState<CytoscapeElement[]>([]);
+  const [showLegend, setShowLegend] = useState<boolean>(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const cyRef = useRef<CytoscapeInstance | null>(null);
 
   // Filter states
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<AllFilters>({
     showPathogens: true,
     showAntibiotics: true,
     gramStain: {
@@ -22,7 +79,7 @@ const PathogenNetworkVisualizationCytoscape = () => {
       atypical: true,
       'acid-fast': true,
       virus: true,
-      mixed: true
+      mixed: true,
     },
     antibioticClasses: {
       Penicillins: true,
@@ -38,13 +95,13 @@ const PathogenNetworkVisualizationCytoscape = () => {
       Sulfonamides: true,
       Tetracyclines: true,
       Lipopeptides: true,
-      Antivirals: true
+      Antivirals: true,
     },
     edgeTypes: {
       susceptible: true,
       resistant: true,
-      pathogenRelationships: true
-    }
+      pathogenRelationships: true,
+    },
   });
 
   useEffect(() => {
@@ -71,7 +128,7 @@ const PathogenNetworkVisualizationCytoscape = () => {
         cy.nodes('[type = "pathogen"]').hide();
       } else {
         // Filter by gram stain
-        Object.keys(filters.gramStain).forEach(stain => {
+        Object.keys(filters.gramStain).forEach((stain) => {
           if (!filters.gramStain[stain]) {
             cy.nodes(`[gramStain = "${stain}"]`).hide();
           }
@@ -83,7 +140,7 @@ const PathogenNetworkVisualizationCytoscape = () => {
         cy.nodes('[type = "antibiotic"]').hide();
       } else {
         // Filter by antibiotic class
-        Object.keys(filters.antibioticClasses).forEach(className => {
+        Object.keys(filters.antibioticClasses).forEach((className) => {
           if (!filters.antibioticClasses[className]) {
             cy.nodes(`[class = "${className}"]`).hide();
           }
@@ -98,10 +155,12 @@ const PathogenNetworkVisualizationCytoscape = () => {
         cy.edges('[label = "resistant"]').hide();
       }
       if (!filters.edgeTypes.pathogenRelationships) {
-        cy.edges().filter(edge => {
-          const label = edge.data('label');
-          return label !== 'susceptible' && label !== 'resistant';
-        }).hide();
+        cy.edges()
+          .filter((edge: any) => {
+            const label = edge.data('label');
+            return label !== 'susceptible' && label !== 'resistant';
+          })
+          .hide();
       }
 
       // Hide edges connected to hidden nodes
@@ -109,30 +168,34 @@ const PathogenNetworkVisualizationCytoscape = () => {
     }
   }, [filters]);
 
-  const handleLayoutChange = (event) => {
-    setLayout({ name: event.target.value });
+  const handleLayoutChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+    setLayout({ name: event.target.value as any });
   };
 
-  const handleFilterChange = (category, subcategory, value) => {
-    setFilters(prev => {
+  const handleFilterChange = (
+    category: string,
+    subcategory: string | null,
+    value: boolean
+  ): void => {
+    setFilters((prev) => {
       if (subcategory) {
         return {
           ...prev,
           [category]: {
-            ...prev[category],
-            [subcategory]: value
-          }
+            ...prev[category as keyof AllFilters],
+            [subcategory]: value,
+          },
         };
       } else {
         return {
           ...prev,
-          [category]: value
+          [category]: value,
         };
       }
     });
   };
 
-  const resetFilters = () => {
+  const resetFilters = (): void => {
     setFilters({
       showPathogens: true,
       showAntibiotics: true,
@@ -142,7 +205,7 @@ const PathogenNetworkVisualizationCytoscape = () => {
         atypical: true,
         'acid-fast': true,
         virus: true,
-        mixed: true
+        mixed: true,
       },
       antibioticClasses: {
         Penicillins: true,
@@ -158,23 +221,23 @@ const PathogenNetworkVisualizationCytoscape = () => {
         Sulfonamides: true,
         Tetracyclines: true,
         Lipopeptides: true,
-        Antivirals: true
+        Antivirals: true,
       },
       edgeTypes: {
         susceptible: true,
         resistant: true,
-        pathogenRelationships: true
-      }
+        pathogenRelationships: true,
+      },
     });
   };
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(prev => !prev);
+  const toggleSidebar = (): void => {
+    setIsSidebarOpen((prev) => !prev);
   };
 
   // Keyboard accessibility - ESC to close
   useEffect(() => {
-    const handleEscape = (e) => {
+    const handleEscape = (e: KeyboardEvent): void => {
       if (e.key === 'Escape' && isSidebarOpen) {
         setIsSidebarOpen(false);
       }
@@ -280,7 +343,9 @@ const PathogenNetworkVisualizationCytoscape = () => {
                 <input
                   type="checkbox"
                   checked={filters.showAntibiotics}
-                  onChange={(e) => handleFilterChange('showAntibiotics', null, e.target.checked)}
+                  onChange={(e) =>
+                    handleFilterChange('showAntibiotics', null, e.target.checked)
+                  }
                   className="rounded"
                 />
                 Antibiotics
@@ -290,12 +355,14 @@ const PathogenNetworkVisualizationCytoscape = () => {
             {/* Gram Stain Filter */}
             <div className="mb-3">
               <h6 className="font-medium text-xs mb-2 text-gray-700">Gram Stain</h6>
-              {Object.keys(filters.gramStain).map(stain => (
+              {Object.keys(filters.gramStain).map((stain) => (
                 <label key={stain} className="flex items-center gap-2 text-xs">
                   <input
                     type="checkbox"
                     checked={filters.gramStain[stain]}
-                    onChange={(e) => handleFilterChange('gramStain', stain, e.target.checked)}
+                    onChange={(e) =>
+                      handleFilterChange('gramStain', stain, e.target.checked)
+                    }
                     disabled={!filters.showPathogens}
                     className="rounded"
                   />
@@ -311,7 +378,9 @@ const PathogenNetworkVisualizationCytoscape = () => {
                 <input
                   type="checkbox"
                   checked={filters.edgeTypes.susceptible}
-                  onChange={(e) => handleFilterChange('edgeTypes', 'susceptible', e.target.checked)}
+                  onChange={(e) =>
+                    handleFilterChange('edgeTypes', 'susceptible', e.target.checked)
+                  }
                   className="rounded"
                 />
                 Susceptible (Green)
@@ -320,7 +389,9 @@ const PathogenNetworkVisualizationCytoscape = () => {
                 <input
                   type="checkbox"
                   checked={filters.edgeTypes.resistant}
-                  onChange={(e) => handleFilterChange('edgeTypes', 'resistant', e.target.checked)}
+                  onChange={(e) =>
+                    handleFilterChange('edgeTypes', 'resistant', e.target.checked)
+                  }
                   className="rounded"
                 />
                 Resistant (Red)
@@ -329,7 +400,13 @@ const PathogenNetworkVisualizationCytoscape = () => {
                 <input
                   type="checkbox"
                   checked={filters.edgeTypes.pathogenRelationships}
-                  onChange={(e) => handleFilterChange('edgeTypes', 'pathogenRelationships', e.target.checked)}
+                  onChange={(e) =>
+                    handleFilterChange(
+                      'edgeTypes',
+                      'pathogenRelationships',
+                      e.target.checked
+                    )
+                  }
                   className="rounded"
                 />
                 Pathogen Relationships
@@ -338,14 +415,22 @@ const PathogenNetworkVisualizationCytoscape = () => {
 
             {/* Antibiotic Classes - Scrollable */}
             <div className="mb-3">
-              <h6 className="font-medium text-xs mb-2 text-gray-700">Antibiotic Classes</h6>
+              <h6 className="font-medium text-xs mb-2 text-gray-700">
+                Antibiotic Classes
+              </h6>
               <div className="grid grid-cols-1 gap-1 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded">
-                {Object.keys(filters.antibioticClasses).map(className => (
+                {Object.keys(filters.antibioticClasses).map((className) => (
                   <label key={className} className="flex items-center gap-2 text-xs">
                     <input
                       type="checkbox"
                       checked={filters.antibioticClasses[className]}
-                      onChange={(e) => handleFilterChange('antibioticClasses', className, e.target.checked)}
+                      onChange={(e) =>
+                        handleFilterChange(
+                          'antibioticClasses',
+                          className,
+                          e.target.checked
+                        )
+                      }
                       disabled={!filters.showAntibiotics}
                       className="rounded"
                     />
@@ -386,23 +471,38 @@ const PathogenNetworkVisualizationCytoscape = () => {
                   <h6 className="font-medium mb-2 text-gray-700">Gram Stain</h6>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#6a0dad'}}></div>
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: '#6a0dad' }}
+                      ></div>
                       <span>Gram-positive</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#d9534f'}}></div>
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: '#d9534f' }}
+                      ></div>
                       <span>Gram-negative</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#5bc0de'}}></div>
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: '#5bc0de' }}
+                      ></div>
                       <span>Atypical</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#f0ad4e'}}></div>
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: '#f0ad4e' }}
+                      ></div>
                       <span>Acid-fast</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full" style={{backgroundColor: '#5cb85c'}}></div>
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: '#5cb85c' }}
+                      ></div>
                       <span>Virus</span>
                     </div>
                   </div>
@@ -429,22 +529,36 @@ const PathogenNetworkVisualizationCytoscape = () => {
 
                 {/* Antibiotic Classes Sample */}
                 <div>
-                  <h6 className="font-medium mb-2 text-gray-700">Antibiotic Classes (Sample)</h6>
+                  <h6 className="font-medium mb-2 text-gray-700">
+                    Antibiotic Classes (Sample)
+                  </h6>
                   <div className="grid grid-cols-1 gap-1">
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded" style={{backgroundColor: '#16a085'}}></div>
+                      <div
+                        className="w-4 h-4 rounded"
+                        style={{ backgroundColor: '#16a085' }}
+                      ></div>
                       <span>Penicillins</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded" style={{backgroundColor: '#27ae60'}}></div>
+                      <div
+                        className="w-4 h-4 rounded"
+                        style={{ backgroundColor: '#27ae60' }}
+                      ></div>
                       <span>Cephalosporins</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded" style={{backgroundColor: '#c0392b'}}></div>
+                      <div
+                        className="w-4 h-4 rounded"
+                        style={{ backgroundColor: '#c0392b' }}
+                      ></div>
                       <span>Glycopeptides</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded" style={{backgroundColor: '#e74c3c'}}></div>
+                      <div
+                        className="w-4 h-4 rounded"
+                        style={{ backgroundColor: '#e74c3c' }}
+                      ></div>
                       <span>Fluoroquinolones</span>
                     </div>
                   </div>
@@ -470,9 +584,13 @@ const PathogenNetworkVisualizationCytoscape = () => {
           <CytoscapeComponent
             elements={CytoscapeComponent.normalizeElements(elements)}
             stylesheet={cytoscapeStylesheet}
-            style={{ width: '100%', height: '100%', backgroundColor: '#f9fafb' }}
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#f9fafb',
+            }}
             layout={layout}
-            cy={(cy) => {
+            cy={(cy: CytoscapeInstance) => {
               cyRef.current = cy;
               console.log('Cytoscape instance initialized');
             }}

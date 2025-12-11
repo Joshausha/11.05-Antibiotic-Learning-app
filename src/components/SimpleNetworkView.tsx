@@ -4,18 +4,59 @@
  * Sophomore-level React component using simple SVG graphics
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, FC, ReactElement } from 'react';
 import { Network, ZoomIn, ZoomOut, RotateCcw, Info } from 'lucide-react';
 
-const SimpleNetworkView = ({ 
-  pathogens = [], 
-  selectedPathogen = null, 
+// Types
+interface Pathogen {
+  id: string;
+  name: string;
+  commonName: string;
+  description?: string;
+  gramStatus: 'positive' | 'negative' | 'other';
+  severity: 'high' | 'medium' | 'low';
+  shape?: string;
+}
+
+interface Antibiotic {
+  antibioticId: string;
+  effectiveness: 'high' | 'medium' | 'low';
+}
+
+interface PathogenRelationships {
+  [pathogenId: string]: {
+    antibiotics: Antibiotic[];
+  };
+}
+
+interface NodePosition {
+  x: number;
+  y: number;
+}
+
+interface Connection {
+  source: string;
+  target: string;
+  weight: number;
+  sharedAntibiotics: number;
+}
+
+interface SimpleNetworkViewProps {
+  pathogens?: Pathogen[];
+  selectedPathogen?: Pathogen | null;
+  onSelectPathogen?: (pathogen: Pathogen) => void;
+  relationships?: PathogenRelationships | null;
+}
+
+const SimpleNetworkView: FC<SimpleNetworkViewProps> = ({
+  pathogens = [],
+  selectedPathogen = null,
   onSelectPathogen = () => {},
-  relationships = null
+  relationships = null,
 }) => {
-  const [zoom, setZoom] = useState(1);
-  const [showLabels, setShowLabels] = useState(true);
-  const [hoveredNode, setHoveredNode] = useState(null);
+  const [zoom, setZoom] = useState<number>(1);
+  const [showLabels, setShowLabels] = useState<boolean>(true);
+  const [hoveredNode, setHoveredNode] = useState<Pathogen | null>(null);
 
   // Network dimensions
   const width = 600;
@@ -24,65 +65,68 @@ const SimpleNetworkView = ({
   const centerY = height / 2;
 
   // Calculate node positions in a circle
-  const nodePositions = useMemo(() => {
+  const nodePositions = useMemo((): Record<string, NodePosition> => {
     if (!pathogens || pathogens.length === 0) return {};
-    
-    const positions = {};
+
+    const positions: Record<string, NodePosition> = {};
     const radius = Math.min(width, height) * 0.3;
-    
+
     pathogens.forEach((pathogen, index) => {
       const angle = (index / pathogens.length) * 2 * Math.PI;
       positions[pathogen.id] = {
         x: centerX + radius * Math.cos(angle),
-        y: centerY + radius * Math.sin(angle)
+        y: centerY + radius * Math.sin(angle),
       };
     });
-    
+
     return positions;
   }, [pathogens]);
 
   // Calculate connections based on shared antibiotics
-  const connections = useMemo(() => {
+  const connections = useMemo((): Connection[] => {
     if (!pathogens || !relationships) return [];
-    
-    const conn = [];
-    
+
+    const conn: Connection[] = [];
+
     for (let i = 0; i < pathogens.length; i++) {
       for (let j = i + 1; j < pathogens.length; j++) {
         const pathogen1 = pathogens[i];
         const pathogen2 = pathogens[j];
-        
+
         const antibiotics1 = relationships[pathogen1.id]?.antibiotics || [];
         const antibiotics2 = relationships[pathogen2.id]?.antibiotics || [];
-        
+
         // Find shared effective antibiotics
-        const shared = antibiotics1.filter(ab1 => 
-          ab1.effectiveness === 'high' &&
-          antibiotics2.some(ab2 => 
-            ab2.antibioticId === ab1.antibioticId && ab2.effectiveness === 'high'
-          )
+        const shared = antibiotics1.filter(
+          (ab1) =>
+            ab1.effectiveness === 'high' &&
+            antibiotics2.some(
+              (ab2) =>
+                ab2.antibioticId === ab1.antibioticId &&
+                ab2.effectiveness === 'high'
+            )
         );
-        
+
         if (shared.length > 0) {
           conn.push({
             source: pathogen1.id,
             target: pathogen2.id,
             weight: shared.length,
-            sharedAntibiotics: shared.length
+            sharedAntibiotics: shared.length,
           });
         }
       }
     }
-    
+
     return conn;
   }, [pathogens, relationships]);
 
   // Get node color based on gram status
-  const getNodeColor = (pathogen) => {
+  const getNodeColor = (pathogen: Pathogen): string => {
     if (selectedPathogen?.id === pathogen.id) {
       return '#2563eb'; // blue for selected
     }
-    
+
     switch (pathogen.gramStatus) {
       case 'positive':
         return '#9333ea'; // purple
@@ -94,7 +138,7 @@ const SimpleNetworkView = ({
   };
 
   // Get node radius based on severity
-  const getNodeRadius = (pathogen) => {
+  const getNodeRadius = (pathogen: Pathogen): number => {
     const baseRadius = 8;
     switch (pathogen.severity) {
       case 'high':
@@ -109,16 +153,16 @@ const SimpleNetworkView = ({
   };
 
   // Handle node click
-  const handleNodeClick = (pathogen) => {
+  const handleNodeClick = (pathogen: Pathogen): void => {
     if (onSelectPathogen) {
       onSelectPathogen(pathogen);
     }
   };
 
   // Handle zoom controls
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.2, 2));
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.2, 0.5));
-  const handleResetZoom = () => setZoom(1);
+  const handleZoomIn = (): void => setZoom((prev) => Math.min(prev + 0.2, 2));
+  const handleZoomOut = (): void => setZoom((prev) => Math.max(prev - 0.2, 0.5));
+  const handleResetZoom = (): void => setZoom(1);
 
   if (!pathogens || pathogens.length === 0) {
     return (
@@ -152,7 +196,11 @@ const SimpleNetworkView = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowLabels(!showLabels)}
-              className={`p-2 rounded text-xs ${showLabels ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}
+              className={`p-2 rounded text-xs ${
+                showLabels
+                  ? 'bg-blue-100 text-blue-600'
+                  : 'bg-gray-100 text-gray-600'
+              }`}
             >
               Labels
             </button>
@@ -204,15 +252,21 @@ const SimpleNetworkView = ({
       {/* SVG Network */}
       <div className="p-4">
         <div className="border rounded-lg overflow-hidden bg-gray-50">
-          <svg 
-            width={width} 
-            height={height}
-            style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}
-          >
+          <svg width={width} height={height} style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}>
             {/* Grid background */}
             <defs>
-              <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" strokeWidth="0.5"/>
+              <pattern
+                id="grid"
+                width="20"
+                height="20"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 20 0 L 0 0 0 20"
+                  fill="none"
+                  stroke="#e5e7eb"
+                  strokeWidth="0.5"
+                />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
@@ -221,9 +275,9 @@ const SimpleNetworkView = ({
             {connections.map((connection, index) => {
               const sourcePos = nodePositions[connection.source];
               const targetPos = nodePositions[connection.target];
-              
+
               if (!sourcePos || !targetPos) return null;
-              
+
               return (
                 <line
                   key={index}
@@ -242,12 +296,12 @@ const SimpleNetworkView = ({
             {pathogens.map((pathogen) => {
               const position = nodePositions[pathogen.id];
               if (!position) return null;
-              
+
               const radius = getNodeRadius(pathogen);
               const color = getNodeColor(pathogen);
               const isHovered = hoveredNode?.id === pathogen.id;
               const isSelected = selectedPathogen?.id === pathogen.id;
-              
+
               return (
                 <g key={pathogen.id}>
                   {/* Node circle */}
@@ -265,7 +319,7 @@ const SimpleNetworkView = ({
                     onMouseEnter={() => setHoveredNode(pathogen)}
                     onMouseLeave={() => setHoveredNode(null)}
                   />
-                  
+
                   {/* Node label */}
                   {showLabels && (
                     <text
@@ -296,12 +350,14 @@ const SimpleNetworkView = ({
                   {hoveredNode.name}
                 </h4>
                 <p className="text-xs text-blue-700">
-                  {hoveredNode.description}
+                  {hoveredNode.description || 'No description available'}
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
-                  {hoveredNode.gramStatus === 'positive' ? 'Gram Positive' : 'Gram Negative'} • 
-                  {hoveredNode.severity} severity • 
-                  {hoveredNode.shape}
+                  {hoveredNode.gramStatus === 'positive'
+                    ? 'Gram Positive'
+                    : 'Gram Negative'}{' '}
+                  • {hoveredNode.severity} severity •{' '}
+                  {hoveredNode.shape || 'Unknown shape'}
                 </p>
               </div>
             </div>
@@ -312,7 +368,8 @@ const SimpleNetworkView = ({
       {/* Footer */}
       <div className="px-4 py-3 bg-gray-50 border-t rounded-b-lg">
         <p className="text-xs text-gray-500 text-center">
-          Click nodes to explore pathogen details • Lines show shared antibiotic coverage
+          Click nodes to explore pathogen details • Lines show shared antibiotic
+          coverage
         </p>
       </div>
     </div>
