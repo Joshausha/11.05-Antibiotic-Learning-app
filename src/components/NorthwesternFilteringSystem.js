@@ -43,11 +43,11 @@ import {
   importFilterState,
   filterCache
 } from '../utils/northwesternFilterLogic';
-import { 
+import {
   applyClinicalScenario,
   generateClinicalDecisionSupport,
   getRecommendedScenarios
-} from '../utils/clinicalScenarioFilters.js';
+} from '../utils/clinicalScenarioFilters';
 
 /**
  * Northwestern Filtering System Component

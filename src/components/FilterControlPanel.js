@@ -36,11 +36,11 @@ import {
   CLINICAL_SCENARIOS,
   FilterState 
 } from '../utils/northwesternFilterLogic';
-import { 
-  EMERGENCY_SCENARIOS, 
+import {
+  EMERGENCY_SCENARIOS,
   STANDARD_SCENARIOS,
-  getRecommendedScenarios 
-} from '../utils/clinicalScenarioFilters.js';
+  getRecommendedScenarios
+} from '../utils/clinicalScenarioFilters';
 
 /**
  * Filter Control Panel Component
