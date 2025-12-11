@@ -1,14 +1,15 @@
 /**
- * QuizTab Component - Northwestern Enhanced
+ * QuizTab Component - Northwestern Enhanced (TypeScript)
  * Handles the complete quiz functionality including questions, answers, and results
  * Enhanced with Northwestern visual quiz questions and pie chart interactions
- * 
+ *
  * Props:
  * - quizQuestions: array - array of quiz question objects
  * - setActiveTab: function - function to change active tab (for navigation after quiz)
- * 
+ *
  * Enhanced by: Agent 2.5 - Component Integration Guardian
  * Date: 2025-08-18
+ * Migrated to TypeScript: 2025-12-11
  */
 
 import React, { useState, memo, useMemo } from 'react';
@@ -18,49 +19,125 @@ import SkeletonLoader from './SkeletonLoader';
 import ErrorMessage from './ErrorMessage';
 import NorthwesternQuizComponent from './NorthwesternQuizComponent';
 import spacedRepetitionManager from '../utils/spacedRepetitionManager';
+import { QuizQuestion } from '../types/medical.types';
 
-const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
+// ==========================================
+// TYPE DEFINITIONS
+// ==========================================
+
+/**
+ * Quiz difficulty level type
+ */
+type DifficultyLevel = 'all' | 'northwestern' | 'beginner' | 'intermediate' | 'advanced';
+
+/**
+ * Difficulty selection option
+ */
+interface DifficultyOption {
+  key: DifficultyLevel;
+  label: string;
+  icon: string;
+  color: string;
+}
+
+/**
+ * Difficulty statistics
+ */
+interface DifficultyStats {
+  all: number;
+  beginner: number;
+  intermediate: number;
+  advanced: number;
+  northwestern: number;
+}
+
+/**
+ * Selected answers map (question index -> answer index)
+ */
+interface SelectedAnswersMap {
+  [questionIndex: number]: number;
+}
+
+/**
+ * Spaced repetition result for a question
+ */
+interface SpacedRepetitionResult {
+  question: QuizQuestion;
+  isCorrect: boolean;
+  cardId: string;
+  nextReview?: Date;
+  interval?: number;
+  reason?: string;
+}
+
+/**
+ * Enhanced quiz question with spaced repetition metadata
+ */
+interface AdaptiveQuizQuestion extends QuizQuestion {
+  priority?: 'high' | 'medium' | 'low';
+  reason?: string;
+  northwesternFocus?: boolean;
+}
+
+/**
+ * QuizTab component props
+ */
+interface QuizTabProps {
+  quizQuestions?: QuizQuestion[];
+  setActiveTab?: (tab: string) => void;
+}
+
+// ==========================================
+// COMPONENT
+// ==========================================
+
+const QuizTab: React.FC<QuizTabProps> = ({
+  quizQuestions = [],
+  setActiveTab = () => {}
+}) => {
   // Quiz state management
-  const [quizMode, setQuizMode] = useState(false);
-  const [currentQuizQuestion, setCurrentQuizQuestion] = useState(0);
-  const [quizScore, setQuizScore] = useState(0);
-  const [showQuizResult, setShowQuizResult] = useState(false);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  
+  const [quizMode, setQuizMode] = useState<boolean>(false);
+  const [currentQuizQuestion, setCurrentQuizQuestion] = useState<number>(0);
+  const [quizScore, setQuizScore] = useState<number>(0);
+  const [showQuizResult, setShowQuizResult] = useState<boolean>(false);
+  const [selectedAnswers, setSelectedAnswers] = useState<SelectedAnswersMap>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
   // Difficulty selection state
-  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
-  const [showDifficultySelection, setShowDifficultySelection] = useState(false);
-  const [filteredQuestions, setFilteredQuestions] = useState(quizQuestions || []);
-  
+  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel>('all');
+  const [showDifficultySelection, setShowDifficultySelection] = useState<boolean>(false);
+  const [filteredQuestions, setFilteredQuestions] = useState<QuizQuestion[]>(quizQuestions || []);
+
   // Spaced repetition state
-  const [useSpacedRepetition, setUseSpacedRepetition] = useState(true);
-  const [adaptiveQuestions, setAdaptiveQuestions] = useState([]);
-  const [currentCardId, setCurrentCardId] = useState(null);
-  const [spacedRepetitionResults, setSpacedRepetitionResults] = useState([]);
+  const [useSpacedRepetition, setUseSpacedRepetition] = useState<boolean>(true);
+  const [adaptiveQuestions, setAdaptiveQuestions] = useState<AdaptiveQuizQuestion[]>([]);
+  const [currentCardId, setCurrentCardId] = useState<string | null>(null);
+  const [spacedRepetitionResults, setSpacedRepetitionResults] = useState<SpacedRepetitionResult[]>([]);
 
   // Filter questions by difficulty or Northwestern focus
-  const filterQuestionsByDifficulty = (difficulty) => {
+  const filterQuestionsByDifficulty = (difficulty: DifficultyLevel): QuizQuestion[] => {
     const safeQuestions = quizQuestions || [];
     if (difficulty === 'all') {
       return safeQuestions;
     }
     if (difficulty === 'northwestern') {
-      return safeQuestions.filter(q => q.northwesternFocus === true);
+      return safeQuestions.filter(q => (q as AdaptiveQuizQuestion).northwesternFocus === true);
     }
     return safeQuestions.filter(q => q.difficulty === difficulty);
   };
 
   // Get difficulty statistics including Northwestern questions
-  const difficultyStats = useMemo(() => {
-    const stats = { all: 0, beginner: 0, intermediate: 0, advanced: 0, northwestern: 0 };
+  const difficultyStats = useMemo((): DifficultyStats => {
+    const stats: DifficultyStats = { all: 0, beginner: 0, intermediate: 0, advanced: 0, northwestern: 0 };
     const safeQuestions = quizQuestions || [];
     safeQuestions.forEach(q => {
       stats.all++;
       const difficulty = q.difficulty || 'intermediate';
-      stats[difficulty] = (stats[difficulty] || 0) + 1;
-      if (q.northwesternFocus) {
+      if (difficulty in stats) {
+        stats[difficulty as keyof DifficultyStats] = (stats[difficulty as keyof DifficultyStats] || 0) + 1;
+      }
+      if ((q as AdaptiveQuizQuestion).northwesternFocus) {
         stats.northwestern = (stats.northwestern || 0) + 1;
       }
     });
@@ -68,7 +145,7 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
   }, [quizQuestions]);
 
   // Handle difficulty selection
-  const handleDifficultySelect = (difficulty) => {
+  const handleDifficultySelect = (difficulty: DifficultyLevel): void => {
     setSelectedDifficulty(difficulty);
     const filtered = filterQuestionsByDifficulty(difficulty);
     setFilteredQuestions(filtered);
@@ -76,31 +153,31 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
   };
 
   // Start a new quiz
-  const startQuiz = () => {
+  const startQuiz = (): void => {
     setIsLoading(true);
     setError(null);
-    
+
     // Use shorter delay in test environment
     const delay = process.env.NODE_ENV === 'test' ? 0 : 500;
-    
+
     setTimeout(() => {
-      let questionsToUse = filteredQuestions;
-      
+      let questionsToUse: QuizQuestion[] | AdaptiveQuizQuestion[] = filteredQuestions;
+
       // Use spaced repetition if enabled
       if (useSpacedRepetition && spacedRepetitionManager) {
         try {
           const targetCount = Math.min(10, filteredQuestions.length);
           const adaptiveRecommendations = spacedRepetitionManager.getAdaptiveQuizQuestions(
-            filteredQuestions, 
+            filteredQuestions,
             targetCount
           );
-          
+
           // Defensive programming: ensure we got a valid array with valid questions
-          if (Array.isArray(adaptiveRecommendations) && 
-              adaptiveRecommendations.length > 0 && 
-              adaptiveRecommendations.every(q => q && q.question)) {
-            questionsToUse = adaptiveRecommendations;
-            setAdaptiveQuestions(adaptiveRecommendations);
+          if (Array.isArray(adaptiveRecommendations) &&
+              adaptiveRecommendations.length > 0 &&
+              adaptiveRecommendations.every((q: QuizQuestion) => q && q.question)) {
+            questionsToUse = adaptiveRecommendations as AdaptiveQuizQuestion[];
+            setAdaptiveQuestions(adaptiveRecommendations as AdaptiveQuizQuestion[]);
             console.log(`Using ${adaptiveRecommendations.length} spaced repetition questions`);
           } else {
             console.log('Spaced repetition returned no valid questions, using standard quiz');
@@ -110,7 +187,7 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
           // Fall back to regular filtered questions
         }
       }
-      
+
       setQuizMode(true);
       setCurrentQuizQuestion(0);
       setQuizScore(0);
@@ -122,12 +199,12 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
   };
 
   // Handle answer selection
-  const handleQuizAnswer = (answerIndex) => {
+  const handleQuizAnswer = (answerIndex: number): void => {
     const currentQuestions = useSpacedRepetition && adaptiveQuestions.length > 0 ? adaptiveQuestions : filteredQuestions;
     const currentQuestion = currentQuestions[currentQuizQuestion];
-    
+
     // Store the selected answer
-    const newAnswers = { ...selectedAnswers };
+    const newAnswers: SelectedAnswersMap = { ...selectedAnswers };
     newAnswers[currentQuizQuestion] = answerIndex;
     setSelectedAnswers(newAnswers);
 
@@ -143,7 +220,7 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
         const card = spacedRepetitionManager.convertQuestionToCard(currentQuestion);
         const cardId = `question_${currentQuestion.id || currentQuestion.question?.substring(0, 50)}`;
         const updateResult = spacedRepetitionManager.updateCard(cardId, isCorrect);
-        
+
         if (updateResult) {
           setSpacedRepetitionResults(prev => [...prev, {
             question: currentQuestion,
@@ -151,7 +228,7 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
             cardId,
             nextReview: updateResult.nextReview,
             interval: updateResult.interval,
-            reason: currentQuestion.reason || 'Quiz question'
+            reason: (currentQuestion as AdaptiveQuizQuestion).reason || 'Quiz question'
           }]);
         }
       } catch (error) {
@@ -173,7 +250,7 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
   };
 
   // Reset quiz to initial state
-  const resetQuiz = () => {
+  const resetQuiz = (): void => {
     setQuizMode(false);
     setCurrentQuizQuestion(0);
     setQuizScore(0);
@@ -187,7 +264,7 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
 
   // Get current question set (adaptive or filtered)
   const currentQuestions = useSpacedRepetition && adaptiveQuestions.length > 0 ? adaptiveQuestions : filteredQuestions;
-  
+
   // Calculate progress percentage
   const progressPercentage = currentQuestions.length > 0 ? ((currentQuizQuestion + 1) / currentQuestions.length) * 100 : 0;
 
@@ -195,10 +272,19 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
   const scorePercentage = currentQuestions.length > 0 ? Math.round((quizScore / currentQuestions.length) * 100) : 0;
 
   // Handle quiz errors
-  const handleError = (errorMessage) => {
+  const handleError = (errorMessage: string): void => {
     setError(errorMessage);
     setIsLoading(false);
   };
+
+  // Difficulty options configuration
+  const difficultyOptions: DifficultyOption[] = [
+    { key: 'all', label: 'All Questions', icon: '📚', color: 'blue' },
+    { key: 'northwestern', label: 'Northwestern Visual', icon: '🥧', color: 'purple' },
+    { key: 'beginner', label: 'Beginner', icon: '🌱', color: 'green' },
+    { key: 'intermediate', label: 'Intermediate', icon: '🎯', color: 'yellow' },
+    { key: 'advanced', label: 'Advanced', icon: '🏆', color: 'red' }
+  ];
 
   // Show loading state
   if (isLoading) {
@@ -221,8 +307,6 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
             startQuiz();
           }}
           onHome={() => setActiveTab('home')}
-          showRetry={true}
-          showHome={true}
         />
       </div>
     );
@@ -256,20 +340,14 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
                 View Stats
               </button>
             </div>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-              {[
-                { key: 'all', label: 'All Questions', icon: '📚', color: 'blue' },
-                { key: 'northwestern', label: 'Northwestern Visual', icon: '🥧', color: 'purple' },
-                { key: 'beginner', label: 'Beginner', icon: '🌱', color: 'green' },
-                { key: 'intermediate', label: 'Intermediate', icon: '🎯', color: 'yellow' },
-                { key: 'advanced', label: 'Advanced', icon: '🏆', color: 'red' }
-              ].map(({ key, label, icon, color }) => (
+              {difficultyOptions.map(({ key, label, icon, color }) => (
                 <button
                   key={key}
                   className={`p-3 rounded-lg border-2 transition-all text-sm ${
-                    selectedDifficulty === key 
-                      ? `bg-${color}-50 border-${color}-500 text-${color}-800` 
+                    selectedDifficulty === key
+                      ? `bg-${color}-50 border-${color}-500 text-${color}-800`
                       : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-gray-300'
                   }`}
                   onClick={() => handleDifficultySelect(key)}
@@ -293,7 +371,7 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
                         <span className="capitalize text-gray-700">{difficulty}:</span>
                         <div className="flex items-center gap-2">
                           <div className="w-20 bg-gray-200 rounded-full h-2">
-                            <div 
+                            <div
                               className={`h-2 rounded-full ${
                                 difficulty === 'beginner' ? 'bg-green-500' :
                                 difficulty === 'intermediate' ? 'bg-yellow-500' :
@@ -336,7 +414,7 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
               </button>
             </div>
             <p className="text-sm text-green-700 mb-2">
-              {useSpacedRepetition 
+              {useSpacedRepetition
                 ? "🧠 Questions optimized for your learning using FSRS algorithm - prioritizes review items and weak areas"
                 : "📝 Standard quiz mode - questions filtered by difficulty only"
               }
@@ -365,7 +443,7 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
 
           {/* Start Quiz Button */}
           <div className="text-center">
-            <button 
+            <button
               className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-lg w-full md:w-auto"
               onClick={startQuiz}
               disabled={filteredQuestions.length === 0}
@@ -385,9 +463,9 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
       ) : showQuizResult ? (
         /* Quiz Results Screen */
         <div className="bg-white rounded-xl p-8 shadow-sm text-center">
-          <CheckCircle 
-            size={64} 
-            className={`mx-auto mb-4 ${quizScore >= 3 ? 'text-green-500' : 'text-red-500'}`} 
+          <CheckCircle
+            size={64}
+            className={`mx-auto mb-4 ${quizScore >= 3 ? 'text-green-500' : 'text-red-500'}`}
           />
           <h2 className="text-2xl font-semibold mb-4">Quiz Complete!</h2>
           <div className="mb-6">
@@ -400,14 +478,14 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
             <div className="text-sm text-gray-500 mb-4 space-y-1">
               <div>Difficulty: <span className="capitalize font-medium">{selectedDifficulty}</span></div>
               {useSpacedRepetition && (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 justify-center">
                   <Brain size={14} className="text-green-600" />
                   <span>Adaptive Learning Mode</span>
                 </div>
               )}
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
-              <div 
+              <div
                 className={`h-3 rounded-full transition-all duration-500 ${
                   scorePercentage >= 80 ? 'bg-green-500' : scorePercentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
                 }`}
@@ -415,7 +493,7 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
               />
             </div>
           </div>
-          
+
           {/* Performance Message */}
           <div className={`p-4 rounded-lg mb-8 ${
             scorePercentage >= 90 ? 'bg-green-50 border border-green-200' :
@@ -445,11 +523,11 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
           {/* Spaced Repetition Analytics */}
           {useSpacedRepetition && spacedRepetitionResults.length > 0 && (
             <div className="mb-8 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-3 justify-center">
                 <Brain size={20} className="text-purple-600" />
                 <h3 className="font-semibold text-purple-800">Learning Analytics</h3>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="text-center p-3 bg-white rounded-lg">
                   <div className="text-lg font-bold text-purple-800">
@@ -464,13 +542,13 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
                   <div className="text-xs text-purple-600">Weak Area Focus</div>
                 </div>
               </div>
-              
+
               <div className="text-xs text-purple-700 space-y-1">
                 <div>📈 Next review intervals optimized based on your performance</div>
                 <div>🎯 Algorithm adapts to strengthen your weak areas</div>
                 <div>⏰ Questions will appear again at optimal timing for retention</div>
               </div>
-              
+
               {spacedRepetitionResults.some(r => r.nextReview) && (
                 <div className="mt-3 text-xs text-purple-600">
                   <div className="font-medium mb-1">Next review times calculated:</div>
@@ -487,13 +565,13 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button 
+            <button
               className="btn-primary px-6 py-3 w-full sm:w-auto"
               onClick={resetQuiz}
             >
               Take Again
             </button>
-            <button 
+            <button
               className="btn-secondary px-6 py-3 w-full sm:w-auto"
               onClick={() => setActiveTab('conditions')}
             >
@@ -507,7 +585,7 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
           {currentQuestions.length === 0 ? (
             <div className="text-center py-16 text-gray-500">
               <p>No questions available for the selected difficulty level.</p>
-              <button 
+              <button
                 className="mt-4 text-blue-600 hover:text-blue-800 underline"
                 onClick={() => handleDifficultySelect('all')}
               >
@@ -532,15 +610,15 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
                     Question {currentQuizQuestion + 1} of {currentQuestions.length}
                   </span>
                   <div className="flex items-center gap-2">
-                    {useSpacedRepetition && currentQuestions[currentQuizQuestion].reason && (
+                    {useSpacedRepetition && (currentQuestions[currentQuizQuestion] as AdaptiveQuizQuestion).reason && (
                       <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800">
-                        {currentQuestions[currentQuizQuestion].priority === 'high' ? '🔄' : 
-                         currentQuestions[currentQuizQuestion].priority === 'medium' ? '🎯' : '📚'} 
-                        {currentQuestions[currentQuizQuestion].reason}
+                        {(currentQuestions[currentQuizQuestion] as AdaptiveQuizQuestion).priority === 'high' ? '🔄' :
+                         (currentQuestions[currentQuizQuestion] as AdaptiveQuizQuestion).priority === 'medium' ? '🎯' : '📚'}
+                        {(currentQuestions[currentQuizQuestion] as AdaptiveQuizQuestion).reason}
                       </span>
                     )}
                     {/* Northwestern indicator */}
-                    {currentQuestions[currentQuizQuestion].northwesternFocus && (
+                    {(currentQuestions[currentQuizQuestion] as AdaptiveQuizQuestion).northwesternFocus && (
                       <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800">
                         <PieChart size={12} className="inline mr-1" />
                         Northwestern
@@ -558,11 +636,11 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
               </div>
 
               {/* Conditional Question Rendering */}
-              {currentQuestions[currentQuizQuestion].northwesternFocus ? (
+              {(currentQuestions[currentQuizQuestion] as AdaptiveQuizQuestion).northwesternFocus ? (
                 <NorthwesternQuizComponent
                   question={currentQuestions[currentQuizQuestion]}
                   currentAnswer={selectedAnswers[currentQuizQuestion]}
-                  onAnswerSelect={(index) => handleQuizAnswer(index)}
+                  onAnswerSelect={(index: number) => handleQuizAnswer(index)}
                   showResult={selectedAnswers[currentQuizQuestion] !== undefined}
                   isCorrect={selectedAnswers[currentQuizQuestion] === currentQuestions[currentQuizQuestion].correct}
                 />
@@ -582,10 +660,10 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
                       const showAnswer = selectedAnswer !== undefined;
                       const isCorrect = index === currentQuestions[currentQuizQuestion].correct;
                       const isSelected = index === selectedAnswer;
-                      
+
                       // Determine button styling based on state
                       let buttonClass = "w-full p-4 text-left border-2 rounded-lg transition-all ";
-                      
+
                       if (showAnswer) {
                         if (isCorrect) {
                           buttonClass += "bg-green-50 border-green-500 text-green-800";
@@ -632,9 +710,9 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
                           <p className="text-blue-700 mt-1 leading-relaxed">
                             {currentQuestions[currentQuizQuestion].explanation}
                           </p>
-                          {useSpacedRepetition && currentQuestions[currentQuizQuestion].reason && (
+                          {useSpacedRepetition && (currentQuestions[currentQuizQuestion] as AdaptiveQuizQuestion).reason && (
                             <div className="mt-2 text-xs text-blue-600 border-t border-blue-200 pt-2">
-                              <strong>Why this question was selected:</strong> {currentQuestions[currentQuizQuestion].reason}
+                              <strong>Why this question was selected:</strong> {(currentQuestions[currentQuizQuestion] as AdaptiveQuizQuestion).reason}
                             </div>
                           )}
                         </div>
@@ -651,4 +729,4 @@ const QuizTab = ({ quizQuestions = [], setActiveTab = () => {} }) => {
   );
 };
 
-export default QuizTab;
+export default memo(QuizTab);

@@ -1,5 +1,5 @@
 /**
- * VisualizationsTab Component
+ * VisualizationsTab Component (TypeScript)
  * Comprehensive data visualization dashboard for the antibiotic learning app
  *
  * REFACTORED: Phase 4 - Extracted modules:
@@ -8,6 +8,8 @@
  * - OverviewDashboard component
  * - PathogenNetworkPanel component
  * - AntibioticAnalysisPanel component
+ *
+ * Migrated to TypeScript: 2025-12-11
  */
 
 import React, { memo, useEffect } from 'react';
@@ -56,7 +58,124 @@ import {
 // Import Northwestern Animation System
 import { useNorthwesternAnimations } from '../animations/NorthwesternAnimations';
 
-const VisualizationsTab = ({
+// Import types
+import { MedicalCondition } from '../types/medical.types';
+
+// ==========================================
+// TYPE DEFINITIONS
+// ==========================================
+
+/**
+ * Pathogen data structure
+ */
+interface PathogenNode {
+  id: string;
+  name: string;
+  gramStatus?: 'Positive' | 'Negative' | 'Variable';
+  [key: string]: any;
+}
+
+interface PathogenData {
+  pathogens?: PathogenNode[];
+  [key: string]: any;
+}
+
+/**
+ * Antibiotic data structure
+ */
+interface Antibiotic {
+  id: string;
+  name: string;
+  class: string;
+  [key: string]: any;
+}
+
+interface AntibioticData {
+  antibiotics?: Antibiotic[];
+  [key: string]: any;
+}
+
+/**
+ * Visualization option configuration
+ */
+interface VisualizationOption {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+}
+
+/**
+ * Filter option configuration
+ */
+interface FilterOption {
+  value: string;
+  label: string;
+}
+
+/**
+ * Category distribution map
+ */
+interface CategoryDistribution {
+  [category: string]: number;
+}
+
+/**
+ * Drug class distribution map
+ */
+interface DrugClassDistribution {
+  [drugClass: string]: number;
+}
+
+/**
+ * Overview statistics
+ */
+interface OverviewStats {
+  totalConditions: number;
+  totalPathogens: number;
+  totalAntibiotics: number;
+  gramPositive: number;
+  gramNegative: number;
+}
+
+/**
+ * Northwestern Animation Manager
+ */
+interface AnimationManager {
+  animate: (element: HTMLElement, config: any) => Promise<void>;
+  cleanup: () => void;
+  setEmergencyMode?: (mode: boolean) => void;
+}
+
+/**
+ * Northwestern Animation Config
+ */
+interface AnimationConfig {
+  element: HTMLElement;
+  config: {
+    keyframes: any[];
+    duration: number;
+    easing?: string;
+    [key: string]: any;
+  };
+}
+
+/**
+ * VisualizationsTab component props
+ */
+interface VisualizationsTabProps {
+  pathogenData?: PathogenData;
+  antibioticData?: AntibioticData;
+  medicalConditions?: MedicalCondition[];
+  onSelectCondition?: (condition: MedicalCondition) => void;
+  onSelectPathogen?: (pathogen: PathogenNode) => void;
+}
+
+// ==========================================
+// COMPONENT
+// ==========================================
+
+const VisualizationsTab: React.FC<VisualizationsTabProps> = ({
   pathogenData,
   antibioticData,
   medicalConditions,
@@ -119,7 +238,7 @@ const VisualizationsTab = ({
     );
 
     if (animationManager && transitionAnimations?.length > 0) {
-      const firstAnimation = transitionAnimations[0];
+      const firstAnimation = transitionAnimations[0] as AnimationConfig;
       animationManager.animate(
         firstAnimation.element,
         firstAnimation.config
@@ -141,19 +260,19 @@ const VisualizationsTab = ({
   }, [emergencyMode, animationManager]);
 
   // Enhanced visualization selection with animation
-  const handleVisualizationChange = async (visualizationId) => {
+  const handleVisualizationChange = async (visualizationId: string): Promise<void> => {
     if (!animationEnabled) {
       setActiveVisualization(visualizationId);
       return;
     }
 
-    const selectionElement = document.querySelector(`[data-visualization="${visualizationId}"]`);
+    const selectionElement = document.querySelector(`[data-visualization="${visualizationId}"]`) as HTMLElement | null;
     if (selectionElement && animationManager) {
       const selectionAnimation = createSelectionAnimation(
         selectionElement,
         'visualization',
         { educationLevel: 'resident', emergencyMode }
-      );
+      ) as AnimationConfig;
 
       try {
         await animationManager.animate(
@@ -169,7 +288,7 @@ const VisualizationsTab = ({
   };
 
   // Handle guideline display request
-  const handleShowGuidelinesForPathogen = (pathogenName, condition = null) => {
+  const handleShowGuidelinesForPathogen = (pathogenName: string, condition: string | null = null): void => {
     const effectiveCondition = condition || selectedConditionForGuidelines;
     const guidelinesForPathogen = getGuidelinesForPathogen(pathogenName, effectiveCondition);
     const guidelinesForCondition = guidelinesForPathogen.length > 0
@@ -182,7 +301,7 @@ const VisualizationsTab = ({
   };
 
   // Render category distribution
-  const renderCategoryDistribution = () => (
+  const renderCategoryDistribution = (): JSX.Element => (
     <div className="bg-white p-6 rounded-xl shadow-sm border">
       <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
         <PieChart size={24} className="text-blue-600" />
@@ -219,7 +338,7 @@ const VisualizationsTab = ({
   );
 
   // Render pathogen analysis
-  const renderPathogenAnalysis = () => (
+  const renderPathogenAnalysis = (): JSX.Element => (
     <div className="bg-white p-6 rounded-xl shadow-sm border">
       <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
         <Microscope size={24} className="text-green-600" />
@@ -257,7 +376,7 @@ const VisualizationsTab = ({
   );
 
   // Render antibiotic comparison
-  const renderAntibioticComparison = () => (
+  const renderAntibioticComparison = (): JSX.Element => (
     <div className="space-y-6">
       <ComparisonControlPanel
         allAntibiotics={antibioticData?.antibiotics || []}
@@ -275,7 +394,7 @@ const VisualizationsTab = ({
   );
 
   // Render guidelines panel
-  const renderGuidelinesPanel = () => (
+  const renderGuidelinesPanel = (): JSX.Element => (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-sm border p-4">
         <button
@@ -295,8 +414,8 @@ const VisualizationsTab = ({
             condition={selectedConditionForGuidelines}
             guidelines={displayedGuidelines}
             emergencyMode={emergencyMode}
-            onGuidelineSelect={(guideline) => console.log('Guideline selected:', guideline)}
-            onExpandDetails={(guidelineId) => console.log('Guideline expanded:', guidelineId)}
+            onGuidelineSelect={(guideline: any) => console.log('Guideline selected:', guideline)}
+            onExpandDetails={(guidelineId: string) => console.log('Guideline expanded:', guidelineId)}
           />
         </ErrorBoundary>
       ) : (
@@ -310,7 +429,7 @@ const VisualizationsTab = ({
   );
 
   // Render clinical decision tree
-  const renderClinicalDecisionTree = () => (
+  const renderClinicalDecisionTree = (): JSX.Element => (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-sm border p-4">
         <button
@@ -327,8 +446,8 @@ const VisualizationsTab = ({
             patientAge={null}
             emergencyMode={emergencyMode}
             selectedPathogen={selectedPathogen}
-            onDecisionPathChange={(path) => console.log('Decision path changed:', path)}
-            onRecommendationComplete={(recommendation) => console.log('Recommendation completed:', recommendation)}
+            onDecisionPathChange={(path: any) => console.log('Decision path changed:', path)}
+            onRecommendationComplete={(recommendation: any) => console.log('Recommendation completed:', recommendation)}
             antibioticData={antibioticData}
             pathogenData={pathogenData}
           />
@@ -344,7 +463,7 @@ const VisualizationsTab = ({
   );
 
   // Main visualization content router
-  const renderVisualizationContent = () => {
+  const renderVisualizationContent = (): JSX.Element => {
     switch (activeVisualization) {
       case 'overview':
         return (
@@ -398,7 +517,7 @@ const VisualizationsTab = ({
   };
 
   // Render visualization option button
-  const renderOptionButton = (option) => {
+  const renderOptionButton = (option: VisualizationOption): JSX.Element => {
     const Icon = option.icon;
     return (
       <button
@@ -526,10 +645,10 @@ const VisualizationsTab = ({
                   <Filter size={16} className="text-gray-400" />
                   <select
                     value={selectedFilter}
-                    onChange={(e) => setSelectedFilter(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedFilter(e.target.value)}
                     className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
-                    {filterOptions.map(option => (
+                    {filterOptions.map((option: FilterOption) => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>

@@ -49,3 +49,199 @@ export interface DurationIndicatorProps {
   showIcon?: boolean;
   format?: 'short' | 'long';
 }
+
+// ==========================================
+// QUIZ TAB COMPONENT TYPES
+// ==========================================
+
+/**
+ * Quiz difficulty level type
+ */
+export type DifficultyLevel = 'all' | 'northwestern' | 'beginner' | 'intermediate' | 'advanced';
+
+/**
+ * Difficulty selection option
+ */
+export interface DifficultyOption {
+  key: DifficultyLevel;
+  label: string;
+  icon: string;
+  color: string;
+}
+
+/**
+ * Difficulty statistics
+ */
+export interface DifficultyStats {
+  all: number;
+  beginner: number;
+  intermediate: number;
+  advanced: number;
+  northwestern: number;
+}
+
+/**
+ * Selected answers map (question index -> answer index)
+ */
+export interface SelectedAnswersMap {
+  [questionIndex: number]: number;
+}
+
+/**
+ * Spaced repetition result for a question
+ */
+export interface SpacedRepetitionResult {
+  question: any; // QuizQuestion from medical.types
+  isCorrect: boolean;
+  cardId: string;
+  nextReview?: Date;
+  interval?: number;
+  reason?: string;
+}
+
+/**
+ * Enhanced quiz question with spaced repetition metadata
+ */
+export interface AdaptiveQuizQuestion {
+  id?: string;
+  question: string;
+  options: string[];
+  correct: number;
+  explanation: string;
+  category?: string;
+  conditionId?: string;
+  difficulty?: string;
+  priority?: 'high' | 'medium' | 'low';
+  reason?: string;
+  northwesternFocus?: boolean;
+  [key: string]: any;
+}
+
+/**
+ * QuizTab component props
+ */
+export interface QuizTabProps {
+  quizQuestions?: any[]; // QuizQuestion[] from medical.types
+  setActiveTab?: (tab: string) => void;
+}
+
+/**
+ * Quiz Progress props (extended from ProgressIndicatorProps)
+ */
+export interface QuizProgressProps {
+  currentQuestion: number;
+  totalQuestions: number;
+  correctAnswers: number;
+  showStats?: boolean;
+  className?: string;
+}
+
+// ==========================================
+// VISUALIZATIONS TAB COMPONENT TYPES
+// ==========================================
+
+/**
+ * Pathogen data structure
+ */
+export interface PathogenNode {
+  id: string;
+  name: string;
+  gramStatus?: 'Positive' | 'Negative' | 'Variable';
+  [key: string]: any;
+}
+
+export interface PathogenData {
+  pathogens?: PathogenNode[];
+  [key: string]: any;
+}
+
+/**
+ * Antibiotic data structure
+ */
+export interface Antibiotic {
+  id: string;
+  name: string;
+  class: string;
+  [key: string]: any;
+}
+
+export interface AntibioticData {
+  antibiotics?: Antibiotic[];
+  [key: string]: any;
+}
+
+/**
+ * Visualization option configuration
+ */
+export interface VisualizationOption {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+}
+
+/**
+ * Filter option configuration
+ */
+export interface FilterOption {
+  value: string;
+  label: string;
+}
+
+/**
+ * Category distribution map
+ */
+export interface CategoryDistribution {
+  [category: string]: number;
+}
+
+/**
+ * Drug class distribution map
+ */
+export interface DrugClassDistribution {
+  [drugClass: string]: number;
+}
+
+/**
+ * Overview statistics
+ */
+export interface OverviewStats {
+  totalConditions: number;
+  totalPathogens: number;
+  totalAntibiotics: number;
+  gramPositive: number;
+  gramNegative: number;
+}
+
+/**
+ * Northwestern Animation Manager
+ */
+export interface AnimationManager {
+  animate: (element: HTMLElement, config: any) => Promise<void>;
+  cleanup: () => void;
+  setEmergencyMode?: (mode: boolean) => void;
+}
+
+/**
+ * Northwestern Animation Config
+ */
+export interface AnimationConfig {
+  element: HTMLElement;
+  config: {
+    keyframes: any[];
+    duration: number;
+    easing?: string;
+    [key: string]: any;
+  };
+}
+
+/**
+ * VisualizationsTab component props
+ */
+export interface VisualizationsTabProps {
+  pathogenData?: PathogenData;
+  antibioticData?: AntibioticData;
+  medicalConditions?: any[]; // MedicalCondition[] from medical.types
+  onSelectCondition?: (condition: any) => void;
+  onSelectPathogen?: (pathogen: PathogenNode) => void;
+}

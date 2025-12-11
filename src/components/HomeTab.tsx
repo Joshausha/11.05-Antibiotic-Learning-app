@@ -1,7 +1,7 @@
 /**
  * HomeTab Component
  * Displays the landing page with app overview and feature highlights
- * 
+ *
  * Props:
  * - setActiveTab: function - function to change the active tab
  */
@@ -10,21 +10,54 @@ import React, { memo, useState } from 'react';
 import { BookOpen, Target, Brain, TrendingUp, Award, Microscope, Pill, Shield, ChevronDown } from 'lucide-react';
 import { ProgressBar, CircularProgress, LearningProgress, MedicalTopicProgress } from './ProgressIndicator';
 
-const HomeTab = ({ setActiveTab = () => {} }) => {
+interface HomeTabProps {
+  setActiveTab?: (tab: string) => void;
+}
+
+interface ExpandedSections {
+  moreTools: boolean;
+  detailedProgress: boolean;
+}
+
+interface UserProgress {
+  totalQuizzes: number;
+  averageScore: number;
+  sectionsCompleted: number;
+  totalSections: number;
+  weeklyGoal: number;
+  weeklyProgress: number;
+}
+
+interface LearningSection {
+  name: string;
+  type: 'pathogen' | 'antibiotic' | 'clinical' | 'resistance' | 'quiz';
+  completed: boolean;
+  score: number;
+}
+
+interface MedicalTopics {
+  pathogenMastery: number;
+  antibioticKnowledge: number;
+  clinicalScenarios: number;
+  resistancePatterns: number;
+}
+
+const HomeTab: React.FC<HomeTabProps> = ({ setActiveTab = () => {} }) => {
   // Progressive Disclosure State (Phase 1.2: HomeTab Simplification)
-  const [expandedSections, setExpandedSections] = useState({
+  const [expandedSections, setExpandedSections] = useState<ExpandedSections>({
     moreTools: false,
     detailedProgress: false
   });
 
-  const toggleSection = (section) => {
+  const toggleSection = (section: keyof ExpandedSections): void => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
     }));
   };
+
   // Mock user progress data for demonstration
-  const userProgress = {
+  const userProgress: UserProgress = {
     totalQuizzes: 3,
     averageScore: 85,
     sectionsCompleted: 2,
@@ -34,7 +67,7 @@ const HomeTab = ({ setActiveTab = () => {} }) => {
   };
 
   // Medical topic progress data
-  const medicalTopics = {
+  const medicalTopics: MedicalTopics = {
     pathogenMastery: 75,
     antibioticKnowledge: 82,
     clinicalScenarios: 68,
@@ -42,14 +75,15 @@ const HomeTab = ({ setActiveTab = () => {} }) => {
   };
 
   // Learning sections with medical context
-  const learningSections = [
+  const learningSections: LearningSection[] = [
     { name: "Pathogens", type: "pathogen", completed: true, score: 88 },
     { name: "Antibiotics", type: "antibiotic", completed: true, score: 78 },
     { name: "Clinical Cases", type: "clinical", completed: false, score: 65 },
     { name: "Resistance Patterns", type: "resistance", completed: false, score: 45 },
     { name: "Quiz Mastery", type: "quiz", completed: false, score: 72 }
   ];
-  const handleNavigation = (tabName) => {
+
+  const handleNavigation = (tabName: string): void => {
     try {
       setActiveTab(tabName);
     } catch (error) {
@@ -57,7 +91,7 @@ const HomeTab = ({ setActiveTab = () => {} }) => {
     }
   };
 
-  const handleKeyDown = (event, tabName) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, tabName: string): void => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       handleNavigation(tabName);
@@ -75,7 +109,7 @@ const HomeTab = ({ setActiveTab = () => {} }) => {
           Master infectious diseases and antimicrobial therapy with evidence-based clinical guidelines
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button 
+          <button
             type="button"
             className="btn-primary px-8 py-3 text-lg"
             onClick={() => handleNavigation('quiz')}
@@ -84,7 +118,7 @@ const HomeTab = ({ setActiveTab = () => {} }) => {
           >
             Take a Quiz
           </button>
-          <button 
+          <button
             type="button"
             className="btn-secondary px-8 py-3 text-lg"
             onClick={() => handleNavigation('reference')}
@@ -100,10 +134,10 @@ const HomeTab = ({ setActiveTab = () => {} }) => {
       {userProgress.totalQuizzes > 0 && (
         <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12" aria-labelledby="progress-heading">
           <h2 id="progress-heading" className="sr-only">Learning Progress Dashboard</h2>
-          
+
           <div className="card text-center" role="region" aria-labelledby="learning-progress-heading">
             <div className="flex items-center justify-center mb-4">
-              <CircularProgress 
+              <CircularProgress
                 progress={userProgress.sectionsCompleted}
                 total={userProgress.totalSections}
                 size="lg"
@@ -135,7 +169,7 @@ const HomeTab = ({ setActiveTab = () => {} }) => {
               <h3 id="weekly-goal-heading" className="text-lg font-semibold">Weekly Goal</h3>
               <Award className="text-yellow-600" size={20} aria-hidden="true" />
             </div>
-            <ProgressBar 
+            <ProgressBar
               progress={userProgress.weeklyProgress}
               total={userProgress.weeklyGoal}
               showStats={true}
@@ -294,4 +328,4 @@ const HomeTab = ({ setActiveTab = () => {} }) => {
   );
 };
 
-export default HomeTab;
+export default memo(HomeTab);

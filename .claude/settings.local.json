@@ -33,7 +33,12 @@
       "Bash(do sed -i '' 's/EnhancedAntibioticData\\.js/EnhancedAntibioticData.ts/g' \"$file\" echo \"Fixed: $file\" done)",
       "Bash(wc:*)",
       "Bash(for:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "mcp__git__git_log",
+      "Bash(git checkout:*)",
+      "mcp__sequentialthinking__sequentialthinking",
+      "mcp__git__git_status",
+      "Bash(while read f)"
     ]
   }
 }
