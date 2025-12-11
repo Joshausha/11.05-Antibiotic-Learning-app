@@ -3,7 +3,7 @@
  * Tests for FSRS algorithm integration and medical education optimization
  */
 
-import spacedRepetitionManager from '../spacedRepetitionManager.js';
+import spacedRepetitionManager from '../spacedRepetitionManager';
 import { Rating, createEmptyCard } from 'ts-fsrs';
 
 // Mock localStorage for testing
