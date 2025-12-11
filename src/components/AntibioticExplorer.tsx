@@ -2,22 +2,117 @@
  * AntibioticExplorer Component - Northwestern Integration Enhanced
  * Provides comprehensive antibiotic exploration functionality with Northwestern pie chart visualization
  * Allows users to search, filter, and explore antibiotics with Northwestern coverage analysis
- * 
+ *
  * Enhanced by: Agent 2.5 - Component Integration Guardian
  * Date: 2025-08-18
  */
 
-import React, { memo, useState, useMemo } from 'react';
-import { Search, Pill, Target, ArrowRight, TrendingUp, Shield, Users, Grid, List, PieChart } from 'lucide-react';
+import React, { memo, useState, useMemo, FC, ReactNode } from 'react';
+import {
+  Search,
+  Pill,
+  Target,
+  ArrowRight,
+  TrendingUp,
+  Shield,
+  Users,
+  Grid,
+  List,
+  PieChart,
+} from 'lucide-react';
 import NorthwesternPieChart from './NorthwesternPieChart';
 import { getAntibioticById } from '../data/EnhancedAntibioticData';
 
-const AntibioticExplorer = ({ 
+// Types
+interface Condition {
+  name: string;
+  category: string;
+  relevantTherapies?: Record<string, string>;
+}
+
+interface Antibiotic {
+  id: string;
+  name: string;
+  class: string;
+  conditions: Condition[];
+  count?: number;
+  northwesternSpectrum?: Record<string, number>;
+}
+
+interface AntibioticStats {
+  total: number;
+  drugClassCount: number;
+  avgConditions: number;
+  maxConditions: number;
+  topAntibiotics?: Array<{
+    name: string;
+    class: string;
+    count: number;
+  }>;
+}
+
+interface DrugClassStat {
+  drugClass: string;
+  antibiotics: number;
+  conditions: number;
+}
+
+interface AntibioticDataContextType {
+  antibiotics: Antibiotic[];
+  selectedAntibiotic: Antibiotic | null;
+  selectedAntibioticConditions: Condition[];
+  drugClassStats: DrugClassStat[];
+  availableDrugClasses: string[];
+  antibioticStats: AntibioticStats | null;
+  filteredStats: any;
+  searchQuery: string;
+  drugClassFilter: string;
+  sortBy: string;
+  searchAntibiotics: (query: string) => void;
+  filterByDrugClass: (drugClass: string) => void;
+  setSortOrder: (order: string) => void;
+  selectAntibiotic: (antibiotic: Antibiotic) => void;
+  clearSelection: () => void;
+  clearFilters: () => void;
+  findAlternativeAntibiotics: (antibiotic: Antibiotic) => Antibiotic[];
+  findCombinationTherapies: (antibiotic: Antibiotic) => any[];
+  getResistanceInfo: (antibiotic: Antibiotic) => string[] | null;
+  isLoading: boolean;
+}
+
+interface AntibioticExplorerProps {
+  antibioticData?: AntibioticDataContextType | null;
+  onSelectCondition?: (condition: Condition) => void;
+}
+
+const AntibioticExplorer: FC<AntibioticExplorerProps> = ({
   antibioticData = null,
-  onSelectCondition = () => {} 
+  onSelectCondition = () => {},
 }) => {
   // Defensive programming: Safely extract antibiotic data with comprehensive fallbacks
-  const safeAntibioticData = antibioticData || {};
+  const safeAntibioticData: AntibioticDataContextType = antibioticData || {
+    antibiotics: [],
+    selectedAntibiotic: null,
+    selectedAntibioticConditions: [],
+    drugClassStats: [],
+    availableDrugClasses: [],
+    antibioticStats: null,
+    filteredStats: null,
+    searchQuery: '',
+    drugClassFilter: 'all',
+    sortBy: 'name',
+    searchAntibiotics: () => {},
+    filterByDrugClass: () => {},
+    setSortOrder: () => {},
+    selectAntibiotic: () => {},
+    clearSelection: () => {},
+    clearFilters: () => {},
+    findAlternativeAntibiotics: () => [],
+    findCombinationTherapies: () => [],
+    getResistanceInfo: () => null,
+    isLoading: false,
+  };
+
   const {
     antibiotics = [],
     selectedAntibiotic = null,
@@ -38,31 +133,37 @@ const AntibioticExplorer = ({
     findAlternativeAntibiotics = () => [],
     findCombinationTherapies = () => [],
     getResistanceInfo = () => null,
-    isLoading = false
+    isLoading = false,
   } = safeAntibioticData;
 
   // Northwestern visualization state
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'northwestern'
-  const [selectedSegment, setSelectedSegment] = useState(null);
-  
+  const [viewMode, setViewMode] = useState<'list' | 'northwestern'>('list');
+  const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
+
   // Enhanced antibiotics data with Northwestern information
-  const enhancedAntibiotics = useMemo(() => {
-    return (antibiotics || []).map(antibiotic => {
-      // Get enhanced data that includes Northwestern spectrum
+  const enhancedAntibiotics: Antibiotic[] = useMemo(() => {
+    return (antibiotics || []).map((antibiotic) => {
       const enhanced = getAntibioticById(antibiotic.id);
       return enhanced || antibiotic;
     });
   }, [antibiotics]);
 
   // Northwestern interaction handlers
-  const handleNorthwesternSegmentHover = (segmentKey, event, context) => {
+  const handleNorthwesternSegmentHover = (
+    segmentKey: string,
+    event: React.MouseEvent,
+    context: any
+  ): void => {
     setSelectedSegment(segmentKey);
   };
 
-  const handleNorthwesternSegmentClick = (segmentKey, event, context) => {
-    // Select the antibiotic when clicking on its chart
+  const handleNorthwesternSegmentClick = (
+    segmentKey: string,
+    event: React.MouseEvent,
+    context: any
+  ): void => {
     if (context.antibiotic) {
-      const antibiotic = enhancedAntibiotics.find(ab => ab.name === context.antibiotic);
+      const antibiotic = enhancedAntibiotics.find((ab) => ab.name === context.antibiotic);
       if (antibiotic) {
         selectAntibiotic(antibiotic);
       }
@@ -70,12 +171,11 @@ const AntibioticExplorer = ({
   };
 
   // Filter antibiotics by selected segment coverage
-  const filteredBySegment = useMemo(() => {
+  const filteredBySegment: Antibiotic[] = useMemo(() => {
     if (!selectedSegment) return enhancedAntibiotics;
-    
-    return (enhancedAntibiotics || []).filter(antibiotic => {
-      return antibiotic.northwesternSpectrum && 
-             antibiotic.northwesternSpectrum[selectedSegment] > 0;
+
+    return (enhancedAntibiotics || []).filter((antibiotic) => {
+      return antibiotic.northwesternSpectrum && antibiotic.northwesternSpectrum[selectedSegment] > 0;
     });
   }, [enhancedAntibiotics, selectedSegment]);
 
@@ -87,18 +187,18 @@ const AntibioticExplorer = ({
     );
   }
 
-  const getDrugClassColor = (drugClass) => {
-    const colors = {
-      'Penicillins': 'text-blue-600 bg-blue-100',
-      'Cephalosporins': 'text-green-600 bg-green-100',
-      'Glycopeptides': 'text-purple-600 bg-purple-100',
-      'Fluoroquinolones': 'text-orange-600 bg-orange-100',
-      'Macrolides': 'text-pink-600 bg-pink-100',
-      'Aminoglycosides': 'text-indigo-600 bg-indigo-100',
-      'Lincosamides': 'text-teal-600 bg-teal-100',
-      'Oxazolidinones': 'text-red-600 bg-red-100'
+  const getDrugClassColor = (drugClass: string | undefined): string => {
+    const colors: Record<string, string> = {
+      Penicillins: 'text-blue-600 bg-blue-100',
+      Cephalosporins: 'text-green-600 bg-green-100',
+      Glycopeptides: 'text-purple-600 bg-purple-100',
+      Fluoroquinolones: 'text-orange-600 bg-orange-100',
+      Macrolides: 'text-pink-600 bg-pink-100',
+      Aminoglycosides: 'text-indigo-600 bg-indigo-100',
+      Lincosamides: 'text-teal-600 bg-teal-100',
+      Oxazolidinones: 'text-red-600 bg-red-100',
     };
-    return colors[drugClass] || 'text-gray-600 bg-gray-100';
+    return colors[drugClass || ''] || 'text-gray-600 bg-gray-100';
   };
 
   return (
@@ -110,9 +210,10 @@ const AntibioticExplorer = ({
           <h1 className="text-2xl font-bold text-gray-900">Antibiotic Explorer</h1>
         </div>
         <p className="text-gray-600">
-          Explore antimicrobial agents and discover their clinical applications and treatment contexts.
+          Explore antimicrobial agents and discover their clinical applications and treatment
+          contexts.
         </p>
-        
+
         {/* Statistics */}
         {antibioticStats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
@@ -121,7 +222,9 @@ const AntibioticExplorer = ({
               <div className="text-sm text-gray-600">Total Antibiotics</div>
             </div>
             <div className="text-center p-3 bg-green-50 rounded-lg">
-              <div className="text-xl font-bold text-green-600">{antibioticStats.drugClassCount}</div>
+              <div className="text-xl font-bold text-green-600">
+                {antibioticStats.drugClassCount}
+              </div>
               <div className="text-sm text-gray-600">Drug Classes</div>
             </div>
             <div className="text-center p-3 bg-purple-50 rounded-lg">
@@ -143,7 +246,7 @@ const AntibioticExplorer = ({
               {(antibioticStats?.topAntibiotics || []).map((antibiotic, index) => (
                 <button
                   key={index}
-                  onClick={() => selectAntibiotic(antibiotic)}
+                  onClick={() => selectAntibiotic(antibiotic as any)}
                   className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${getDrugClassColor(antibiotic.class)} hover:opacity-80`}
                 >
                   {antibiotic.name} ({antibiotic.count})
@@ -161,8 +264,8 @@ const AntibioticExplorer = ({
               <button
                 onClick={() => setViewMode('list')}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
-                  viewMode === 'list' 
-                    ? 'bg-white text-blue-600 shadow-sm' 
+                  viewMode === 'list'
+                    ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
@@ -172,8 +275,8 @@ const AntibioticExplorer = ({
               <button
                 onClick={() => setViewMode('northwestern')}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
-                  viewMode === 'northwestern' 
-                    ? 'bg-white text-blue-600 shadow-sm' 
+                  viewMode === 'northwestern'
+                    ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
@@ -224,25 +327,23 @@ const AntibioticExplorer = ({
           {/* Filters */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Drug Class
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Drug Class</label>
               <select
                 value={drugClassFilter}
                 onChange={(e) => filterByDrugClass(e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Classes</option>
-                {(availableDrugClasses || []).map(drugClass => (
-                  <option key={drugClass} value={drugClass}>{drugClass}</option>
+                {(availableDrugClasses || []).map((drugClass) => (
+                  <option key={drugClass} value={drugClass}>
+                    {drugClass}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sort By
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortOrder(e.target.value)}
@@ -263,25 +364,29 @@ const AntibioticExplorer = ({
             </button>
           </div>
 
-          {/* Drug Class Statistics - Fixed defensive programming */}
+          {/* Drug Class Statistics */}
           {Array.isArray(drugClassStats) && drugClassStats.length > 0 && (
             <div className="mt-6">
               <h3 className="text-sm font-medium text-gray-700 mb-3">Drug Classes</h3>
               <div className="space-y-2 max-h-40 overflow-y-auto">
-                {(drugClassStats || []).slice(0, 8).map((stat, index) => (
-                  <div
-                    key={index}
-                    onClick={() => filterByDrugClass(stat.drugClass)}
-                    className="flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                  >
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDrugClassColor(stat.drugClass)}`}>
-                      {stat.drugClass}
-                    </span>
-                    <div className="text-sm text-gray-600">
-                      {stat.antibiotics} drugs, {stat.conditions} conditions
+                {(drugClassStats || [])
+                  .slice(0, 8)
+                  .map((stat, index) => (
+                    <div
+                      key={index}
+                      onClick={() => filterByDrugClass(stat.drugClass)}
+                      className="flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    >
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getDrugClassColor(stat.drugClass)}`}
+                      >
+                        {stat.drugClass}
+                      </span>
+                      <div className="text-sm text-gray-600">
+                        {stat.antibiotics} drugs, {stat.conditions} conditions
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           )}
@@ -316,12 +421,16 @@ const AntibioticExplorer = ({
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="font-medium text-gray-900">{antibiotic.name}</div>
-                      <div className={`inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${getDrugClassColor(antibiotic.class)}`}>
+                      <div
+                        className={`inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${getDrugClassColor(antibiotic.class)}`}
+                      >
                         {antibiotic.class}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium text-gray-900">{antibiotic.conditions.length}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {antibiotic.conditions.length}
+                      </div>
                       <div className="text-xs text-gray-500">conditions</div>
                     </div>
                   </div>
@@ -333,48 +442,53 @@ const AntibioticExplorer = ({
             <div className="max-h-96 overflow-y-auto">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {(selectedSegment ? filteredBySegment : enhancedAntibiotics)
-                  .filter(antibiotic => antibiotic.northwesternSpectrum) // Only show antibiotics with Northwestern data
+                  .filter((antibiotic) => antibiotic.northwesternSpectrum)
                   .map((antibiotic, index) => (
-                  <div
-                    key={index}
-                    className={`p-3 border rounded-lg transition-all duration-200 hover:shadow-md ${
-                      selectedAntibiotic?.name === antibiotic.name
-                        ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                        : 'border-gray-200 hover:border-blue-300'
-                    }`}
-                  >
-                    <div className="text-center mb-2">
-                      <div className="font-medium text-sm text-gray-900 truncate" title={antibiotic.name}>
-                        {antibiotic.name}
+                    <div
+                      key={index}
+                      className={`p-3 border rounded-lg transition-all duration-200 hover:shadow-md ${
+                        selectedAntibiotic?.name === antibiotic.name
+                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                          : 'border-gray-200 hover:border-blue-300'
+                      }`}
+                    >
+                      <div className="text-center mb-2">
+                        <div
+                          className="font-medium text-sm text-gray-900 truncate"
+                          title={antibiotic.name}
+                        >
+                          {antibiotic.name}
+                        </div>
+                        <div
+                          className={`inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${getDrugClassColor(antibiotic.class)}`}
+                        >
+                          {antibiotic.class}
+                        </div>
                       </div>
-                      <div className={`inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${getDrugClassColor(antibiotic.class)}`}>
-                        {antibiotic.class}
+
+                      <div className="flex justify-center">
+                        <NorthwesternPieChart
+                          antibiotic={antibiotic}
+                          size="small"
+                          interactive={true}
+                          onSegmentHover={handleNorthwesternSegmentHover}
+                          onSegmentClick={handleNorthwesternSegmentClick}
+                          selectedSegments={selectedSegment ? [selectedSegment] : []}
+                          className="cursor-pointer"
+                          emergencyMode={false}
+                          educationLevel="resident"
+                        />
+                      </div>
+
+                      <div className="text-center mt-2 text-xs text-gray-500">
+                        {antibiotic.conditions?.length || 0} conditions
                       </div>
                     </div>
-                    
-                    <div className="flex justify-center">
-                      <NorthwesternPieChart
-                        antibiotic={antibiotic}
-                        size="small"
-                        interactive={true}
-                        onSegmentHover={handleNorthwesternSegmentHover}
-                        onSegmentClick={handleNorthwesternSegmentClick}
-                        selectedSegments={selectedSegment ? [selectedSegment] : []}
-                        className="cursor-pointer"
-                        emergencyMode={false}
-                        educationLevel="resident"
-                      />
-                    </div>
-                    
-                    <div className="text-center mt-2 text-xs text-gray-500">
-                      {antibiotic.conditions?.length || 0} conditions
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
-              
+
               {/* No Northwestern data message */}
-              {enhancedAntibiotics.filter(ab => ab.northwesternSpectrum).length === 0 && (
+              {enhancedAntibiotics.filter((ab) => ab.northwesternSpectrum).length === 0 && (
                 <div className="text-center text-gray-500 py-8">
                   <PieChart size={48} className="mx-auto mb-4 opacity-50" />
                   <p>Northwestern coverage data is being loaded...</p>
@@ -393,16 +507,15 @@ const AntibioticExplorer = ({
             <div>
               <h2 className="text-xl font-semibold">{selectedAntibiotic.name}</h2>
               <div className="flex items-center gap-2 mt-1">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDrugClassColor(selectedAntibiotic.class)}`}>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getDrugClassColor(selectedAntibiotic.class)}`}
+                >
                   {selectedAntibiotic.class}
                 </span>
                 <span className="text-sm text-gray-600">{selectedAntibiotic.count} uses</span>
               </div>
             </div>
-            <button
-              onClick={clearSelection}
-              className="text-gray-500 hover:text-gray-700"
-            >
+            <button onClick={clearSelection} className="text-gray-500 hover:text-gray-700">
               ✕
             </button>
           </div>
@@ -410,7 +523,7 @@ const AntibioticExplorer = ({
           {/* Northwestern Coverage Visualization */}
           {(() => {
             const enhancedSelected = getAntibioticById(selectedAntibiotic.id);
-            return enhancedSelected?.northwesternSpectrum && (
+            return enhancedSelected?.northwesternSpectrum ? (
               <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -421,19 +534,17 @@ const AntibioticExplorer = ({
                     Interactive
                   </span>
                 </div>
-                
+
                 <div className="flex items-center justify-center">
                   <NorthwesternPieChart
                     antibiotic={enhancedSelected}
                     size="large"
                     interactive={true}
                     showLabels={false}
-                    onSegmentHover={(segment, event, context) => {
-                      // Enhanced hover for detailed view
+                    onSegmentHover={(segment: string, event: React.MouseEvent, context: any) => {
                       setSelectedSegment(segment);
                     }}
-                    onSegmentClick={(segment, event, context) => {
-                      // Handle segment analysis
+                    onSegmentClick={(segment: string, event: React.MouseEvent, context: any) => {
                       console.log('Segment analysis:', segment, context);
                     }}
                     selectedSegments={selectedSegment ? [selectedSegment] : []}
@@ -442,7 +553,7 @@ const AntibioticExplorer = ({
                     className="mx-auto"
                   />
                 </div>
-                
+
                 {selectedSegment && (
                   <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
                     <div className="text-sm">
@@ -451,20 +562,21 @@ const AntibioticExplorer = ({
                       </span>
                       <span className="ml-2">
                         {enhancedSelected.northwesternSpectrum[selectedSegment] === 0 && 'No coverage'}
-                        {enhancedSelected.northwesternSpectrum[selectedSegment] === 1 && 'Moderate coverage'}
+                        {enhancedSelected.northwesternSpectrum[selectedSegment] === 1 &&
+                          'Moderate coverage'}
                         {enhancedSelected.northwesternSpectrum[selectedSegment] === 2 && 'Good coverage'}
                       </span>
                     </div>
                   </div>
                 )}
               </div>
-            );
+            ) : null;
           })()}
 
           {/* Resistance Information */}
           {(() => {
             const resistanceInfo = getResistanceInfo(selectedAntibiotic);
-            return resistanceInfo && resistanceInfo.length > 0 && (
+            return resistanceInfo && resistanceInfo.length > 0 ? (
               <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                 <div className="flex items-center gap-2 mb-2">
                   <Shield size={16} className="text-yellow-600" />
@@ -476,7 +588,7 @@ const AntibioticExplorer = ({
                   ))}
                 </ul>
               </div>
-            );
+            ) : null;
           })()}
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -500,18 +612,20 @@ const AntibioticExplorer = ({
                       </div>
                       <ArrowRight size={16} className="text-gray-400" />
                     </div>
-                    
+
                     {/* Show relevant therapy contexts */}
-                    {condition.relevantTherapies && Object.keys(condition.relevantTherapies).length > 0 && (
-                      <div className="mt-2">
-                        <div className="text-xs text-gray-500 mb-1">Therapy contexts:</div>
-                        {Object.entries(condition.relevantTherapies || {}).map(([context, therapy], idx) => (
-                          <div key={idx} className="text-xs bg-gray-100 rounded px-2 py-1 mb-1">
-                            <span className="font-medium">{context}:</span> {therapy.length > 100 ? therapy.substring(0, 100) + '...' : therapy}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {condition.relevantTherapies &&
+                      Object.keys(condition.relevantTherapies).length > 0 && (
+                        <div className="mt-2">
+                          <div className="text-xs text-gray-500 mb-1">Therapy contexts:</div>
+                          {Object.entries(condition.relevantTherapies || {}).map(([context, therapy], idx) => (
+                            <div key={idx} className="text-xs bg-gray-100 rounded px-2 py-1 mb-1">
+                              <span className="font-medium">{context}:</span>{' '}
+                              {therapy.length > 100 ? therapy.substring(0, 100) + '...' : therapy}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                   </div>
                 ))}
               </div>
@@ -523,31 +637,35 @@ const AntibioticExplorer = ({
                 <Users size={18} className="text-purple-600" />
                 Alternative Options
               </h3>
-              
+
               {(() => {
                 const alternatives = findAlternativeAntibiotics(selectedAntibiotic);
                 return (
                   <div className="space-y-2">
-                    {(alternatives || []).slice(0, 6).map((alternative, index) => (
-                      <div
-                        key={index}
-                        onClick={() => selectAntibiotic(alternative)}
-                        className="p-3 border rounded-lg cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium text-gray-900">{alternative.name}</div>
-                            <div className={`inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${getDrugClassColor(alternative.class)}`}>
-                              {alternative.class}
+                    {(alternatives || [])
+                      .slice(0, 6)
+                      .map((alternative, index) => (
+                        <div
+                          key={index}
+                          onClick={() => selectAntibiotic(alternative)}
+                          className="p-3 border rounded-lg cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium text-gray-900">{alternative.name}</div>
+                              <div
+                                className={`inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${getDrugClassColor(alternative.class)}`}
+                              >
+                                {alternative.class}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm text-gray-600">{alternative.conditions.length}</div>
+                              <div className="text-xs text-gray-500">shared</div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="text-sm text-gray-600">{alternative.conditions.length}</div>
-                            <div className="text-xs text-gray-500">shared</div>
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 );
               })()}
@@ -557,7 +675,7 @@ const AntibioticExplorer = ({
           {/* Combination Therapies */}
           {(() => {
             const combinations = findCombinationTherapies(selectedAntibiotic);
-            return combinations && combinations.length > 0 && (
+            return combinations && combinations.length > 0 ? (
               <div className="mt-6">
                 <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
                   <TrendingUp size={18} className="text-orange-600" />
@@ -572,13 +690,14 @@ const AntibioticExplorer = ({
                         <span className="font-medium text-gray-900">{combo.antibiotic.name}</span>
                       </div>
                       <div className="text-xs text-gray-600">
-                        {(combo.contexts || []).length} context{(combo.contexts || []).length !== 1 ? 's' : ''}
+                        {(combo.contexts || []).length} context
+                        {(combo.contexts || []).length !== 1 ? 's' : ''}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-            );
+            ) : null;
           })()}
         </div>
       )}
