@@ -5,21 +5,67 @@
 
 import React, { useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
-import { Brain, Target, TrendingUp, Calendar, Clock, Award } from 'lucide-react';
+import { Brain, Target, TrendingUp, Calendar, Clock, Award, LucideIcon } from 'lucide-react';
 import { chartColors, getPerformanceColor } from './chartConfig';
 import { calculatePerformanceMetrics, formatChartNumber } from './chartHelpers';
 
-const ProgressMetricsCards = ({ 
-  quizHistory = [], 
+// Types
+interface QuizHistoryItem {
+  scorePercentage: number;
+}
+
+interface SpacedRepetitionAnalytics {
+  totalCards: number;
+  dueToday: number;
+  learned: number;
+  mature: number;
+  retentionRate: number;
+  averageInterval: number;
+}
+
+interface SpacedRepetitionData {
+  analytics?: SpacedRepetitionAnalytics;
+}
+
+interface ProgressMetricsCardsProps {
+  quizHistory?: QuizHistoryItem[];
+  spacedRepetitionData?: SpacedRepetitionData;
+  className?: string;
+}
+
+interface FSRSMetrics {
+  totalCards: number;
+  dueToday: number;
+  learned: number;
+  mature: number;
+  retentionRate: number;
+  averageInterval: number;
+}
+
+interface MetricCardProps {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  icon: LucideIcon;
+  color?: string;
+  trend?: number | null;
+  showSparkline?: boolean;
+  quizHistory?: QuizHistoryItem[];
+  sparklineData?: any;
+  sparklineOptions?: any;
+}
+
+const ProgressMetricsCards: React.FC<ProgressMetricsCardsProps> = ({
+  quizHistory = [],
   spacedRepetitionData = {},
-  className = '' 
+  className = '',
 }) => {
-  const performanceMetrics = useMemo(() => 
-    calculatePerformanceMetrics(quizHistory), 
+  const performanceMetrics = useMemo(
+    () => calculatePerformanceMetrics(quizHistory),
     [quizHistory]
   );
 
-  const fsrsMetrics = useMemo(() => {
+  const fsrsMetrics: FSRSMetrics = useMemo(() => {
     const analytics = spacedRepetitionData.analytics || {};
     return {
       totalCards: analytics.totalCards || 0,
@@ -27,7 +73,7 @@ const ProgressMetricsCards = ({
       learned: analytics.learned || 0,
       mature: analytics.mature || 0,
       retentionRate: analytics.retentionRate || 100,
-      averageInterval: analytics.averageInterval || 0
+      averageInterval: analytics.averageInterval || 0,
     };
   }, [spacedRepetitionData]);
 
@@ -36,14 +82,16 @@ const ProgressMetricsCards = ({
     const recent = quizHistory.slice(-10);
     return {
       labels: recent.map((_, index) => index + 1),
-      datasets: [{
-        data: recent.map(quiz => quiz.scorePercentage || 0),
-        borderColor: chartColors.primary,
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        pointRadius: 0,
-        tension: 0.4
-      }]
+      datasets: [
+        {
+          data: recent.map((quiz) => quiz.scorePercentage || 0),
+          borderColor: chartColors.primary,
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.4,
+        },
+      ],
     };
   }, [quizHistory]);
 
@@ -52,59 +100,55 @@ const ProgressMetricsCards = ({
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
-      tooltip: { enabled: false }
+      tooltip: { enabled: false },
     },
     scales: {
       x: { display: false },
-      y: { display: false }
+      y: { display: false },
     },
     elements: {
-      point: { radius: 0 }
-    }
+      point: { radius: 0 },
+    },
   };
 
-  const MetricCard = ({ 
-    title, 
-    value, 
-    subtitle, 
-    icon: Icon, 
+  const MetricCard: React.FC<MetricCardProps> = ({
+    title,
+    value,
+    subtitle,
+    icon: Icon,
     color = chartColors.primary,
     trend = null,
-    showSparkline = false
+    showSparkline = false,
   }) => (
     <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div 
-            className="p-2 rounded-lg"
-            style={{ backgroundColor: `${color}20` }}
-          >
+          <div className="p-2 rounded-lg" style={{ backgroundColor: `${color}20` }}>
             <Icon size={20} style={{ color }} />
           </div>
           <div>
             <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
-            {subtitle && (
-              <p className="text-xs text-gray-500">{subtitle}</p>
-            )}
+            {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
           </div>
         </div>
         {trend !== null && (
-          <div className={`flex items-center gap-1 text-xs ${
-            trend > 0 ? 'text-green-600' : trend < 0 ? 'text-red-600' : 'text-gray-500'
-          }`}>
+          <div
+            className={`flex items-center gap-1 text-xs ${
+              trend > 0 ? 'text-green-600' : trend < 0 ? 'text-red-600' : 'text-gray-500'
+            }`}
+          >
             <TrendingUp size={14} />
-            {trend > 0 ? '+' : ''}{trend}%
+            {trend > 0 ? '+' : ''}
+            {trend}%
           </div>
         )}
       </div>
-      
+
       <div className="flex items-end justify-between">
         <div>
-          <div className="text-2xl font-bold text-gray-900 mb-1">
-            {value}
-          </div>
+          <div className="text-2xl font-bold text-gray-900 mb-1">{value}</div>
         </div>
-        
+
         {showSparkline && quizHistory.length > 1 && (
           <div className="w-16 h-8">
             <Line data={sparklineData} options={sparklineOptions} />
@@ -125,6 +169,9 @@ const ProgressMetricsCards = ({
         color={getPerformanceColor(performanceMetrics.averageScore)}
         trend={performanceMetrics.improvementTrend}
         showSparkline={true}
+        quizHistory={quizHistory}
+        sparklineData={sparklineData}
+        sparklineOptions={sparklineOptions}
       />
 
       {/* Study Consistency */}

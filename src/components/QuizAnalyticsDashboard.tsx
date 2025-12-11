@@ -1,9 +1,9 @@
 /**
  * QuizAnalyticsDashboard Component
- * 
+ *
  * A comprehensive analytics dashboard that provides real-time insights into quiz performance
  * Features stunning visualizations and interactive elements to track learning progress
- * 
+ *
  * Key Features:
  * - Real-time performance charts
  * - Category-based radar charts
@@ -14,14 +14,14 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { 
-  TrendingUp, 
-  Target, 
-  Calendar, 
-  Award, 
-  AlertCircle, 
-  BarChart3, 
-  PieChart, 
+import {
+  TrendingUp,
+  Target,
+  Calendar,
+  Award,
+  AlertCircle,
+  BarChart3,
+  PieChart,
   Activity,
   Brain,
   Clock,
@@ -29,16 +29,133 @@ import {
   Trophy,
   Zap,
   Users,
-  Filter
+  Filter,
+  LucideIcon,
 } from 'lucide-react';
 
-const QuizAnalyticsDashboard = ({ quizProgress, quizQuestions = [] }) => {
-  const [selectedTimeRange, setSelectedTimeRange] = useState('all');
-  const [activeChart, setActiveChart] = useState('performance');
+// Types
+interface QuizAnswer {
+  questionText: string;
+  isCorrect: boolean;
+}
+
+interface QuizHistoryItem {
+  completedAt: string;
+  scorePercentage: number;
+  correctAnswers: number;
+  totalQuestions: number;
+  duration: string;
+  answers: QuizAnswer[];
+}
+
+interface QuizStats {
+  averageScore: number;
+  bestScore: number;
+  improvementTrend: string;
+  streakCount: number;
+}
+
+interface QuizProgress {
+  quizHistory: QuizHistoryItem[];
+  stats: QuizStats;
+}
+
+interface AnalyticsData {
+  totalQuizzes: number;
+  averageScore: number;
+  bestScore: number;
+  improvementTrend: string;
+  categoryPerformance: Record<string, number>;
+  difficultyBreakdown: Record<string, number>;
+  recentActivity: QuizHistoryItem[];
+  weeklyProgress: WeeklyDataPoint[];
+  topicStrengths: TopicPerformance[];
+  topicWeaknesses: TopicPerformance[];
+  streakCount: number;
+}
+
+interface WeeklyDataPoint {
+  week: string;
+  score: number;
+  quizzes: number;
+}
+
+interface TopicPerformance {
+  topic: string;
+  accuracy: number;
+  totalQuestions: number;
+}
+
+interface Recommendation {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}
+
+interface QuizQuestion {
+  category?: string;
+  question?: string;
+}
+
+interface QuizAnalyticsDashboardProps {
+  quizProgress: QuizProgress | null;
+  quizQuestions?: QuizQuestion[];
+}
+
+interface MetricCardProps {
+  icon: LucideIcon;
+  title: string;
+  value: string | number;
+  subtitle: string;
+  color: 'blue' | 'green' | 'purple' | 'yellow';
+  animated: boolean;
+}
+
+interface PerformanceChartProps {
+  data: WeeklyDataPoint[];
+  animated: boolean;
+}
+
+interface DifficultyChartProps {
+  data: Record<string, number>;
+  animated: boolean;
+}
+
+interface CategoryRadarChartProps {
+  data: Record<string, number>;
+  animated: boolean;
+}
+
+interface TopicBarProps {
+  topic: string;
+  percentage: number;
+  color: 'green' | 'red' | 'blue';
+  animated: boolean;
+  delay: number;
+}
+
+interface RecentQuizCardProps {
+  quiz: QuizHistoryItem;
+  animated: boolean;
+  delay: number;
+}
+
+interface RecommendationCardProps {
+  recommendation: Recommendation;
+  animated: boolean;
+  delay: number;
+}
+
+const QuizAnalyticsDashboard: React.FC<QuizAnalyticsDashboardProps> = ({
+  quizProgress,
+  quizQuestions = [],
+}) => {
+  const [selectedTimeRange, setSelectedTimeRange] = useState<'all' | 'week' | 'month' | 'quarter'>('all');
+  const [activeChart, setActiveChart] = useState<'performance' | 'difficulty' | 'category'>('performance');
   const [animationEnabled, setAnimationEnabled] = useState(true);
 
   // Process quiz data for analytics
-  const analytics = useMemo(() => {
+  const analytics: AnalyticsData = useMemo(() => {
     if (!quizProgress || !quizProgress.quizHistory) {
       return {
         totalQuizzes: 0,
@@ -50,28 +167,29 @@ const QuizAnalyticsDashboard = ({ quizProgress, quizQuestions = [] }) => {
         recentActivity: [],
         weeklyProgress: [],
         topicStrengths: [],
-        topicWeaknesses: []
+        topicWeaknesses: [],
+        streakCount: 0,
       };
     }
 
     const history = quizProgress.quizHistory;
     const stats = quizProgress.stats;
-    
+
     // Filter by time range
     const filteredHistory = filterByTimeRange(history, selectedTimeRange);
-    
+
     // Calculate category performance
     const categoryPerformance = calculateCategoryPerformance(filteredHistory, quizQuestions);
-    
+
     // Calculate difficulty breakdown
     const difficultyBreakdown = calculateDifficultyBreakdown(filteredHistory);
-    
+
     // Calculate weekly progress
     const weeklyProgress = calculateWeeklyProgress(filteredHistory);
-    
+
     // Identify topic strengths and weaknesses
     const topicAnalysis = calculateTopicAnalysis(filteredHistory);
-    
+
     return {
       totalQuizzes: filteredHistory.length,
       averageScore: stats.averageScore,
@@ -83,7 +201,7 @@ const QuizAnalyticsDashboard = ({ quizProgress, quizQuestions = [] }) => {
       weeklyProgress,
       topicStrengths: topicAnalysis.strengths,
       topicWeaknesses: topicAnalysis.weaknesses,
-      streakCount: stats.streakCount
+      streakCount: stats.streakCount,
     };
   }, [quizProgress, selectedTimeRange, quizQuestions]);
 
@@ -107,13 +225,13 @@ const QuizAnalyticsDashboard = ({ quizProgress, quizQuestions = [] }) => {
             Real-time insights into your antibiotic knowledge mastery
           </p>
         </div>
-        
+
         {/* Time Range Filter */}
         <div className="flex items-center gap-3 mt-4 md:mt-0">
           <Filter size={20} className="text-gray-500" />
           <select
             value={selectedTimeRange}
-            onChange={(e) => setSelectedTimeRange(e.target.value)}
+            onChange={(e) => setSelectedTimeRange(e.target.value as 'all' | 'week' | 'month' | 'quarter')}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">All Time</option>
@@ -168,7 +286,7 @@ const QuizAnalyticsDashboard = ({ quizProgress, quizQuestions = [] }) => {
             Performance Trends
           </h2>
           <div className="flex gap-2">
-            {['performance', 'difficulty', 'category'].map((chart) => (
+            {(['performance', 'difficulty', 'category'] as const).map((chart) => (
               <button
                 key={chart}
                 className={`px-4 py-2 rounded-lg transition-all ${
@@ -183,22 +301,16 @@ const QuizAnalyticsDashboard = ({ quizProgress, quizQuestions = [] }) => {
             ))}
           </div>
         </div>
-        
+
         {activeChart === 'performance' && (
-          <PerformanceChart 
-            data={analytics.weeklyProgress} 
-            animated={animationEnabled}
-          />
+          <PerformanceChart data={analytics.weeklyProgress} animated={animationEnabled} />
         )}
         {activeChart === 'difficulty' && (
-          <DifficultyChart 
-            data={analytics.difficultyBreakdown} 
-            animated={animationEnabled}
-          />
+          <DifficultyChart data={analytics.difficultyBreakdown} animated={animationEnabled} />
         )}
         {activeChart === 'category' && (
-          <CategoryRadarChart 
-            data={analytics.categoryPerformance} 
+          <CategoryRadarChart
+            data={analytics.categoryPerformance}
             animated={animationEnabled}
           />
         )}
@@ -212,7 +324,7 @@ const QuizAnalyticsDashboard = ({ quizProgress, quizQuestions = [] }) => {
             <Brain className="text-purple-600" size={20} />
             Knowledge Areas
           </h3>
-          
+
           <div className="space-y-4">
             {/* Strengths */}
             <div>
@@ -233,7 +345,7 @@ const QuizAnalyticsDashboard = ({ quizProgress, quizQuestions = [] }) => {
                 ))}
               </div>
             </div>
-            
+
             {/* Weaknesses */}
             <div>
               <h4 className="font-medium text-red-800 mb-3 flex items-center gap-2">
@@ -262,7 +374,7 @@ const QuizAnalyticsDashboard = ({ quizProgress, quizQuestions = [] }) => {
             <Activity className="text-blue-600" size={20} />
             Recent Activity
           </h3>
-          
+
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {analytics.recentActivity.map((quiz, index) => (
               <RecentQuizCard
@@ -282,7 +394,7 @@ const QuizAnalyticsDashboard = ({ quizProgress, quizQuestions = [] }) => {
           <BookOpen className="text-blue-600" size={20} />
           Personalized Learning Recommendations
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {generateRecommendations(analytics).map((recommendation, index) => (
             <RecommendationCard
@@ -299,8 +411,15 @@ const QuizAnalyticsDashboard = ({ quizProgress, quizQuestions = [] }) => {
 };
 
 // Helper Components
-const MetricCard = ({ icon: Icon, title, value, subtitle, color, animated }) => {
-  const colorClasses = {
+const MetricCard: React.FC<MetricCardProps> = ({
+  icon: Icon,
+  title,
+  value,
+  subtitle,
+  color,
+  animated,
+}) => {
+  const colorClasses: Record<string, string> = {
     blue: 'bg-blue-50 text-blue-600 border-blue-200',
     green: 'bg-green-50 text-green-600 border-green-200',
     purple: 'bg-purple-50 text-purple-600 border-purple-200',
@@ -308,9 +427,11 @@ const MetricCard = ({ icon: Icon, title, value, subtitle, color, animated }) => 
   };
 
   return (
-    <div className={`bg-white rounded-xl shadow-lg p-6 border-l-4 border-${color}-500 transition-all hover:shadow-xl ${
-      animated ? 'animate-pulse' : ''
-    }`}>
+    <div
+      className={`bg-white rounded-xl shadow-lg p-6 border-l-4 border-${color}-500 transition-all hover:shadow-xl ${
+        animated ? 'animate-pulse' : ''
+      }`}
+    >
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
@@ -325,7 +446,7 @@ const MetricCard = ({ icon: Icon, title, value, subtitle, color, animated }) => 
   );
 };
 
-const PerformanceChart = ({ data, animated }) => {
+const PerformanceChart: React.FC<PerformanceChartProps> = ({ data, animated }) => {
   if (!data || data.length === 0) {
     return (
       <div className="h-64 flex items-center justify-center text-gray-500">
@@ -341,17 +462,14 @@ const PerformanceChart = ({ data, animated }) => {
   return (
     <div className="h-64 flex items-end justify-between gap-2 p-4 bg-gray-50 rounded-lg">
       {data.map((point, index) => (
-        <div
-          key={index}
-          className="flex-1 flex flex-col items-center"
-        >
+        <div key={index} className="flex-1 flex flex-col items-center">
           <div
             className={`w-full bg-gradient-to-t from-blue-500 to-blue-300 rounded-t transition-all duration-1000 ${
               animated ? 'animate-pulse' : ''
             }`}
             style={{
               height: `${(point.score / 100) * 200}px`,
-              animationDelay: `${index * 100}ms`
+              animationDelay: `${index * 100}ms`,
             }}
           />
           <div className="mt-2 text-xs text-gray-600 text-center">
@@ -364,10 +482,14 @@ const PerformanceChart = ({ data, animated }) => {
   );
 };
 
-const DifficultyChart = ({ data, animated }) => {
-  const difficulties = ['beginner', 'intermediate', 'advanced'];
+const DifficultyChart: React.FC<DifficultyChartProps> = ({ data, animated }) => {
+  const difficulties: Array<'beginner' | 'intermediate' | 'advanced'> = [
+    'beginner',
+    'intermediate',
+    'advanced',
+  ];
   const colors = ['bg-green-500', 'bg-yellow-500', 'bg-red-500'];
-  
+
   return (
     <div className="space-y-4">
       {difficulties.map((difficulty, index) => {
@@ -384,13 +506,11 @@ const DifficultyChart = ({ data, animated }) => {
                 }`}
                 style={{
                   width: `${value}%`,
-                  animationDelay: `${index * 200}ms`
+                  animationDelay: `${index * 200}ms`,
                 }}
               />
             </div>
-            <div className="w-12 text-sm font-semibold text-gray-700">
-              {value}%
-            </div>
+            <div className="w-12 text-sm font-semibold text-gray-700">{value}%</div>
           </div>
         );
       })}
@@ -398,9 +518,9 @@ const DifficultyChart = ({ data, animated }) => {
   );
 };
 
-const CategoryRadarChart = ({ data, animated }) => {
+const CategoryRadarChart: React.FC<CategoryRadarChartProps> = ({ data, animated }) => {
   const categories = Object.keys(data);
-  
+
   if (categories.length === 0) {
     return (
       <div className="h-64 flex items-center justify-center text-gray-500">
@@ -441,9 +561,7 @@ const CategoryRadarChart = ({ data, animated }) => {
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-sm font-bold text-gray-700">
-                {data[category]}%
-              </span>
+              <span className="text-sm font-bold text-gray-700">{data[category]}%</span>
             </div>
           </div>
           <p className="text-xs text-gray-600 font-medium">{category}</p>
@@ -453,8 +571,8 @@ const CategoryRadarChart = ({ data, animated }) => {
   );
 };
 
-const TopicBar = ({ topic, percentage, color, animated, delay }) => {
-  const colorClasses = {
+const TopicBar: React.FC<TopicBarProps> = ({ topic, percentage, color, animated, delay }) => {
+  const colorClasses: Record<string, string> = {
     green: 'bg-green-500',
     red: 'bg-red-500',
     blue: 'bg-blue-500',
@@ -462,9 +580,7 @@ const TopicBar = ({ topic, percentage, color, animated, delay }) => {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="w-24 text-sm text-gray-700 font-medium capitalize">
-        {topic}
-      </div>
+      <div className="w-24 text-sm text-gray-700 font-medium capitalize">{topic}</div>
       <div className="flex-1 bg-gray-200 rounded-full h-4">
         <div
           className={`h-4 rounded-full transition-all duration-1000 ${colorClasses[color]} ${
@@ -472,34 +588,42 @@ const TopicBar = ({ topic, percentage, color, animated, delay }) => {
           }`}
           style={{
             width: `${percentage}%`,
-            animationDelay: `${delay}ms`
+            animationDelay: `${delay}ms`,
           }}
         />
       </div>
-      <div className="w-12 text-sm font-semibold text-gray-700">
-        {percentage}%
-      </div>
+      <div className="w-12 text-sm font-semibold text-gray-700">{percentage}%</div>
     </div>
   );
 };
 
-const RecentQuizCard = ({ quiz, animated, delay }) => {
-  const scoreColor = quiz.scorePercentage >= 80 ? 'text-green-600' : 
-                    quiz.scorePercentage >= 60 ? 'text-yellow-600' : 'text-red-600';
+const RecentQuizCard: React.FC<RecentQuizCardProps> = ({ quiz, animated, delay }) => {
+  const scoreColor =
+    quiz.scorePercentage >= 80
+      ? 'text-green-600'
+      : quiz.scorePercentage >= 60
+        ? 'text-yellow-600'
+        : 'text-red-600';
 
   return (
-    <div className={`border border-gray-200 rounded-lg p-4 transition-all hover:shadow-md ${
-      animated ? 'animate-pulse' : ''
-    }`} style={{ animationDelay: `${delay}ms` }}>
+    <div
+      className={`border border-gray-200 rounded-lg p-4 transition-all hover:shadow-md ${
+        animated ? 'animate-pulse' : ''
+      }`}
+      style={{ animationDelay: `${delay}ms` }}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-            quiz.scorePercentage >= 80 ? 'bg-green-100' : 
-            quiz.scorePercentage >= 60 ? 'bg-yellow-100' : 'bg-red-100'
-          }`}>
-            <span className={`font-bold text-sm ${scoreColor}`}>
-              {quiz.scorePercentage}%
-            </span>
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              quiz.scorePercentage >= 80
+                ? 'bg-green-100'
+                : quiz.scorePercentage >= 60
+                  ? 'bg-yellow-100'
+                  : 'bg-red-100'
+            }`}
+          >
+            <span className={`font-bold text-sm ${scoreColor}`}>{quiz.scorePercentage}%</span>
           </div>
           <div>
             <p className="font-medium text-gray-900">
@@ -519,11 +643,18 @@ const RecentQuizCard = ({ quiz, animated, delay }) => {
   );
 };
 
-const RecommendationCard = ({ recommendation, animated, delay }) => {
+const RecommendationCard: React.FC<RecommendationCardProps> = ({
+  recommendation,
+  animated,
+  delay,
+}) => {
   return (
-    <div className={`bg-white rounded-lg p-4 border border-blue-200 transition-all hover:shadow-md ${
-      animated ? 'animate-pulse' : ''
-    }`} style={{ animationDelay: `${delay}ms` }}>
+    <div
+      className={`bg-white rounded-lg p-4 border border-blue-200 transition-all hover:shadow-md ${
+        animated ? 'animate-pulse' : ''
+      }`}
+      style={{ animationDelay: `${delay}ms` }}
+    >
       <div className="flex items-start gap-3">
         <div className="p-2 bg-blue-100 rounded-lg">
           <recommendation.icon size={16} className="text-blue-600" />
@@ -538,12 +669,15 @@ const RecommendationCard = ({ recommendation, animated, delay }) => {
 };
 
 // Helper Functions
-function filterByTimeRange(history, timeRange) {
+function filterByTimeRange(
+  history: QuizHistoryItem[],
+  timeRange: 'all' | 'week' | 'month' | 'quarter'
+): QuizHistoryItem[] {
   if (timeRange === 'all') return history;
-  
+
   const now = new Date();
   const cutoffDate = new Date();
-  
+
   switch (timeRange) {
     case 'week':
       cutoffDate.setDate(now.getDate() - 7);
@@ -557,107 +691,115 @@ function filterByTimeRange(history, timeRange) {
     default:
       return history;
   }
-  
-  return history.filter(quiz => new Date(quiz.completedAt) >= cutoffDate);
+
+  return history.filter((quiz) => new Date(quiz.completedAt) >= cutoffDate);
 }
 
-function calculateCategoryPerformance(history, quizQuestions) {
-  const categoryData = {};
-  
+function calculateCategoryPerformance(
+  history: QuizHistoryItem[],
+  quizQuestions: QuizQuestion[]
+): Record<string, number> {
+  const categoryData: Record<string, { correct: number; total: number }> = {};
+
   // Map questions to categories
-  const questionCategories = {};
-  quizQuestions.forEach(q => {
-    if (q.category) {
+  const questionCategories: Record<string, string> = {};
+  quizQuestions.forEach((q) => {
+    if (q.category && q.question) {
       questionCategories[q.question] = q.category;
     }
   });
-  
-  history.forEach(quiz => {
-    quiz.answers.forEach(answer => {
+
+  history.forEach((quiz) => {
+    quiz.answers.forEach((answer) => {
       const category = questionCategories[answer.questionText] || 'General';
-      
+
       if (!categoryData[category]) {
         categoryData[category] = { correct: 0, total: 0 };
       }
-      
+
       categoryData[category].total++;
       if (answer.isCorrect) {
         categoryData[category].correct++;
       }
     });
   });
-  
-  const result = {};
-  Object.keys(categoryData).forEach(category => {
-    result[category] = Math.round((categoryData[category].correct / categoryData[category].total) * 100);
+
+  const result: Record<string, number> = {};
+  Object.keys(categoryData).forEach((category) => {
+    result[category] = Math.round(
+      (categoryData[category].correct / categoryData[category].total) * 100
+    );
   });
-  
+
   return result;
 }
 
-function calculateDifficultyBreakdown(history) {
-  const difficultyData = { beginner: 0, intermediate: 0, advanced: 0 };
+function calculateDifficultyBreakdown(history: QuizHistoryItem[]): Record<string, number> {
+  const difficultyData: Record<string, number> = { beginner: 0, intermediate: 0, advanced: 0 };
   let total = 0;
-  
-  history.forEach(quiz => {
+
+  history.forEach((quiz) => {
     // This is simplified - in a real app, you'd track difficulty per question
     const avgScore = quiz.scorePercentage;
     total++;
-    
+
     if (avgScore >= 80) difficultyData.beginner++;
     else if (avgScore >= 60) difficultyData.intermediate++;
     else difficultyData.advanced++;
   });
-  
-  Object.keys(difficultyData).forEach(key => {
+
+  Object.keys(difficultyData).forEach((key) => {
     difficultyData[key] = total > 0 ? Math.round((difficultyData[key] / total) * 100) : 0;
   });
-  
+
   return difficultyData;
 }
 
-function calculateWeeklyProgress(history) {
-  const weeklyData = [];
+function calculateWeeklyProgress(history: QuizHistoryItem[]): WeeklyDataPoint[] {
+  const weeklyData: WeeklyDataPoint[] = [];
   const now = new Date();
-  
+
   for (let i = 7; i >= 0; i--) {
     const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - (i * 7));
-    
+    weekStart.setDate(now.getDate() - i * 7);
+
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
-    
-    const weekQuizzes = history.filter(quiz => {
+
+    const weekQuizzes = history.filter((quiz) => {
       const quizDate = new Date(quiz.completedAt);
       return quizDate >= weekStart && quizDate <= weekEnd;
     });
-    
-    const avgScore = weekQuizzes.length > 0 
-      ? Math.round(weekQuizzes.reduce((sum, q) => sum + q.scorePercentage, 0) / weekQuizzes.length)
-      : 0;
-    
+
+    const avgScore =
+      weekQuizzes.length > 0
+        ? Math.round(weekQuizzes.reduce((sum, q) => sum + q.scorePercentage, 0) / weekQuizzes.length)
+        : 0;
+
     weeklyData.push({
       week: `Week ${8 - i}`,
       score: avgScore,
-      quizzes: weekQuizzes.length
+      quizzes: weekQuizzes.length,
     });
   }
-  
+
   return weeklyData;
 }
 
-function calculateTopicAnalysis(history) {
-  const topicData = {};
-  
-  history.forEach(quiz => {
-    quiz.answers.forEach(answer => {
+function calculateTopicAnalysis(
+  history: QuizHistoryItem[]
+): { strengths: TopicPerformance[]; weaknesses: TopicPerformance[] } {
+  const topicData: Record<string, { correct: number; total: number }> = {};
+
+  history.forEach((quiz) => {
+    quiz.answers.forEach((answer) => {
       const topics = extractTopicsFromQuestion(answer.questionText);
-      
-      topics.forEach(topic => {
+
+      topics.forEach((topic) => {
         if (!topicData[topic]) {
           topicData[topic] = { correct: 0, total: 0 };
         }
-        
+
         topicData[topic].total++;
         if (answer.isCorrect) {
           topicData[topic].correct++;
@@ -665,23 +807,27 @@ function calculateTopicAnalysis(history) {
       });
     });
   });
-  
-  const topics = Object.keys(topicData).map(topic => ({
+
+  const topics = Object.keys(topicData).map((topic) => ({
     topic,
     accuracy: Math.round((topicData[topic].correct / topicData[topic].total) * 100),
-    totalQuestions: topicData[topic].total
+    totalQuestions: topicData[topic].total,
   }));
-  
+
   return {
-    strengths: topics.filter(t => t.accuracy >= 80 && t.totalQuestions >= 3).sort((a, b) => b.accuracy - a.accuracy),
-    weaknesses: topics.filter(t => t.accuracy < 70 && t.totalQuestions >= 3).sort((a, b) => a.accuracy - b.accuracy)
+    strengths: topics
+      .filter((t) => t.accuracy >= 80 && t.totalQuestions >= 3)
+      .sort((a, b) => b.accuracy - a.accuracy),
+    weaknesses: topics
+      .filter((t) => t.accuracy < 70 && t.totalQuestions >= 3)
+      .sort((a, b) => a.accuracy - b.accuracy),
   };
 }
 
-function extractTopicsFromQuestion(questionText) {
-  const topics = [];
+function extractTopicsFromQuestion(questionText: string): string[] {
+  const topics: string[] = [];
   const text = questionText.toLowerCase();
-  
+
   // Enhanced topic extraction
   if (text.includes('pneumonia')) topics.push('pneumonia');
   if (text.includes('uti') || text.includes('urinary')) topics.push('urinary infections');
@@ -689,47 +835,48 @@ function extractTopicsFromQuestion(questionText) {
   if (text.includes('meningitis')) topics.push('meningitis');
   if (text.includes('cellulitis')) topics.push('skin infections');
   if (text.includes('osteomyelitis')) topics.push('bone infections');
-  if (text.includes('antibiotic') || text.includes('antimicrobial')) topics.push('antibiotic therapy');
+  if (text.includes('antibiotic') || text.includes('antimicrobial'))
+    topics.push('antibiotic therapy');
   if (text.includes('resistance')) topics.push('antibiotic resistance');
-  
+
   return topics.length > 0 ? topics : ['general medicine'];
 }
 
-function generateRecommendations(analytics) {
-  const recommendations = [];
-  
+function generateRecommendations(analytics: AnalyticsData): Recommendation[] {
+  const recommendations: Recommendation[] = [];
+
   if (analytics.averageScore < 70) {
     recommendations.push({
       icon: BookOpen,
       title: 'Review Core Concepts',
-      description: 'Focus on fundamental antibiotic principles to improve your overall understanding.'
+      description: 'Focus on fundamental antibiotic principles to improve your overall understanding.',
     });
   }
-  
+
   if (analytics.topicWeaknesses.length > 0) {
     recommendations.push({
       icon: Target,
       title: `Study ${analytics.topicWeaknesses[0].topic}`,
-      description: `You scored ${analytics.topicWeaknesses[0].accuracy}% in this area. Consider reviewing related materials.`
+      description: `You scored ${analytics.topicWeaknesses[0].accuracy}% in this area. Consider reviewing related materials.`,
     });
   }
-  
+
   if (analytics.streakCount >= 3) {
     recommendations.push({
       icon: Trophy,
       title: 'Keep Up the Momentum!',
-      description: `You're on a ${analytics.streakCount}-quiz streak. Try advanced questions to challenge yourself.`
+      description: `You're on a ${analytics.streakCount}-quiz streak. Try advanced questions to challenge yourself.`,
     });
   }
-  
+
   if (analytics.totalQuizzes < 5) {
     recommendations.push({
       icon: Users,
       title: 'Take More Quizzes',
-      description: 'Complete more quizzes to get better analytics and identify your learning patterns.'
+      description: 'Complete more quizzes to get better analytics and identify your learning patterns.',
     });
   }
-  
+
   return recommendations;
 }
 
