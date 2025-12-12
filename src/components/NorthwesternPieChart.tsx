@@ -1,28 +1,98 @@
 /**
- * Northwestern 8-Segment Pie Chart Component
- * 
+ * Northwestern 8-Segment Pie Chart Component (TypeScript)
+ *
  * Core visualization component for antibiotic coverage using Northwestern methodology.
  * Renders 8 segments representing different pathogen categories with coverage levels.
- * 
+ *
  * Created by: Agent 2.1 - Phase 2 Northwestern Foundation
  * Medical Accuracy: Validated against EnhancedAntibioticData.ts
  * Performance Target: <1000ms rendering, <200ms re-render
- * 
- * @component
- * @example
- * <NorthwesternPieChart 
- *   antibiotic={enhancedAntibioticData[0]}
- *   size="medium"
- *   interactive={true}
- *   onSegmentHover={(segment, coverage, context) => console.log(segment)}
- * />
  */
 
-import React, { useMemo, useCallback, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useMemo, useCallback, useState, FC, MouseEvent, TouchEvent } from 'react';
 
-// Northwestern 8-segment categories in clockwise order
-const NORTHWESTERN_SEGMENTS = [
+/**
+ * Type Definitions
+ */
+
+interface NorthwesternSpectrum {
+  MRSA: number;
+  VRE_faecium: number;
+  anaerobes: number;
+  atypicals: number;
+  pseudomonas: number;
+  gramNegative: number;
+  MSSA: number;
+  enterococcus_faecalis: number;
+}
+
+interface Antibiotic {
+  id: string | number;
+  name: string;
+  northwesternSpectrum: NorthwesternSpectrum;
+  routeColor: 'red' | 'blue' | 'purple';
+  cellWallActive?: boolean;
+  route?: string | string[];
+  [key: string]: any;
+}
+
+interface SegmentDefinition {
+  key: keyof NorthwesternSpectrum;
+  label: string;
+  angle: number;
+  description: string;
+}
+
+interface SizeConfig {
+  diameter: number;
+  centerRadius: number;
+  strokeWidth: number;
+  fontSize: number;
+}
+
+interface RouteColorPalette {
+  light: string;
+  dark: string;
+  border: string;
+}
+
+interface StrokeStyle {
+  stroke: string;
+  strokeWidth: number;
+  strokeDasharray: string;
+}
+
+interface SegmentData extends SegmentDefinition {
+  path: string;
+  fill: string;
+  stroke: StrokeStyle;
+  coverage: number;
+  id: string;
+}
+
+interface CenterLabel {
+  name: string;
+  route: string;
+}
+
+interface EnhancedSegmentContext {
+  segment: string;
+  coverage: number;
+  description: string;
+  antibiotic?: string;
+  educationLevel: 'student' | 'resident' | 'attending';
+  emergencyMode: boolean;
+  performance: number;
+}
+
+type EducationLevel = 'student' | 'resident' | 'attending';
+type Size = 'small' | 'medium' | 'large';
+type RouteColor = 'red' | 'blue' | 'purple';
+
+/**
+ * Northwestern 8-segment categories in clockwise order
+ */
+const NORTHWESTERN_SEGMENTS: SegmentDefinition[] = [
   { key: 'MRSA', label: 'MRSA', angle: 0, description: 'Methicillin-resistant Staphylococcus aureus' },
   { key: 'VRE_faecium', label: 'VRE faecium', angle: 45, description: 'Vancomycin-resistant Enterococcus faecium' },
   { key: 'anaerobes', label: 'Anaerobes', angle: 90, description: 'Bacteroides, C. difficile, mixed anaerobes' },
@@ -33,58 +103,62 @@ const NORTHWESTERN_SEGMENTS = [
   { key: 'enterococcus_faecalis', label: 'E. faecalis', angle: 315, description: 'Enterococcus faecalis' }
 ];
 
-// Size configurations for responsive design
-const SIZE_CONFIG = {
+/**
+ * Size configurations for responsive design
+ */
+const SIZE_CONFIG: Record<Size, SizeConfig> = {
   small: { diameter: 120, centerRadius: 20, strokeWidth: 1, fontSize: 10 },
   medium: { diameter: 200, centerRadius: 30, strokeWidth: 2, fontSize: 12 },
   large: { diameter: 280, centerRadius: 40, strokeWidth: 2, fontSize: 14 }
 };
 
-// Color palettes based on route
-const ROUTE_COLORS = {
-  red: { // Oral
+/**
+ * Color palettes based on route
+ */
+const ROUTE_COLORS: Record<RouteColor, RouteColorPalette> = {
+  red: {
     light: '#fecaca', // coverage 1
-    dark: '#dc2626',  // coverage 2
+    dark: '#dc2626', // coverage 2
     border: '#991b1b'
   },
-  blue: { // IV
-    light: '#bfdbfe', // coverage 1  
-    dark: '#2563eb',  // coverage 2
+  blue: {
+    light: '#bfdbfe', // coverage 1
+    dark: '#2563eb', // coverage 2
     border: '#1d4ed8'
   },
-  purple: { // Both
+  purple: {
     light: '#ddd6fe', // coverage 1
-    dark: '#7c3aed',  // coverage 2
+    dark: '#7c3aed', // coverage 2
     border: '#5b21b6'
   }
 };
 
 /**
  * Calculates SVG path for a pie segment
- * @param {number} startAngle - Starting angle in degrees
- * @param {number} endAngle - Ending angle in degrees  
- * @param {number} radius - Outer radius
- * @param {number} innerRadius - Inner radius for center hole
- * @param {number} centerX - Center X coordinate
- * @param {number} centerY - Center Y coordinate
- * @returns {string} SVG path string
  */
-const createSegmentPath = (startAngle, endAngle, radius, innerRadius, centerX, centerY) => {
-  const startAngleRad = (startAngle - 90) * Math.PI / 180; // -90 to start at top
-  const endAngleRad = (endAngle - 90) * Math.PI / 180;
-  
+const createSegmentPath = (
+  startAngle: number,
+  endAngle: number,
+  radius: number,
+  innerRadius: number,
+  centerX: number,
+  centerY: number
+): string => {
+  const startAngleRad = ((startAngle - 90) * Math.PI) / 180; // -90 to start at top
+  const endAngleRad = ((endAngle - 90) * Math.PI) / 180;
+
   const x1 = centerX + radius * Math.cos(startAngleRad);
   const y1 = centerY + radius * Math.sin(startAngleRad);
   const x2 = centerX + radius * Math.cos(endAngleRad);
   const y2 = centerY + radius * Math.sin(endAngleRad);
-  
+
   const x3 = centerX + innerRadius * Math.cos(startAngleRad);
   const y3 = centerY + innerRadius * Math.sin(startAngleRad);
   const x4 = centerX + innerRadius * Math.cos(endAngleRad);
   const y4 = centerY + innerRadius * Math.sin(endAngleRad);
-  
-  const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
-  
+
+  const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+
   return [
     `M ${x1} ${y1}`, // Move to start point on outer circle
     `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`, // Arc to end point on outer circle
@@ -96,30 +170,28 @@ const createSegmentPath = (startAngle, endAngle, radius, innerRadius, centerX, c
 
 /**
  * Gets fill color based on coverage level and route
- * @param {number} coverage - Coverage level (0, 1, or 2)
- * @param {string} routeColor - Route color ('red', 'blue', or 'purple')
- * @returns {string} Fill color
  */
-const getCoverageColor = (coverage, routeColor) => {
+const getCoverageColor = (coverage: number, routeColor: RouteColor): string => {
   const palette = ROUTE_COLORS[routeColor] || ROUTE_COLORS.blue;
-  
+
   switch (coverage) {
-    case 0: return '#ffffff'; // No coverage - white
-    case 1: return palette.light; // Some coverage - light
-    case 2: return palette.dark; // Good coverage - dark
-    default: return '#f3f4f6'; // Fallback - gray
+    case 0:
+      return '#ffffff'; // No coverage - white
+    case 1:
+      return palette.light; // Some coverage - light
+    case 2:
+      return palette.dark; // Good coverage - dark
+    default:
+      return '#f3f4f6'; // Fallback - gray
   }
 };
 
 /**
  * Gets stroke pattern for cell wall active antibiotics
- * @param {boolean} cellWallActive - Whether antibiotic affects cell wall
- * @param {string} routeColor - Route color for stroke color
- * @returns {object} Stroke style properties
  */
-const getStrokeStyle = (cellWallActive, routeColor) => {
+const getStrokeStyle = (cellWallActive: boolean | undefined, routeColor: RouteColor): StrokeStyle => {
   const palette = ROUTE_COLORS[routeColor] || ROUTE_COLORS.blue;
-  
+
   return {
     stroke: palette.border,
     strokeWidth: 2,
@@ -128,10 +200,29 @@ const getStrokeStyle = (cellWallActive, routeColor) => {
 };
 
 /**
+ * Props Interface
+ */
+interface NorthwesternPieChartProps {
+  antibiotic: Antibiotic;
+  size?: Size;
+  onSegmentHover?: (segment: string, coverage: number, context: string) => void;
+  onSegmentClick?: (segment: string, antibiotic: Antibiotic) => void;
+  showLabels?: boolean;
+  interactive?: boolean;
+  className?: string;
+  hoveredSegment?: string;
+  selectedSegments?: string[];
+  educationLevel?: EducationLevel;
+  emergencyMode?: boolean;
+  enableTouchInteractions?: boolean;
+  showCenterLabel?: boolean;
+}
+
+/**
  * Northwestern Pie Chart Component
  * Enhanced with sophisticated medical education interactions
  */
-const NorthwesternPieChart = ({
+const NorthwesternPieChart: FC<NorthwesternPieChartProps> = ({
   antibiotic,
   size = 'medium',
   onSegmentHover,
@@ -139,18 +230,17 @@ const NorthwesternPieChart = ({
   showLabels = false,
   interactive = true,
   className = '',
-  // Enhanced interaction props
   hoveredSegment: externalHoveredSegment,
   selectedSegments = [],
   educationLevel = 'resident',
   emergencyMode = false,
   enableTouchInteractions = true,
-  showCenterLabel = false  // Hide center label by default for cleaner grid display
+  showCenterLabel = false // Hide center label by default for cleaner grid display
 }) => {
-  const [internalHoveredSegment, setInternalHoveredSegment] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [touchStartTime, setTouchStartTime] = useState(null);
+  const [internalHoveredSegment, setInternalHoveredSegment] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
 
   // Use external or internal hover state
   const hoveredSegment = externalHoveredSegment !== undefined ? externalHoveredSegment : internalHoveredSegment;
@@ -159,45 +249,43 @@ const NorthwesternPieChart = ({
   const config = SIZE_CONFIG[size];
   const centerX = config.diameter / 2;
   const centerY = config.diameter / 2;
-  const outerRadius = (config.diameter / 2) - config.strokeWidth;
+  const outerRadius = config.diameter / 2 - config.strokeWidth;
   const innerRadius = config.centerRadius;
 
   // Validate antibiotic data
-  const isValid = useMemo(() => {
+  const isValid = useMemo((): boolean => {
     if (!antibiotic || !antibiotic.northwesternSpectrum || !antibiotic.routeColor) {
       setError('Invalid antibiotic data');
       return false;
     }
-    
+
     // Validate all 8 segments are present
-    const requiredSegments = NORTHWESTERN_SEGMENTS.map(s => s.key);
-    const hasAllSegments = requiredSegments.every(key => 
-      antibiotic.northwesternSpectrum.hasOwnProperty(key)
-    );
-    
+    const requiredSegments = NORTHWESTERN_SEGMENTS.map((s) => s.key);
+    const hasAllSegments = requiredSegments.every((key) => antibiotic.northwesternSpectrum.hasOwnProperty(key));
+
     if (!hasAllSegments) {
       setError('Missing Northwestern spectrum data');
       return false;
     }
-    
+
     setError(null);
     return true;
   }, [antibiotic]);
 
   // Generate segment data with paths and styling
-  const segmentData = useMemo(() => {
+  const segmentData = useMemo((): SegmentData[] => {
     if (!isValid) return [];
-    
-    return NORTHWESTERN_SEGMENTS.map((segment, index) => {
+
+    return NORTHWESTERN_SEGMENTS.map((segment): SegmentData => {
       const startAngle = segment.angle;
       const endAngle = segment.angle + 45; // Each segment is 45 degrees
       const coverage = antibiotic.northwesternSpectrum[segment.key];
-      
+
       return {
         ...segment,
         path: createSegmentPath(startAngle, endAngle, outerRadius, innerRadius, centerX, centerY),
-        fill: getCoverageColor(coverage, antibiotic.routeColor),
-        stroke: getStrokeStyle(antibiotic.cellWallActive, antibiotic.routeColor),
+        fill: getCoverageColor(coverage, antibiotic.routeColor as RouteColor),
+        stroke: getStrokeStyle(antibiotic.cellWallActive, antibiotic.routeColor as RouteColor),
         coverage,
         id: `segment-${antibiotic.id}-${segment.key}`
       };
@@ -205,110 +293,123 @@ const NorthwesternPieChart = ({
   }, [antibiotic, config, isValid]);
 
   // Handle segment hover with enhanced context
-  const handleSegmentHover = useCallback((segment, event) => {
-    if (!interactive) return;
-    
-    // Performance timing for responsiveness tracking
-    const startTime = performance.now();
-    
-    // Update internal state if not externally controlled
-    if (externalHoveredSegment === undefined) {
-      setInternalHoveredSegment(segment.key);
-    }
-    
-    if (onSegmentHover) {
-      const enhancedContext = {
-        segment: segment.key,
-        coverage: segment.coverage,
-        description: segment.description,
-        antibiotic: antibiotic?.name,
-        educationLevel,
-        emergencyMode,
-        performance: performance.now() - startTime
-      };
-      onSegmentHover(segment.key, segment.coverage, `${segment.description} - Coverage: ${segment.coverage}/2`);
-    }
-  }, [interactive, onSegmentHover, antibiotic, educationLevel, emergencyMode, externalHoveredSegment]);
+  const handleSegmentHover = useCallback(
+    (segment: SegmentData, event: MouseEvent<SVGPathElement>): void => {
+      if (!interactive) return;
+
+      // Performance timing for responsiveness tracking
+      const startTime = performance.now();
+
+      // Update internal state if not externally controlled
+      if (externalHoveredSegment === undefined) {
+        setInternalHoveredSegment(segment.key);
+      }
+
+      if (onSegmentHover) {
+        const enhancedContext = {
+          segment: segment.key,
+          coverage: segment.coverage,
+          description: segment.description,
+          antibiotic: antibiotic?.name,
+          educationLevel,
+          emergencyMode,
+          performance: performance.now() - startTime
+        };
+        onSegmentHover(segment.key, segment.coverage, `${segment.description} - Coverage: ${segment.coverage}/2`);
+      }
+    },
+    [interactive, onSegmentHover, antibiotic, educationLevel, emergencyMode, externalHoveredSegment]
+  );
 
   // Handle segment click with selection support
-  const handleSegmentClick = useCallback((segment, event) => {
-    if (!interactive) return;
-    
-    const startTime = performance.now();
-    
-    if (onSegmentClick) {
-      const enhancedContext = {
-        segment: segment.key,
-        coverage: segment.coverage,
-        antibiotic,
-        isSelected: selectedSegments.includes(segment.key),
-        educationLevel,
-        emergencyMode,
-        performance: performance.now() - startTime
-      };
-      onSegmentClick(segment.key, antibiotic);
-    }
-  }, [interactive, onSegmentClick, antibiotic, selectedSegments, educationLevel, emergencyMode]);
+  const handleSegmentClick = useCallback(
+    (segment: SegmentData, event: MouseEvent<SVGPathElement>): void => {
+      if (!interactive) return;
 
-  // Handle touch interactions for mobile clinical workflows
-  const handleTouchStart = useCallback((segment, event) => {
-    if (!enableTouchInteractions || !interactive) return;
-    
-    setTouchStartTime(Date.now());
-    
-    // Long press detection for emergency access
-    const longPressTimer = setTimeout(() => {
-      if (emergencyMode) {
-        // Trigger emergency context display
-        const emergencyContext = {
+      const startTime = performance.now();
+
+      if (onSegmentClick) {
+        const enhancedContext = {
           segment: segment.key,
           coverage: segment.coverage,
           antibiotic,
-          emergencyAccess: true,
-          timestamp: Date.now()
+          isSelected: selectedSegments.includes(segment.key),
+          educationLevel,
+          emergencyMode,
+          performance: performance.now() - startTime
         };
-        onSegmentHover?.(segment.key, event, emergencyContext);
+        onSegmentClick(segment.key, antibiotic);
       }
-    }, 500);
-    
-    // Store timer for cleanup
-    event.target.longPressTimer = longPressTimer;
-  }, [enableTouchInteractions, interactive, emergencyMode, antibiotic, onSegmentHover]);
+    },
+    [interactive, onSegmentClick, antibiotic, selectedSegments, educationLevel, emergencyMode]
+  );
 
-  const handleTouchEnd = useCallback((segment, event) => {
-    if (!enableTouchInteractions || !interactive) return;
-    
-    // Clear long press timer
-    if (event.target.longPressTimer) {
-      clearTimeout(event.target.longPressTimer);
-      delete event.target.longPressTimer;
-    }
-    
-    const touchDuration = Date.now() - touchStartTime;
-    
-    // If short tap, treat as click
-    if (touchDuration < 500) {
-      handleSegmentClick(segment, event);
-    }
-    
-    setTouchStartTime(null);
-  }, [enableTouchInteractions, interactive, touchStartTime, handleSegmentClick]);
+  // Handle touch interactions for mobile clinical workflows
+  const handleTouchStart = useCallback(
+    (segment: SegmentData, event: TouchEvent<SVGPathElement>): void => {
+      if (!enableTouchInteractions || !interactive) return;
+
+      setTouchStartTime(Date.now());
+
+      // Long press detection for emergency access
+      const longPressTimer = window.setTimeout(() => {
+        if (emergencyMode) {
+          // Trigger emergency context display
+          const emergencyContext = {
+            segment: segment.key,
+            coverage: segment.coverage,
+            antibiotic,
+            emergencyAccess: true,
+            timestamp: Date.now()
+          };
+          onSegmentHover?.(segment.key, event as any, emergencyContext as any);
+        }
+      }, 500);
+
+      // Store timer for cleanup
+      (event.target as any).longPressTimer = longPressTimer;
+    },
+    [enableTouchInteractions, interactive, emergencyMode, antibiotic, onSegmentHover]
+  );
+
+  const handleTouchEnd = useCallback(
+    (segment: SegmentData, event: TouchEvent<SVGPathElement>): void => {
+      if (!enableTouchInteractions || !interactive) return;
+
+      // Clear long press timer
+      const target = event.target as any;
+      if (target.longPressTimer) {
+        clearTimeout(target.longPressTimer);
+        delete target.longPressTimer;
+      }
+
+      const touchDuration = Date.now() - (touchStartTime || 0);
+
+      // If short tap, treat as click
+      if (touchDuration < 500) {
+        handleSegmentClick(segment, event as any);
+      }
+
+      setTouchStartTime(null);
+    },
+    [enableTouchInteractions, interactive, touchStartTime, handleSegmentClick]
+  );
 
   // Handle mouse leave
-  const handleMouseLeave = useCallback(() => {
+  const handleMouseLeave = useCallback((): void => {
     if (externalHoveredSegment === undefined) {
       setInternalHoveredSegment(null);
     }
   }, [externalHoveredSegment]);
 
   // Generate center label text
-  const centerLabel = useMemo(() => {
+  const centerLabel = useMemo((): CenterLabel => {
     if (!antibiotic) return { name: 'Unknown', route: '' };
-    
-    const routeText = Array.isArray(antibiotic.route) 
+
+    const routeText = Array.isArray(antibiotic.route)
       ? antibiotic.route.join('/').toUpperCase()
       : (antibiotic.route || '').toUpperCase();
-    
+
     return {
       name: antibiotic.name || 'Unknown',
       route: routeText
@@ -319,9 +420,7 @@ const NorthwesternPieChart = ({
   if (isLoading) {
     return (
       <div className={`northwestern-pie-chart northwestern-pie-chart--${size} ${className}`}>
-        <div className="northwestern-pie-chart__loading">
-          Loading chart...
-        </div>
+        <div className="northwestern-pie-chart__loading">Loading chart...</div>
       </div>
     );
   }
@@ -330,19 +429,14 @@ const NorthwesternPieChart = ({
   if (error) {
     return (
       <div className={`northwestern-pie-chart northwestern-pie-chart--${size} ${className}`}>
-        <div className="northwestern-pie-chart__error">
-          Error: {error}
-        </div>
+        <div className="northwestern-pie-chart__error">Error: {error}</div>
       </div>
     );
   }
 
   return (
-    <div 
-      className={`northwestern-pie-chart northwestern-pie-chart--${size} ${className}`}
-      onMouseLeave={handleMouseLeave}
-    >
-      <svg 
+    <div className={`northwestern-pie-chart northwestern-pie-chart--${size} ${className}`} onMouseLeave={handleMouseLeave}>
+      <svg
         viewBox={`0 0 ${config.diameter} ${config.diameter}`}
         className="northwestern-pie-chart__svg"
         role="img"
@@ -353,17 +447,19 @@ const NorthwesternPieChart = ({
           const isHovered = hoveredSegment === segment.key;
           const isSelected = selectedSegments.includes(segment.key);
           const hasLowCoverage = segment.coverage === 0;
-          
+
           // Enhanced styling for different states
           const segmentClasses = [
             'pie-segment',
-            `pie-segment--${segment.key.toLowerCase().replace('_', '-')}`,
+            `pie-segment--${segment.key.toLowerCase().replace(/_/g, '-')}`,
             `pie-segment--coverage-${segment.coverage}`,
             isHovered && 'pie-segment--hovered',
             isSelected && 'pie-segment--selected',
             hasLowCoverage && 'pie-segment--contraindicated',
             emergencyMode && 'pie-segment--emergency-mode'
-          ].filter(Boolean).join(' ');
+          ]
+            .filter(Boolean)
+            .join(' ');
 
           // Dynamic opacity and effects
           let segmentOpacity = 1;
@@ -385,7 +481,9 @@ const NorthwesternPieChart = ({
               className={segmentClasses}
               d={segment.path}
               fill={segment.fill}
-              {...enhancedStroke}
+              stroke={enhancedStroke.stroke}
+              strokeWidth={enhancedStroke.strokeWidth}
+              strokeDasharray={enhancedStroke.strokeDasharray}
               style={{
                 cursor: interactive ? 'pointer' : 'default',
                 opacity: segmentOpacity,
@@ -401,7 +499,7 @@ const NorthwesternPieChart = ({
               onKeyDown={(e) => {
                 if (interactive && (e.key === 'Enter' || e.key === ' ')) {
                   e.preventDefault();
-                  handleSegmentClick(segment, e);
+                  handleSegmentClick(segment, e as any);
                 }
               }}
               aria-label={`${segment.label}: ${segment.coverage}/2 coverage`}
@@ -411,13 +509,13 @@ const NorthwesternPieChart = ({
             />
           );
         })}
-        
+
         {/* Center label - only show when explicitly enabled */}
         {showCenterLabel && (
           <g className="pie-center-label">
             <text
               x={centerX}
-              y={centerY - config.fontSize/2}
+              y={centerY - config.fontSize / 2}
               textAnchor="middle"
               dominantBaseline="middle"
               className="pie-center-label__name"
@@ -429,7 +527,7 @@ const NorthwesternPieChart = ({
             </text>
             <text
               x={centerX}
-              y={centerY + config.fontSize/2}
+              y={centerY + config.fontSize / 2}
               textAnchor="middle"
               dominantBaseline="middle"
               className="pie-center-label__route"
@@ -441,19 +539,16 @@ const NorthwesternPieChart = ({
             </text>
           </g>
         )}
-        
+
         {/* Optional segment labels */}
-        <g 
-          className="pie-segment-labels"
-          style={{ display: showLabels ? 'block' : 'none' }}
-        >
+        <g className="pie-segment-labels" style={{ display: showLabels ? 'block' : 'none' }}>
           {segmentData.map((segment) => {
             const labelAngle = segment.angle + 22.5; // Middle of segment
             const labelRadius = outerRadius + 15;
-            const labelAngleRad = (labelAngle - 90) * Math.PI / 180;
+            const labelAngleRad = ((labelAngle - 90) * Math.PI) / 180;
             const labelX = centerX + labelRadius * Math.cos(labelAngleRad);
             const labelY = centerY + labelRadius * Math.sin(labelAngleRad);
-            
+
             return (
               <text
                 key={`label-${segment.id}`}
@@ -475,48 +570,20 @@ const NorthwesternPieChart = ({
   );
 };
 
-// PropTypes validation
-NorthwesternPieChart.propTypes = {
-  antibiotic: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-    name: PropTypes.string.isRequired,
-    northwesternSpectrum: PropTypes.shape({
-      MRSA: PropTypes.oneOf([0, 1, 2]).isRequired,
-      VRE_faecium: PropTypes.oneOf([0, 1, 2]).isRequired,
-      anaerobes: PropTypes.oneOf([0, 1, 2]).isRequired,
-      atypicals: PropTypes.oneOf([0, 1, 2]).isRequired,
-      pseudomonas: PropTypes.oneOf([0, 1, 2]).isRequired,
-      gramNegative: PropTypes.oneOf([0, 1, 2]).isRequired,
-      MSSA: PropTypes.oneOf([0, 1, 2]).isRequired,
-      enterococcus_faecalis: PropTypes.oneOf([0, 1, 2]).isRequired
-    }).isRequired,
-    routeColor: PropTypes.oneOf(['red', 'blue', 'purple']).isRequired,
-    cellWallActive: PropTypes.bool,
-    route: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
-  }).isRequired,
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  onSegmentHover: PropTypes.func,
-  onSegmentClick: PropTypes.func,
-  showLabels: PropTypes.bool,
-  interactive: PropTypes.bool,
-  className: PropTypes.string,
-  // Enhanced interaction props
-  hoveredSegment: PropTypes.string,
-  selectedSegments: PropTypes.arrayOf(PropTypes.string),
-  educationLevel: PropTypes.oneOf(['student', 'resident', 'attending']),
-  emergencyMode: PropTypes.bool,
-  enableTouchInteractions: PropTypes.bool,
-  showCenterLabel: PropTypes.bool
-};
-
 export default NorthwesternPieChart;
 
-// Export helper functions for testing
+// Export helper functions and types for testing
 export {
   NORTHWESTERN_SEGMENTS,
   SIZE_CONFIG,
   ROUTE_COLORS,
   createSegmentPath,
   getCoverageColor,
-  getStrokeStyle
+  getStrokeStyle,
+  type Antibiotic,
+  type NorthwesternSpectrum,
+  type SegmentData,
+  type EducationLevel,
+  type Size,
+  type RouteColor
 };
