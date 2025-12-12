@@ -1,26 +1,32 @@
 /**
  * AntibioticAnalysisPanel Component
  * Displays interactive antibiotic coverage analysis with Northwestern pie charts
- * Extracted from VisualizationsTab.js during Phase 4 refactoring
+ * Extracted from VisualizationsTab.tsx during Phase 4 refactoring
  */
 
-import React, { memo } from 'react';
+import React, { memo, FC } from 'react';
 import { Activity } from 'lucide-react';
 import ErrorBoundary from '../ErrorBoundary';
 import AnimatedNorthwesternPieChart from '../AnimatedNorthwesternPieChart';
 import { getDrugClassColor } from '../../config/visualizationConfig';
+import { Antibiotic } from '../../types/medical.types';
 
-/**
- * Antibiotic Analysis Panel with Northwestern pie charts
- * @param {Object} props
- * @param {Object} props.antibioticData - Antibiotic data with antibiotics array
- * @param {Object} props.drugClassDistribution - Drug class distribution object
- * @param {Object} props.overviewStats - Overview statistics
- */
-const AntibioticAnalysisPanel = ({
-  antibioticData,
-  drugClassDistribution,
-  overviewStats
+interface AntibioticAnalysisPanelProps {
+  antibioticData?: {
+    antibiotics?: Antibiotic[];
+    [key: string]: any;
+  };
+  drugClassDistribution?: Record<string, number>;
+  overviewStats?: {
+    totalAntibiotics: number;
+    [key: string]: any;
+  };
+}
+
+const AntibioticAnalysisPanel: FC<AntibioticAnalysisPanelProps> = memo(({
+  antibioticData = { antibiotics: [] },
+  drugClassDistribution = {},
+  overviewStats = { totalAntibiotics: 0 }
 }) => {
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border">
@@ -52,12 +58,19 @@ const AntibioticAnalysisPanel = ({
       />
     </div>
   );
-};
+});
+
+AntibioticAnalysisPanel.displayName = 'AntibioticAnalysisPanel';
 
 /**
  * Individual antibiotic pie chart card
  */
-const AntibioticPieChartCard = memo(({ antibiotic, index }) => (
+interface AntibioticPieChartCardProps {
+  antibiotic: Antibiotic;
+  index: number;
+}
+
+const AntibioticPieChartCard = memo<FC<AntibioticPieChartCardProps>>(({ antibiotic, index }) => (
   <div className="bg-gray-50 rounded-lg p-4">
     <h4 className="text-lg font-medium text-gray-900 mb-3 text-center">
       {antibiotic.name || `Antibiotic ${index + 1}`}
@@ -86,7 +99,7 @@ AntibioticPieChartCard.displayName = 'AntibioticPieChartCard';
 /**
  * No data placeholder
  */
-const NoDataPlaceholder = memo(() => (
+const NoDataPlaceholder = memo<FC>(() => (
   <div className="text-center py-8">
     <Activity size={48} className="mx-auto text-gray-400 mb-4" />
     <p className="text-gray-500">Antibiotic data loading...</p>
@@ -101,7 +114,15 @@ NoDataPlaceholder.displayName = 'NoDataPlaceholder';
 /**
  * Drug class distribution section
  */
-const DrugClassDistribution = memo(({ drugClassDistribution, totalAntibiotics }) => (
+interface DrugClassDistributionProps {
+  drugClassDistribution: Record<string, number>;
+  totalAntibiotics: number;
+}
+
+const DrugClassDistribution = memo<FC<DrugClassDistributionProps>>(({
+  drugClassDistribution,
+  totalAntibiotics
+}) => (
   <div className="border-t pt-6">
     <h4 className="text-lg font-medium text-gray-900 mb-4">Drug Class Distribution</h4>
     <div className="space-y-3">
@@ -110,7 +131,7 @@ const DrugClassDistribution = memo(({ drugClassDistribution, totalAntibiotics })
         .map(([drugClass, count]) => {
           const percentage = totalAntibiotics > 0
             ? ((count / totalAntibiotics) * 100).toFixed(1)
-            : 0;
+            : '0';
           const colorClass = getDrugClassColor(drugClass);
 
           return (
@@ -136,4 +157,4 @@ const DrugClassDistribution = memo(({ drugClassDistribution, totalAntibiotics })
 
 DrugClassDistribution.displayName = 'DrugClassDistribution';
 
-export default memo(AntibioticAnalysisPanel);
+export default AntibioticAnalysisPanel;

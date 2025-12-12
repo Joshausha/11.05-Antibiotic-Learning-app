@@ -4,14 +4,14 @@
  * Integrates with medical education content for real-time validation
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, FC } from 'react';
 import { unstable_batchedUpdates } from 'react-dom';
-import { 
-  BookOpen, 
-  Search, 
-  ExternalLink, 
-  Calendar, 
-  Users, 
+import {
+  BookOpen,
+  Search,
+  ExternalLink,
+  Calendar,
+  Users,
   Award,
   RefreshCw,
   AlertCircle,
@@ -21,31 +21,76 @@ import {
 } from 'lucide-react';
 import pubmedService from '../../services/pubmedService';
 
-const ResearchIntegration = ({ 
-  topic = '', 
-  pathogen = '', 
+interface ResearchArticle {
+  pmid?: string;
+  title: string;
+  publicationDate: string;
+  authors: string[];
+  journal: string;
+  pubmedUrl: string;
+  abstract?: string;
+  doi?: string;
+  relevanceScore?: number;
+}
+
+interface ResearchData {
+  articles?: ResearchArticle[];
+  [key: string]: any;
+}
+
+interface ResearchState {
+  guidelines: ResearchData;
+  resistance: ResearchData;
+  pediatric: ResearchData;
+  loading: boolean;
+  error: string | null;
+  lastUpdated: string | null;
+}
+
+interface Filters {
+  dateRange: string;
+  studyType: string;
+  sortBy: string;
+}
+
+interface SearchStrategy {
+  type: 'specific' | 'antibiotic' | 'pathogen' | 'topic';
+  query: string;
+  description: string;
+}
+
+interface ResearchIntegrationProps {
+  topic?: string;
+  pathogen?: string;
+  antibiotic?: string;
+  className?: string;
+}
+
+const ResearchIntegration: FC<ResearchIntegrationProps> = ({
+  topic = '',
+  pathogen = '',
   antibiotic = '',
-  className = '' 
+  className = ''
 }) => {
-  const [research, setResearch] = useState({
-    guidelines: [],
-    resistance: [],
-    pediatric: [],
+  const [research, setResearch] = useState<ResearchState>({
+    guidelines: {},
+    resistance: {},
+    pediatric: {},
     loading: false,
     error: null,
     lastUpdated: null
   });
-  
-  const [activeTab, setActiveTab] = useState('guidelines');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState({
+
+  const [activeTab, setActiveTab] = useState<'guidelines' | 'resistance' | 'pediatric'>('guidelines');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [filters, setFilters] = useState<Filters>({
     dateRange: '3',
     studyType: 'all',
     sortBy: 'relevance'
   });
 
   // Determine search strategy based on props
-  const searchStrategy = useMemo(() => {
+  const searchStrategy = useMemo((): SearchStrategy | null => {
     if (antibiotic && pathogen) {
       return {
         type: 'specific',
@@ -75,14 +120,14 @@ const ResearchIntegration = ({
   }, [antibiotic, pathogen, topic]);
 
   // Fetch research data
-  const fetchResearch = useCallback(async (forceRefresh = false) => {
+  const fetchResearch = useCallback(async (forceRefresh: boolean = false) => {
     if (!searchStrategy) return;
 
     setResearch(prev => ({ ...prev, loading: true, error: null }));
 
     try {
       const cacheKey = `research_${searchStrategy.type}_${searchStrategy.query}`;
-      
+
       const fetchFunction = async () => {
         const promises = [];
 
@@ -138,7 +183,7 @@ const ResearchIntegration = ({
         lastUpdated: new Date().toISOString()
       }));
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Research fetch error:', error);
       setResearch(prev => ({
         ...prev,
@@ -164,14 +209,14 @@ const ResearchIntegration = ({
 
       setResearch(prev => ({
         ...prev,
-        guidelines: results,
+        guidelines: { articles: results },
         resistance: { articles: [] },
         pediatric: { articles: [] },
         loading: false,
         lastUpdated: new Date().toISOString()
       }));
 
-    } catch (error) {
+    } catch (error: any) {
       setResearch(prev => ({
         ...prev,
         loading: false,
@@ -187,12 +232,19 @@ const ResearchIntegration = ({
     }
   }, [searchStrategy, fetchResearch]);
 
-  const TabButton = ({ id, label, count = 0, active = false }) => (
+  interface TabButtonProps {
+    id: 'guidelines' | 'resistance' | 'pediatric';
+    label: string;
+    count?: number;
+    active?: boolean;
+  }
+
+  const TabButton: FC<TabButtonProps> = ({ id, label, count = 0, active = false }) => (
     <button
       onClick={() => setActiveTab(id)}
       className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-        active 
-          ? 'bg-blue-100 text-blue-700 border border-blue-200' 
+        active
+          ? 'bg-blue-100 text-blue-700 border border-blue-200'
           : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
       }`}
     >
@@ -207,9 +259,14 @@ const ResearchIntegration = ({
     </button>
   );
 
-  const ArticleCard = ({ article, relevanceThreshold = 60 }) => {
-    const isHighRelevance = article.relevanceScore >= relevanceThreshold;
-    
+  interface ArticleCardProps {
+    article: ResearchArticle;
+    relevanceThreshold?: number;
+  }
+
+  const ArticleCard: FC<ArticleCardProps> = ({ article, relevanceThreshold = 60 }) => {
+    const isHighRelevance = (article.relevanceScore || 0) >= relevanceThreshold;
+
     return (
       <div className={`bg-white rounded-lg p-4 border-l-4 shadow-sm hover:shadow-md transition-shadow ${
         isHighRelevance ? 'border-l-green-400' : 'border-l-blue-400'
@@ -250,18 +307,18 @@ const ResearchIntegration = ({
             <ExternalLink size={16} />
           </a>
         </div>
-        
+
         {article.abstract && (
           <div className="mt-3 pt-3 border-t border-gray-100">
             <p className="text-xs text-gray-600 leading-relaxed">
-              {article.abstract.length > 200 
+              {article.abstract.length > 200
                 ? `${article.abstract.substring(0, 200)}...`
                 : article.abstract
               }
             </p>
           </div>
         )}
-        
+
         {article.doi && (
           <div className="mt-2 text-xs text-gray-500">
             DOI: <span className="font-mono">{article.doi}</span>
@@ -271,21 +328,26 @@ const ResearchIntegration = ({
     );
   };
 
-  const EmptyState = ({ message, icon: Icon }) => (
+  interface EmptyStateProps {
+    message: string;
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  }
+
+  const EmptyState: FC<EmptyStateProps> = ({ message, icon: Icon }) => (
     <div className="text-center py-8 text-gray-500">
       <Icon size={48} className="mx-auto mb-3 opacity-50" />
       <p>{message}</p>
     </div>
   );
 
-  const getCurrentData = () => {
+  const getCurrentData = (): ResearchArticle[] => {
     switch (activeTab) {
       case 'guidelines':
-        return research.guidelines.articles || [];
+        return (research.guidelines.articles || []) as ResearchArticle[];
       case 'resistance':
-        return research.resistance.articles || [];
+        return (research.resistance.articles || []) as ResearchArticle[];
       case 'pediatric':
-        return research.pediatric.articles || [];
+        return (research.pediatric.articles || []) as ResearchArticle[];
       default:
         return [];
     }
@@ -300,7 +362,7 @@ const ResearchIntegration = ({
           <p className="text-gray-600 mb-4">
             Search PubMed for evidence-based medical literature
           </p>
-          
+
           <div className="max-w-md mx-auto">
             <div className="flex gap-2 mb-4">
               <input
@@ -319,7 +381,7 @@ const ResearchIntegration = ({
                 <Search size={16} />
               </button>
             </div>
-            
+
             <div className="flex gap-2 text-xs">
               <select
                 value={filters.dateRange}
@@ -331,7 +393,7 @@ const ResearchIntegration = ({
                 <option value="5">Last 5 years</option>
                 <option value="10">Last 10 years</option>
               </select>
-              
+
               <select
                 value={filters.studyType}
                 onChange={(e) => setFilters(prev => ({ ...prev, studyType: e.target.value }))}
@@ -365,7 +427,7 @@ const ResearchIntegration = ({
               {searchStrategy.description}
             </p>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {research.lastUpdated && (
               <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -375,7 +437,7 @@ const ResearchIntegration = ({
                 </span>
               </div>
             )}
-            
+
             <button
               onClick={() => fetchResearch(true)}
               disabled={research.loading}
@@ -392,19 +454,19 @@ const ResearchIntegration = ({
           <TabButton
             id="guidelines"
             label="Guidelines"
-            count={research.guidelines.articles?.length || 0}
+            count={(research.guidelines.articles?.length || 0) as number}
             active={activeTab === 'guidelines'}
           />
           <TabButton
             id="resistance"
             label="Resistance"
-            count={research.resistance.articles?.length || 0}
+            count={(research.resistance.articles?.length || 0) as number}
             active={activeTab === 'resistance'}
           />
           <TabButton
             id="pediatric"
             label="Pediatric"
-            count={research.pediatric.articles?.length || 0}
+            count={(research.pediatric.articles?.length || 0) as number}
             active={activeTab === 'pediatric'}
           />
         </div>
@@ -441,7 +503,7 @@ const ResearchIntegration = ({
             {currentData.map((article, index) => (
               <ArticleCard key={article.pmid || index} article={article} />
             ))}
-            
+
             {currentData.length > 0 && (
               <div className="text-center pt-4 border-t border-gray-100">
                 <p className="text-xs text-gray-500">

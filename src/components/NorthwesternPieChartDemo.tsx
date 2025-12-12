@@ -1,29 +1,32 @@
 /**
  * Northwestern Pie Chart Demo Component
- * 
+ *
  * Demonstrates the NorthwesternPieChart component with real antibiotic data
  * from EnhancedAntibioticData.ts. Shows responsive sizes and interactivity.
- * 
- * Created by: Agent 2.1 - Phase 2 Northwestern Foundation  
+ *
+ * Created by: Agent 2.1 - Phase 2 Northwestern Foundation
  * Purpose: Integration demonstration and testing
  */
 
-import React, { useState } from 'react';
+import React, { useState, FC } from 'react';
 import NorthwesternPieChart from './NorthwesternPieChart';
 import enhancedAntibiotics from '../data/EnhancedAntibioticData';
+import { Antibiotic } from '../types/medical.types';
 
-const NorthwesternPieChartDemo = () => {
-  const [selectedAntibiotic, setSelectedAntibiotic] = useState(enhancedAntibiotics[0]);
-  const [selectedSize, setSelectedSize] = useState('medium');
-  const [showLabels, setShowLabels] = useState(false);
-  const [interactive, setInteractive] = useState(true);
-  const [hoverInfo, setHoverInfo] = useState('');
+type SizeOption = 'small' | 'medium' | 'large';
 
-  const handleSegmentHover = (segment, coverage, clinicalContext) => {
+const NorthwesternPieChartDemo: FC = () => {
+  const [selectedAntibiotic, setSelectedAntibiotic] = useState<Antibiotic>(enhancedAntibiotics[0]);
+  const [selectedSize, setSelectedSize] = useState<SizeOption>('medium');
+  const [showLabels, setShowLabels] = useState<boolean>(false);
+  const [interactive, setInteractive] = useState<boolean>(true);
+  const [hoverInfo, setHoverInfo] = useState<string>('');
+
+  const handleSegmentHover = (segment: string, coverage: number, clinicalContext: string) => {
     setHoverInfo(`${segment}: ${clinicalContext}`);
   };
 
-  const handleSegmentClick = (segment, antibiotic) => {
+  const handleSegmentClick = (segment: string, antibiotic: Antibiotic) => {
     console.log(`Clicked ${segment} for ${antibiotic.name}`);
     setHoverInfo(`Clicked: ${segment} for ${antibiotic.name}`);
   };
@@ -34,7 +37,7 @@ const NorthwesternPieChartDemo = () => {
         <h1 className="text-3xl font-bold mb-8 text-gray-900">
           Northwestern Pie Chart Demo
         </h1>
-        
+
         {/* Controls */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 p-6 bg-white rounded-lg shadow">
           {/* Antibiotic Selection */}
@@ -42,11 +45,11 @@ const NorthwesternPieChartDemo = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Antibiotic
             </label>
-            <select 
-              value={selectedAntibiotic.id} 
+            <select
+              value={selectedAntibiotic.id}
               onChange={(e) => {
                 const antibiotic = enhancedAntibiotics.find(ab => ab.id === parseInt(e.target.value));
-                setSelectedAntibiotic(antibiotic);
+                if (antibiotic) setSelectedAntibiotic(antibiotic);
               }}
               className="w-full p-2 border border-gray-300 rounded-md"
             >
@@ -63,9 +66,9 @@ const NorthwesternPieChartDemo = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Size
             </label>
-            <select 
-              value={selectedSize} 
-              onChange={(e) => setSelectedSize(e.target.value)}
+            <select
+              value={selectedSize}
+              onChange={(e) => setSelectedSize(e.target.value as SizeOption)}
               className="w-full p-2 border border-gray-300 rounded-md"
             >
               <option value="small">Small (120px)</option>
@@ -132,13 +135,13 @@ const NorthwesternPieChartDemo = () => {
           <h2 className="text-xl font-semibold mb-4 text-gray-900">
             {selectedAntibiotic.name}
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-medium mb-2">Basic Information</h3>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li><strong>Class:</strong> {selectedAntibiotic.class}</li>
-                <li><strong>Route:</strong> {Array.isArray(selectedAntibiotic.route) 
+                <li><strong>Route:</strong> {Array.isArray(selectedAntibiotic.route)
                   ? selectedAntibiotic.route.join(', ') : selectedAntibiotic.route}</li>
                 <li><strong>Cell Wall Active:</strong> {selectedAntibiotic.cellWallActive ? 'Yes' : 'No'}</li>
                 <li><strong>Generation:</strong> {selectedAntibiotic.generation}</li>
@@ -148,9 +151,9 @@ const NorthwesternPieChartDemo = () => {
             <div>
               <h3 className="font-medium mb-2">Northwestern Spectrum</h3>
               <ul className="text-sm text-gray-600 space-y-1">
-                {Object.entries(selectedAntibiotic.northwesternSpectrum).map(([pathogen, coverage]) => (
+                {Object.entries(selectedAntibiotic.northwesternSpectrum || {}).map(([pathogen, coverage]) => (
                   <li key={pathogen}>
-                    <strong>{pathogen}:</strong> {coverage}/2 
+                    <strong>{pathogen}:</strong> {coverage}/2
                     <span className="ml-2 text-xs">
                       ({coverage === 0 ? 'No coverage' : coverage === 1 ? 'Some coverage' : 'Good coverage'})
                     </span>
@@ -185,7 +188,7 @@ const NorthwesternPieChartDemo = () => {
                   {antibiotic.name}
                 </h4>
                 <p className="text-xs text-gray-500">
-                  {antibiotic.route}
+                  {typeof antibiotic.route === 'string' ? antibiotic.route : Array.isArray(antibiotic.route) ? antibiotic.route[0] : ''}
                 </p>
               </div>
             ))}

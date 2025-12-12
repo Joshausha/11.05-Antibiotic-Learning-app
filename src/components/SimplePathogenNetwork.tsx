@@ -5,16 +5,24 @@
 
 import React from 'react';
 import { Network, Users, Microscope } from 'lucide-react';
+import { Pathogen } from '../types/medical.types';
 
-const SimplePathogenNetwork = ({ pathogenData }) => {
+interface SimplePathogenNetworkProps {
+  pathogenData?: {
+    pathogens?: Pathogen[];
+    [key: string]: any;
+  };
+}
+
+const SimplePathogenNetwork: React.FC<SimplePathogenNetworkProps> = ({ pathogenData }) => {
   // Get some basic pathogen stats for display
   const pathogens = pathogenData?.pathogens || [];
-  const gramPositive = pathogens.filter(p => p.gramStatus === 'positive').length;
-  const gramNegative = pathogens.filter(p => p.gramStatus === 'negative').length;
-  
+  const gramPositive = pathogens.filter(p => p.gramStain === 'positive').length;
+  const gramNegative = pathogens.filter(p => p.gramStain === 'negative').length;
+
   // Create a simple grid layout for pathogens
-  const getGramColor = (gramStatus) => {
-    return gramStatus === 'positive' ? 'bg-purple-100 text-purple-800' : 'bg-red-100 text-red-800';
+  const getGramColor = (gramStain: string): string => {
+    return gramStain === 'positive' ? 'bg-purple-100 text-purple-800' : 'bg-red-100 text-red-800';
   };
 
   return (
@@ -24,7 +32,7 @@ const SimplePathogenNetwork = ({ pathogenData }) => {
         <h3 className="text-lg font-semibold text-gray-900">Pathogen Overview</h3>
         <p className="text-gray-600">Interactive network visualization</p>
       </div>
-      
+
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg border">
           <div className="flex items-center gap-2 mb-2">
@@ -34,7 +42,7 @@ const SimplePathogenNetwork = ({ pathogenData }) => {
           <div className="text-2xl font-bold text-purple-600">{gramPositive}</div>
           <div className="text-sm text-gray-500">pathogens</div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg border">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-3 h-3 bg-red-500 rounded-full"></div>
@@ -44,18 +52,18 @@ const SimplePathogenNetwork = ({ pathogenData }) => {
           <div className="text-sm text-gray-500">pathogens</div>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
-        {pathogens.slice(0, 12).map((pathogen, index) => (
+        {pathogens.slice(0, 12).map((pathogen) => (
           <div
             key={pathogen.id}
-            className={`p-2 rounded-lg text-xs ${getGramColor(pathogen.gramStatus)} border`}
+            className={`p-2 rounded-lg text-xs ${getGramColor(pathogen.gramStain)} border`}
           >
             <div className="flex items-center gap-1 mb-1">
               <Microscope size={12} />
-              <span className="font-medium">{pathogen.commonName}</span>
+              <span className="font-medium">{pathogen.name}</span>
             </div>
-            <div className="text-xs opacity-75">{pathogen.shape}</div>
+            <div className="text-xs opacity-75">{pathogen.type}</div>
           </div>
         ))}
         {pathogens.length > 12 && (
@@ -64,7 +72,7 @@ const SimplePathogenNetwork = ({ pathogenData }) => {
           </div>
         )}
       </div>
-      
+
       <div className="mt-4 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
           <Users size={16} />

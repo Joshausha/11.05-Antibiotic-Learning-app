@@ -39,7 +39,13 @@
       "mcp__sequentialthinking__sequentialthinking",
       "mcp__git__git_status",
       "Bash(while read f)",
-      "Bash(timeout 60 npm test -- --passWithNoTests --testTimeout=5000)"
+      "Bash(timeout 60 npm test -- --passWithNoTests --testTimeout=5000)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(if [ -f \"$file.tsx\" ])",
+      "Bash(else echo \"TSX missing\")",
+      "Bash(fi)",
+      "Bash(if [ -f \"$file.js\" ])",
+      "Bash(timeout 30 npm run build:*)"
     ]
   }
 }

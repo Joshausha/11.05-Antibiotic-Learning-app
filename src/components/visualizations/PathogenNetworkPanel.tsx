@@ -1,10 +1,10 @@
 /**
  * PathogenNetworkPanel Component
  * Renders the pathogen network visualization with layout switching controls
- * Extracted from VisualizationsTab.js during Phase 4 refactoring
+ * Extracted from VisualizationsTab.tsx during Phase 4 refactoring
  */
 
-import React, { memo } from 'react';
+import React, { memo, FC } from 'react';
 import { Network } from 'lucide-react';
 import ErrorBoundary from '../ErrorBoundary';
 import PathogenNetworkVisualization from '../PathogenNetworkVisualization';
@@ -12,42 +12,46 @@ import PathogenNetworkVisualizationCytoscape from '../PathogenNetworkVisualizati
 import NetworkVisualizationD3 from '../NetworkVisualizationD3';
 import NorthwesternSpatialLayout from '../NorthwesternSpatialLayout';
 import { networkLayoutOptions, spatialViewOptions } from '../../config/visualizationConfig';
+import { Antibiotic, Pathogen } from '../../types/medical.types';
 
-/**
- * Pathogen Network Panel with layout switching
- * @param {Object} props
- * @param {string} props.networkLayoutMode - Current network layout mode
- * @param {Function} props.setNetworkLayoutMode - Layout mode setter
- * @param {string} props.spatialViewMode - Current spatial view mode
- * @param {Function} props.setSpatialViewMode - Spatial view mode setter
- * @param {Object} props.antibioticData - Antibiotic data
- * @param {Function} props.onSelectPathogen - Pathogen selection handler
- * @param {Function} props.onNetworkNodeClick - Network node click handler
- * @param {boolean} props.emergencyMode - Emergency mode flag
- * @param {boolean} props.animationEnabled - Animation enabled flag
- * @param {Object} props.animationManager - Animation manager instance
- * @param {Function} props.createSelectionAnimation - Selection animation creator
- */
-const PathogenNetworkPanel = ({
-  networkLayoutMode,
-  setNetworkLayoutMode,
-  spatialViewMode,
-  setSpatialViewMode,
+interface PathogenNetworkPanelProps {
+  networkLayoutMode?: string;
+  setNetworkLayoutMode?: (mode: string) => void;
+  spatialViewMode?: string;
+  setSpatialViewMode?: (mode: string) => void;
+  antibioticData?: {
+    antibiotics?: Antibiotic[];
+    [key: string]: any;
+  };
+  onSelectPathogen?: (pathogen: Pathogen) => void;
+  onNetworkNodeClick?: (node: any) => void;
+  emergencyMode?: boolean;
+  animationEnabled?: boolean;
+  animationManager?: any;
+  createSelectionAnimation?: (element: Element | null, type: string, options: any) => any;
+}
+
+const PathogenNetworkPanel: FC<PathogenNetworkPanelProps> = memo(({
+  networkLayoutMode = 'd3',
+  setNetworkLayoutMode = () => {},
+  spatialViewMode = 'clinical',
+  setSpatialViewMode = () => {},
   antibioticData,
   onSelectPathogen,
   onNetworkNodeClick,
-  emergencyMode,
-  animationEnabled,
+  emergencyMode = false,
+  animationEnabled = false,
   animationManager,
   createSelectionAnimation
 }) => {
   // Handle antibiotic selection from spatial layout with animation
-  const handleSpatialAntibioticSelect = (antibiotic) => {
+  const handleSpatialAntibioticSelect = (antibiotic: Antibiotic) => {
     console.log('Selected antibiotic from spatial layout:', antibiotic);
 
-    if (animationEnabled && animationManager) {
+    if (animationEnabled && animationManager && createSelectionAnimation) {
+      const element = document.querySelector(`[data-antibiotic-id="${antibiotic.id}"]`);
       const selectionAnimation = createSelectionAnimation(
-        document.querySelector(`[data-antibiotic-id="${antibiotic.id}"]`),
+        element,
         'antibiotic',
         { educationLevel: 'resident', emergencyMode }
       );
@@ -56,16 +60,16 @@ const PathogenNetworkPanel = ({
         animationManager.animate(
           selectionAnimation.element,
           selectionAnimation.config
-        ).catch(console.warn);
+        ).catch((err: Error) => console.warn(err));
       }
     }
   };
 
   // Handle group selection from spatial layout with animation
-  const handleGroupSelect = (groupKey, antibiotics) => {
+  const handleGroupSelect = (groupKey: string, antibiotics: Antibiotic[]) => {
     console.log('Selected group from spatial layout:', groupKey, antibiotics);
 
-    if (animationEnabled && animationManager) {
+    if (animationEnabled && animationManager && createSelectionAnimation) {
       const groupElements = document.querySelectorAll(`[data-spatial-group="${groupKey}"]`);
       groupElements.forEach(element => {
         const groupAnimation = createSelectionAnimation(
@@ -78,14 +82,14 @@ const PathogenNetworkPanel = ({
           animationManager.animate(
             groupAnimation.element,
             groupAnimation.config
-          ).catch(console.warn);
+          ).catch((err: Error) => console.warn(err));
         }
       });
     }
   };
 
   // Get layout description text
-  const getLayoutDescription = () => {
+  const getLayoutDescription = (): string => {
     switch (networkLayoutMode) {
       case 'd3':
         return 'Force-directed layout showing pathogen relationships through dynamic positioning';
@@ -184,6 +188,8 @@ const PathogenNetworkPanel = ({
       </div>
     </div>
   );
-};
+});
 
-export default memo(PathogenNetworkPanel);
+PathogenNetworkPanel.displayName = 'PathogenNetworkPanel';
+
+export default PathogenNetworkPanel;

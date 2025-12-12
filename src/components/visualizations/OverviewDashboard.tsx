@@ -1,10 +1,10 @@
 /**
  * OverviewDashboard Component
  * Displays high-level statistics and key metrics for the visualization tab
- * Extracted from VisualizationsTab.js during Phase 4 refactoring
+ * Extracted from VisualizationsTab.tsx during Phase 4 refactoring
  */
 
-import React, { memo } from 'react';
+import React, { memo, FC } from 'react';
 import {
   Target,
   Microscope,
@@ -13,13 +13,28 @@ import {
   PieChart
 } from 'lucide-react';
 
-/**
- * Overview Dashboard displaying key metrics and quick insights
- * @param {Object} props
- * @param {Object} props.overviewStats - Statistics object with counts
- * @param {Object} props.categoryDistribution - Category distribution object
- */
-const OverviewDashboard = ({ overviewStats, categoryDistribution }) => {
+interface OverviewDashboardProps {
+  overviewStats?: {
+    totalConditions: number;
+    totalPathogens: number;
+    totalAntibiotics: number;
+    gramPositive: number;
+    gramNegative: number;
+    [key: string]: any;
+  };
+  categoryDistribution?: Record<string, number>;
+}
+
+const OverviewDashboard: FC<OverviewDashboardProps> = memo(({
+  overviewStats = {
+    totalConditions: 0,
+    totalPathogens: 0,
+    totalAntibiotics: 0,
+    gramPositive: 0,
+    gramNegative: 0
+  },
+  categoryDistribution = {}
+}) => {
   return (
     <div className="space-y-6">
       {/* Key Metrics Cards */}
@@ -65,12 +80,21 @@ const OverviewDashboard = ({ overviewStats, categoryDistribution }) => {
       </div>
     </div>
   );
-};
+});
+
+OverviewDashboard.displayName = 'OverviewDashboard';
 
 /**
  * Individual metric card component
  */
-const MetricCard = memo(({ icon: Icon, iconColor, value, label }) => (
+interface MetricCardProps {
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  iconColor: string;
+  value: number;
+  label: string;
+}
+
+const MetricCard = memo<FC<MetricCardProps>>(({ icon: Icon, iconColor, value, label }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border">
     <div className="flex items-center gap-3">
       <Icon className={iconColor} size={24} />
@@ -87,7 +111,17 @@ MetricCard.displayName = 'MetricCard';
 /**
  * Gram status distribution card
  */
-const GramStatusCard = memo(({ gramPositive, gramNegative, totalPathogens }) => (
+interface GramStatusCardProps {
+  gramPositive: number;
+  gramNegative: number;
+  totalPathogens: number;
+}
+
+const GramStatusCard = memo<FC<GramStatusCardProps>>(({
+  gramPositive,
+  gramNegative,
+  totalPathogens
+}) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border">
     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
       <Microscope size={20} className="text-green-600" />
@@ -115,7 +149,19 @@ GramStatusCard.displayName = 'GramStatusCard';
 /**
  * Individual gram status progress bar
  */
-const GramStatusBar = memo(({ label, count, total, colorClass }) => {
+interface GramStatusBarProps {
+  label: string;
+  count: number;
+  total: number;
+  colorClass: string;
+}
+
+const GramStatusBar = memo<FC<GramStatusBarProps>>(({
+  label,
+  count,
+  total,
+  colorClass
+}) => {
   const percentage = total > 0 ? (count / total) * 100 : 0;
 
   return (
@@ -139,7 +185,11 @@ GramStatusBar.displayName = 'GramStatusBar';
 /**
  * Top categories card
  */
-const TopCategoriesCard = memo(({ categoryDistribution }) => (
+interface TopCategoriesCardProps {
+  categoryDistribution: Record<string, number>;
+}
+
+const TopCategoriesCard = memo<FC<TopCategoriesCardProps>>(({ categoryDistribution }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border">
     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
       <PieChart size={20} className="text-blue-600" />
@@ -163,4 +213,4 @@ const TopCategoriesCard = memo(({ categoryDistribution }) => (
 
 TopCategoriesCard.displayName = 'TopCategoriesCard';
 
-export default memo(OverviewDashboard);
+export default OverviewDashboard;
