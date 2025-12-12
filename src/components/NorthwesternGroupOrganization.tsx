@@ -1,13 +1,9 @@
 /**
- * Northwestern Group Organization Component
- * 
+ * Northwestern Group Organization Component (TypeScript)
+ *
  * Sophisticated group organization system providing visual boundaries, medical context,
  * and interactive group-level features for the Northwestern spatial antibiotic layout.
- * 
- * Created by: Agent 3.2 - Group Organization Designer
- * Phase: 3 - Spatial Organization System
- * Integration: Builds on Agent 3.1's spatial layout foundation
- * 
+ *
  * Features:
  * - Visual group headers with medical context and antibiotic counts
  * - Group boundary visualization with responsive design
@@ -16,38 +12,154 @@
  * - Integration with Phase 2 pie chart components
  * - <100ms group calculations for real-time filtering
  * - Medical emergency <30 second access compliance
- * 
- * @component
- * @example
- * <NorthwesternGroupOrganization
- *   spatialLayout={spatialLayout}
- *   screenSize="tablet"
- *   showGroupHeaders={true}
- *   showGroupStats={true}
- *   expandedGroups={['betaLactams']}
- *   onGroupSelect={(groupKey, antibiotics) => console.log(groupKey, antibiotics)}
- * />
  */
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import PropTypes from 'prop-types';
-import { 
+import React, { useState, useEffect, useMemo, useCallback, useRef, FC, CSSProperties, ReactElement } from 'react';
+import GroupVisualElements from './GroupVisualElements';
+import {
   calculateGroupStatistics,
   calculateCoverageSummary,
   classifyByMechanism,
   classifyByGeneration,
   classifyByRoute,
   getMedicalGroupingData,
-  validateMedicalAccuracy 
+  validateMedicalAccuracy
 } from '../utils/medicalGroupingLogic';
-import GroupVisualElements from './GroupVisualElements.js';
 import '../styles/NorthwesternGroupOrganization.css';
+
+/**
+ * Type Definitions
+ */
+
+interface Antibiotic {
+  id: string | number;
+  name: string;
+  class?: string;
+  northwesternSpectrum?: Record<string, number>;
+  route?: string | string[];
+  routeColor?: 'red' | 'blue' | 'purple';
+  cellWallActive?: boolean;
+  generation?: string;
+  [key: string]: any;
+}
+
+interface GridPosition {
+  row: number;
+  col: number;
+  group?: string;
+}
+
+interface PositionedAntibiotic extends Antibiotic {
+  gridPosition: GridPosition;
+}
+
+interface MedicalGroupColor {
+  background: string;
+  border: string;
+  accent: string;
+}
+
+interface MedicalGroupDefinition {
+  name: string;
+  medicalContext: string;
+  position: string;
+  priority: number;
+  color: MedicalGroupColor;
+  classes: string[];
+  mechanism: string;
+  clinicalContext: string;
+  resistanceMechanism: string;
+  emergencyUse: string;
+}
+
+interface EnhancedGroup extends MedicalGroupDefinition {
+  antibiotics: Antibiotic[];
+  antibioticCount: number;
+  generationGroups: Record<string, any>;
+  routeDistribution: Record<string, any>;
+  mechanismType: any[];
+  isExpanded: boolean;
+  isSelected: boolean;
+}
+
+interface SpatialGroup {
+  groupId: string;
+  name: string;
+  color?: string;
+  description?: string;
+  bounds?: {
+    minRow: number;
+    maxRow: number;
+    minCol: number;
+    maxCol: number;
+  };
+}
+
+interface SpatialLayout {
+  positioned: PositionedAntibiotic[];
+  groups?: Record<string, SpatialGroup>;
+  layout?: any;
+}
+
+interface MedicalGroupData {
+  groups: Record<string, EnhancedGroup>;
+  validation: ValidationResult | null;
+  performance: {
+    calculationTime: number;
+    antibioticCount: number;
+    groupCount: number;
+  };
+}
+
+interface GroupStatistics {
+  [key: string]: any;
+}
+
+interface CoverageSummary {
+  [key: string]: any;
+}
+
+interface StatisticsData {
+  statistics: GroupStatistics;
+  summaries: CoverageSummary;
+}
+
+interface ValidationResult {
+  isValid: boolean;
+  errors?: string[];
+  warnings?: string[];
+}
+
+interface EmergencyOptimizations {
+  showGroupStats?: boolean;
+  showGroupConnections?: boolean;
+  enableStatistics?: boolean;
+  animationDuration?: number;
+}
+
+interface NorthwesternGroupOrganizationProps {
+  spatialLayout: SpatialLayout;
+  screenSize?: 'mobile' | 'tablet' | 'desktop';
+  showGroupHeaders?: boolean;
+  showGroupStats?: boolean;
+  showGroupConnections?: boolean;
+  expandedGroups?: string[];
+  selectedGroup?: string | null;
+  onGroupToggle?: (groupKey: string) => void;
+  onGroupSelect?: (groupKey: string, antibiotics: Antibiotic[]) => void;
+  onGroupFilter?: (groupKey: string, filterType: string, antibiotics: Antibiotic[]) => void;
+  className?: string;
+  enableStatistics?: boolean;
+  statisticsUpdateInterval?: number;
+  emergencyMode?: boolean;
+  clinicalContext?: 'education' | 'clinical' | 'emergency';
+}
 
 /**
  * Medical group definitions with clinical context
  * Based on Northwestern teaching methodology
  */
-const MEDICAL_GROUP_DEFINITIONS = {
+const MEDICAL_GROUP_DEFINITIONS: Record<string, MedicalGroupDefinition> = {
   betaLactams: {
     name: 'β-Lactams',
     medicalContext: 'Cell Wall Synthesis Inhibitors',
@@ -118,7 +230,7 @@ const MEDICAL_GROUP_DEFINITIONS = {
  * Northwestern Group Organization Component
  * Provides comprehensive group organization for spatial antibiotic layout
  */
-const NorthwesternGroupOrganization = ({
+const NorthwesternGroupOrganization: FC<NorthwesternGroupOrganizationProps> = ({
   spatialLayout,
   screenSize = 'desktop',
   showGroupHeaders = true,
@@ -130,29 +242,28 @@ const NorthwesternGroupOrganization = ({
   onGroupSelect,
   onGroupFilter,
   className = '',
-  // Performance and clinical workflow props
   enableStatistics = true,
   statisticsUpdateInterval = 1000,
   emergencyMode = false,
   clinicalContext = 'education'
 }) => {
   // Refs for performance monitoring
-  const calculationStartTime = useRef(Date.now());
-  const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
-  
+  const calculationStartTime = useRef<number>(Date.now());
+  const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now());
+
   // Component state
-  const [groupStatistics, setGroupStatistics] = useState({});
-  const [coverageSummaries, setCoverageSummaries] = useState({});
-  const [medicalAccuracyValidation, setMedicalAccuracyValidation] = useState(null);
-  const [isCalculating, setIsCalculating] = useState(false);
+  const [groupStatistics, setGroupStatistics] = useState<GroupStatistics>({});
+  const [coverageSummaries, setCoverageSummaries] = useState<CoverageSummary>({});
+  const [medicalAccuracyValidation, setMedicalAccuracyValidation] = useState<ValidationResult | null>(null);
+  const [isCalculating, setIsCalculating] = useState<boolean>(false);
 
   // Extract groups and antibiotics from spatial layout
   const { groups: spatialGroups = {}, positioned: positionedAntibiotics = [] } = spatialLayout;
 
   // Medical grouping calculations
-  const medicalGroupData = useMemo(() => {
+  const medicalGroupData = useMemo((): MedicalGroupData => {
     if (!positionedAntibiotics.length) {
-      return { groups: {}, validation: null, performance: { calculationTime: 0 } };
+      return { groups: {}, validation: null, performance: { calculationTime: 0, antibioticCount: 0, groupCount: 0 } };
     }
 
     const startTime = performance.now();
@@ -160,27 +271,27 @@ const NorthwesternGroupOrganization = ({
 
     try {
       // Get enhanced medical grouping data
-      const medicalData = getMedicalGroupingData(spatialGroups, MEDICAL_GROUP_DEFINITIONS);
-      
+      const medicalData = getMedicalGroupingData(spatialGroups, MEDICAL_GROUP_DEFINITIONS) as any;
+
       // Classify antibiotics by various medical criteria
-      const mechanismClassification = classifyByMechanism(positionedAntibiotics);
-      const routeClassification = classifyByRoute(positionedAntibiotics);
-      
+      const mechanismClassification = classifyByMechanism(positionedAntibiotics) as Record<string, any[]>;
+      const routeClassification = classifyByRoute(positionedAntibiotics) as Record<string, any>;
+
       // Calculate enhanced group data
-      const enhancedGroups = {};
-      Object.keys(medicalData.groups).forEach(groupKey => {
+      const enhancedGroups: Record<string, EnhancedGroup> = {};
+      Object.keys(medicalData.groups).forEach((groupKey: string) => {
         const groupAntibiotics = medicalData.groups[groupKey].antibiotics || [];
-        
+
         enhancedGroups[groupKey] = {
           ...medicalData.groups[groupKey],
           ...MEDICAL_GROUP_DEFINITIONS[groupKey],
           antibiotics: groupAntibiotics,
           antibioticCount: groupAntibiotics.length,
           // Generation-based classification within group
-          generationGroups: medicalData.groups[groupKey].classes ? 
-            Object.keys(medicalData.groups[groupKey].classes).reduce((acc, className) => {
+          generationGroups: medicalData.groups[groupKey].classes ?
+            Object.keys(medicalData.groups[groupKey].classes).reduce((acc: Record<string, any>, className: string) => {
               acc[className] = classifyByGeneration(
-                medicalData.groups[groupKey].classes[className], 
+                medicalData.groups[groupKey].classes[className],
                 className
               );
               return acc;
@@ -192,14 +303,14 @@ const NorthwesternGroupOrganization = ({
           // Clinical workflow data
           isExpanded: expandedGroups.includes(groupKey),
           isSelected: selectedGroup === groupKey
-        };
+        } as EnhancedGroup;
       });
 
       // Validate medical accuracy
-      const validation = validateMedicalAccuracy(enhancedGroups, MEDICAL_GROUP_DEFINITIONS);
-      
+      const validation = validateMedicalAccuracy(enhancedGroups, MEDICAL_GROUP_DEFINITIONS) as ValidationResult;
+
       const calculationTime = performance.now() - startTime;
-      
+
       // Performance warning for clinical workflow
       if (calculationTime > 100) {
         console.warn(`Group organization calculation took ${calculationTime.toFixed(2)}ms (target: <100ms)`);
@@ -220,21 +331,21 @@ const NorthwesternGroupOrganization = ({
   }, [spatialGroups, positionedAntibiotics, expandedGroups, selectedGroup]);
 
   // Group statistics calculations
-  const statisticsData = useMemo(() => {
+  const statisticsData = useMemo((): StatisticsData => {
     if (!enableStatistics || !medicalGroupData.groups || isCalculating) {
       return { statistics: {}, summaries: {} };
     }
 
     const startTime = performance.now();
-    const statistics = {};
-    const summaries = {};
+    const statistics: GroupStatistics = {};
+    const summaries: CoverageSummary = {};
 
-    Object.keys(medicalGroupData.groups).forEach(groupKey => {
+    Object.keys(medicalGroupData.groups).forEach((groupKey: string) => {
       const group = medicalGroupData.groups[groupKey];
       if (group.antibiotics && group.antibiotics.length > 0) {
         // Calculate comprehensive statistics
         statistics[groupKey] = calculateGroupStatistics(group.antibiotics);
-        
+
         // Calculate coverage summaries
         summaries[groupKey] = calculateCoverageSummary(group.antibiotics);
       }
@@ -265,25 +376,25 @@ const NorthwesternGroupOrganization = ({
       setGroupStatistics(statisticsData.statistics);
       setCoverageSummaries(statisticsData.summaries);
     }
-    
+
     if (medicalGroupData.validation) {
       setMedicalAccuracyValidation(medicalGroupData.validation);
     }
   }, [statisticsData, medicalGroupData.validation]);
 
   // Event handlers
-  const handleGroupToggle = useCallback((groupKey) => {
+  const handleGroupToggle = useCallback((groupKey: string): void => {
     onGroupToggle?.(groupKey);
   }, [onGroupToggle]);
 
-  const handleGroupSelect = useCallback((groupKey) => {
+  const handleGroupSelect = useCallback((groupKey: string): void => {
     const group = medicalGroupData.groups[groupKey];
     if (group) {
       onGroupSelect?.(groupKey, group.antibiotics);
     }
   }, [medicalGroupData.groups, onGroupSelect]);
 
-  const handleGroupFilter = useCallback((groupKey, filterType) => {
+  const handleGroupFilter = useCallback((groupKey: string, filterType: string): void => {
     const group = medicalGroupData.groups[groupKey];
     if (group) {
       onGroupFilter?.(groupKey, filterType, group.antibiotics);
@@ -291,20 +402,20 @@ const NorthwesternGroupOrganization = ({
   }, [medicalGroupData.groups, onGroupFilter]);
 
   // Emergency mode optimizations
-  const emergencyOptimizations = useMemo(() => {
+  const emergencyOptimizations = useMemo((): EmergencyOptimizations => {
     if (!emergencyMode) return {};
 
     return {
-      showGroupStats: false, // Disable stats in emergency mode
-      showGroupConnections: false, // Disable connections
-      enableStatistics: false, // Disable real-time statistics
-      animationDuration: 0 // Disable animations
+      showGroupStats: false,
+      showGroupConnections: false,
+      enableStatistics: false,
+      animationDuration: 0
     };
   }, [emergencyMode]);
 
   // Responsive group organization styles
-  const containerStyles = useMemo(() => {
-    const baseStyles = {
+  const containerStyles = useMemo((): CSSProperties => {
+    const baseStyles: CSSProperties = {
       display: 'grid',
       width: '100%',
       position: 'relative',
@@ -359,7 +470,7 @@ const NorthwesternGroupOrganization = ({
         <div className="medical-accuracy-error">
           <h3>Medical Accuracy Validation Failed</h3>
           <ul>
-            {medicalAccuracyValidation.errors.map((error, index) => (
+            {medicalAccuracyValidation.errors?.map((error, index) => (
               <li key={index} className="error-item">{error}</li>
             ))}
           </ul>
@@ -372,7 +483,7 @@ const NorthwesternGroupOrganization = ({
   }
 
   return (
-    <div 
+    <div
       className={`northwestern-group-organization northwestern-group-organization--${screenSize} ${emergencyMode ? 'northwestern-group-organization--emergency' : ''} ${className}`}
       style={containerStyles}
       data-group-count={Object.keys(medicalGroupData.groups).length}
@@ -384,11 +495,11 @@ const NorthwesternGroupOrganization = ({
         <div className="group-headers">
           {Object.keys(medicalGroupData.groups)
             .sort((a, b) => medicalGroupData.groups[a].priority - medicalGroupData.groups[b].priority)
-            .map(groupKey => {
+            .map((groupKey: string) => {
               const group = medicalGroupData.groups[groupKey];
               const statistics = groupStatistics[groupKey];
               const coverageSummary = coverageSummaries[groupKey];
-              
+
               return (
                 <GroupVisualElements
                   key={groupKey}
@@ -403,7 +514,7 @@ const NorthwesternGroupOrganization = ({
                   isSelected={group.isSelected}
                   onToggle={() => handleGroupToggle(groupKey)}
                   onSelect={() => handleGroupSelect(groupKey)}
-                  onFilter={(filterType) => handleGroupFilter(groupKey, filterType)}
+                  onFilter={(filterType: string) => handleGroupFilter(groupKey, filterType)}
                 />
               );
             })
@@ -415,12 +526,12 @@ const NorthwesternGroupOrganization = ({
       {showGroupStats && !emergencyMode && (
         <div className="group-statistics-panels">
           {Object.keys(medicalGroupData.groups)
-            .filter(groupKey => medicalGroupData.groups[groupKey].isExpanded)
-            .map(groupKey => {
+            .filter((groupKey: string) => medicalGroupData.groups[groupKey].isExpanded)
+            .map((groupKey: string) => {
               const group = medicalGroupData.groups[groupKey];
               const statistics = groupStatistics[groupKey];
               const coverageSummary = coverageSummaries[groupKey];
-              
+
               return (
                 <GroupVisualElements
                   key={`stats-${groupKey}`}
@@ -440,9 +551,9 @@ const NorthwesternGroupOrganization = ({
       {/* Group Boundaries Overlay */}
       {spatialLayout.layout && (
         <div className="group-boundaries-overlay">
-          {Object.keys(medicalGroupData.groups).map(groupKey => {
+          {Object.keys(medicalGroupData.groups).map((groupKey: string) => {
             const group = medicalGroupData.groups[groupKey];
-            
+
             return (
               <GroupVisualElements
                 key={`boundary-${groupKey}`}
@@ -476,10 +587,9 @@ const NorthwesternGroupOrganization = ({
         <div className="group-debug-info">
           <div className="performance-metrics">
             <span>Group Calc: {medicalGroupData.performance.calculationTime.toFixed(2)}ms</span>
-            <span>Stats Calc: {statisticsData.calculationTime?.toFixed(2) || 0}ms</span>
             <span>Groups: {medicalGroupData.performance.groupCount}</span>
             <span>Antibiotics: {medicalGroupData.performance.antibioticCount}</span>
-            {medicalAccuracyValidation?.warnings.length > 0 && (
+            {medicalAccuracyValidation?.warnings && medicalAccuracyValidation.warnings.length > 0 && (
               <span className="medical-warnings">
                 ⚠️ {medicalAccuracyValidation.warnings.length} medical warnings
               </span>
@@ -489,29 +599,6 @@ const NorthwesternGroupOrganization = ({
       )}
     </div>
   );
-};
-
-// PropTypes for type safety
-NorthwesternGroupOrganization.propTypes = {
-  spatialLayout: PropTypes.shape({
-    groups: PropTypes.object.isRequired,
-    positioned: PropTypes.arrayOf(PropTypes.object).isRequired,
-    layout: PropTypes.object
-  }).isRequired,
-  screenSize: PropTypes.oneOf(['mobile', 'tablet', 'desktop']),
-  showGroupHeaders: PropTypes.bool,
-  showGroupStats: PropTypes.bool,
-  showGroupConnections: PropTypes.bool,
-  expandedGroups: PropTypes.arrayOf(PropTypes.string),
-  selectedGroup: PropTypes.string,
-  onGroupToggle: PropTypes.func,
-  onGroupSelect: PropTypes.func,
-  onGroupFilter: PropTypes.func,
-  className: PropTypes.string,
-  enableStatistics: PropTypes.bool,
-  statisticsUpdateInterval: PropTypes.number,
-  emergencyMode: PropTypes.bool,
-  clinicalContext: PropTypes.oneOf(['education', 'clinical', 'emergency'])
 };
 
 export default NorthwesternGroupOrganization;

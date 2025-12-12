@@ -1,40 +1,25 @@
 /**
- * Northwestern Filtering System Component
- * 
- * Primary interactive filtering interface for Northwestern 8-segment antibiotic 
+ * Northwestern Filtering System Component (TypeScript)
+ *
+ * Primary interactive filtering interface for Northwestern 8-segment antibiotic
  * methodology with real-time visual feedback and clinical decision support.
- * 
- * Created by: Agent 3.3 - Interactive Filtering Specialist
- * Phase: 3 - Spatial Organization System
+ *
  * Performance Target: <100ms filter application, <50ms visual feedback
- * 
+ *
  * Features:
  * - Real-time Northwestern category filtering with visual feedback
  * - Clinical scenario filtering for workflow optimization
- * - Integration with Agent 3.1's spatial layout for highlighting
- * - Integration with Agent 3.2's group organization for contextual filtering
+ * - Integration with spatial layout for highlighting
  * - Multi-category combination filtering with logical operators
  * - Filter state persistence and clinical workflow memory
  * - Emergency mode optimization for <30 second clinical access
  * - Mobile-optimized touch controls for clinical tablets
  * - Accessibility compliance with keyboard navigation and screen readers
- * 
- * @component
- * @example
- * <NorthwesternFilteringSystem
- *   antibiotics={enhancedAntibioticData}
- *   spatialLayout={spatialLayoutResults}
- *   onFilteredResults={(results) => updateDisplay(results)}
- *   onVisualFeedback={(highlights) => updateSpatialHighlights(highlights)}
- *   screenSize="tablet"
- *   emergencyMode={false}
- * />
  */
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import PropTypes from 'prop-types';
-import FilterControlPanel from './FilterControlPanel.js';
-import { 
+import React, { useState, useEffect, useMemo, useCallback, useRef, FC, ReactNode } from 'react';
+import FilterControlPanel from './FilterControlPanel';
+import {
   FilterState,
   applyNorthwesternFilters,
   getFilterSuggestions,
@@ -50,10 +35,125 @@ import {
 } from '../utils/clinicalScenarioFilters';
 
 /**
+ * Type Definitions
+ */
+
+interface Antibiotic {
+  id: string | number;
+  name: string;
+  class: string;
+  northwesternSpectrum: Record<string, number>;
+  cellWallActive?: boolean;
+  routeColor?: 'red' | 'blue' | 'purple';
+  generation?: string;
+  [key: string]: any;
+}
+
+interface GridPosition {
+  row: number;
+  col: number;
+  group?: string;
+}
+
+interface PositionedAntibiotic extends Antibiotic {
+  gridPosition: GridPosition;
+}
+
+interface SpatialGroup {
+  groupId: string;
+  name: string;
+  color?: string;
+  description?: string;
+  bounds?: {
+    minRow: number;
+    maxRow: number;
+    minCol: number;
+    maxCol: number;
+  };
+}
+
+interface SpatialLayout {
+  positioned: PositionedAntibiotic[];
+  groups?: Record<string, SpatialGroup>;
+  layout?: any;
+}
+
+interface FilteredResults {
+  matchingAntibiotics: Antibiotic[];
+  filteredCount: number;
+  totalCount: number;
+  error?: string;
+  performance?: {
+    calculationTime: number;
+    cacheHit?: boolean;
+  };
+  clinicalScenario?: string;
+  decisionSupport?: any;
+  clinicalGuidance?: any;
+}
+
+interface VisualHighlight {
+  antibioticId: string | number;
+  gridPosition: GridPosition;
+  highlightType: 'filter-match' | 'scenario-match' | 'emergency-priority';
+  intensity: number;
+  color: string;
+}
+
+interface PerformanceMetrics {
+  filterTime?: number;
+  totalTime?: number;
+  resultCount?: number;
+  cacheHit?: boolean;
+  timestamp?: number;
+}
+
+interface ValidationResult {
+  isValid: boolean;
+  warnings?: string[];
+  errors?: string[];
+}
+
+interface FilterSuggestion {
+  type: 'scenario' | 'filter';
+  priority: 'high' | 'medium' | 'low';
+  reason: string;
+  scenarioKey?: string;
+  filterConfig?: any;
+}
+
+interface NorthwesternFilteringSystemProps {
+  antibiotics?: Antibiotic[];
+  spatialLayout?: SpatialLayout | null;
+  onFilteredResults?: (results: FilteredResults) => void;
+  onVisualFeedback?: (highlights: VisualHighlight[]) => void;
+  onFilterStateChange?: (state: FilterState) => void;
+  screenSize?: 'mobile' | 'tablet' | 'desktop';
+  emergencyMode?: boolean;
+  clinicalContext?: string;
+  className?: string;
+  enableRealTimeFiltering?: boolean;
+  filterUpdateDebounce?: number;
+  enableVisualFeedback?: boolean;
+  visualFeedbackDebounce?: number;
+  enableStatePersistence?: boolean;
+  persistenceKey?: string;
+  enableFilterSuggestions?: boolean;
+  maxSuggestions?: number;
+}
+
+interface EmergencyOptimizations {
+  disableAnimations?: boolean;
+  hideAdvancedFeatures?: boolean;
+  prioritizeSpeed?: boolean;
+  simplifiedInterface?: boolean;
+}
+
+/**
  * Northwestern Filtering System Component
  * Comprehensive filtering interface with real-time feedback
  */
-const NorthwesternFilteringSystem = ({
+const NorthwesternFilteringSystem: FC<NorthwesternFilteringSystemProps> = ({
   antibiotics = [],
   spatialLayout = null,
   onFilteredResults,
@@ -63,31 +163,29 @@ const NorthwesternFilteringSystem = ({
   emergencyMode = false,
   clinicalContext = '',
   className = '',
-  // Performance and optimization props
   enableRealTimeFiltering = true,
   filterUpdateDebounce = 100,
   enableVisualFeedback = true,
   visualFeedbackDebounce = 50,
-  // Persistence and workflow props
   enableStatePersistence = true,
   persistenceKey = 'northwesternFilterState',
   enableFilterSuggestions = true,
   maxSuggestions = 5
 }) => {
   // Component state
-  const [filterState, setFilterState] = useState(new FilterState());
-  const [filteredResults, setFilteredResults] = useState(null);
-  const [isFiltering, setIsFiltering] = useState(false);
-  const [filterSuggestions, setFilterSuggestions] = useState([]);
-  const [visualHighlights, setVisualHighlights] = useState([]);
-  const [performanceMetrics, setPerformanceMetrics] = useState({});
-  const [validationResults, setValidationResults] = useState({ isValid: true });
+  const [filterState, setFilterState] = useState<FilterState>(new FilterState());
+  const [filteredResults, setFilteredResults] = useState<FilteredResults | null>(null);
+  const [isFiltering, setIsFiltering] = useState<boolean>(false);
+  const [filterSuggestions, setFilterSuggestions] = useState<FilterSuggestion[]>([]);
+  const [visualHighlights, setVisualHighlights] = useState<VisualHighlight[]>([]);
+  const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics>({});
+  const [validationResults, setValidationResults] = useState<ValidationResult>({ isValid: true });
 
   // Refs for performance monitoring and debouncing
-  const filterTimeoutRef = useRef(null);
-  const visualTimeoutRef = useRef(null);
-  const lastFilterTime = useRef(Date.now());
-  const componenMountTime = useRef(Date.now());
+  const filterTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const visualTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastFilterTime = useRef<number>(Date.now());
+  const componenMountTime = useRef<number>(Date.now());
 
   // Load persisted filter state on mount
   useEffect(() => {
@@ -96,7 +194,7 @@ const NorthwesternFilteringSystem = ({
         const persisted = localStorage.getItem(persistenceKey);
         if (persisted) {
           const importedState = importFilterState(JSON.parse(persisted));
-          if (importedState && !importedState.isEmpty()) {
+          if (importedState && !importedState.isEmpty?.()) {
             setFilterState(importedState);
           }
         }
@@ -121,13 +219,13 @@ const NorthwesternFilteringSystem = ({
   // Generate filter suggestions
   useEffect(() => {
     if (enableFilterSuggestions && antibiotics.length > 0) {
-      const suggestions = getFilterSuggestions(antibiotics, clinicalContext);
+      const suggestions = getFilterSuggestions(antibiotics, clinicalContext) as FilterSuggestion[];
       setFilterSuggestions(suggestions.slice(0, maxSuggestions));
     }
   }, [antibiotics, clinicalContext, enableFilterSuggestions, maxSuggestions]);
 
   // Apply filters with debouncing for performance
-  const applyFilters = useCallback(async () => {
+  const applyFilters = useCallback(async (): Promise<void> => {
     if (!antibiotics.length || isFiltering) return;
 
     setIsFiltering(true);
@@ -135,22 +233,22 @@ const NorthwesternFilteringSystem = ({
 
     try {
       // Apply Northwestern filters
-      const results = applyNorthwesternFilters(antibiotics, filterState);
-      
+      const results = applyNorthwesternFilters(antibiotics, filterState) as FilteredResults;
+
       // Validate filter configuration
-      const validation = validateFilterConfiguration(filterState);
-      
+      const validation = validateFilterConfiguration(filterState) as ValidationResult;
+
       // Update state with results
       setFilteredResults(results);
       setValidationResults(validation);
-      
+
       // Calculate performance metrics
       const totalTime = performance.now() - startTime;
-      const metrics = {
-        filterTime: results.performance.calculationTime,
+      const metrics: PerformanceMetrics = {
+        filterTime: results.performance?.calculationTime,
         totalTime,
         resultCount: results.filteredCount,
-        cacheHit: results.performance.cacheHit,
+        cacheHit: results.performance?.cacheHit,
         timestamp: Date.now()
       };
       setPerformanceMetrics(metrics);
@@ -172,9 +270,10 @@ const NorthwesternFilteringSystem = ({
       }
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Filter application error:', error);
       setFilteredResults({
-        error: error.message,
+        error: errorMessage,
         matchingAntibiotics: [],
         filteredCount: 0,
         totalCount: antibiotics.length
@@ -184,9 +283,9 @@ const NorthwesternFilteringSystem = ({
       lastFilterTime.current = Date.now();
     }
   }, [
-    antibiotics, 
-    filterState, 
-    spatialLayout, 
+    antibiotics,
+    filterState,
+    spatialLayout,
     isFiltering,
     onFilteredResults,
     onFilterStateChange,
@@ -214,25 +313,25 @@ const NorthwesternFilteringSystem = ({
   }, [filterState, applyFilters, enableRealTimeFiltering, filterUpdateDebounce, emergencyMode]);
 
   // Generate visual highlights for spatial layout integration
-  const generateVisualHighlights = useCallback((matchingAntibiotics, layout) => {
+  const generateVisualHighlights = useCallback((matchingAntibiotics: Antibiotic[], layout: SpatialLayout): VisualHighlight[] => {
     if (!layout.positioned) return [];
 
     const startTime = performance.now();
-    
-    const highlights = layout.positioned
-      .filter(positioned => 
+
+    const highlights: VisualHighlight[] = layout.positioned
+      .filter(positioned =>
         matchingAntibiotics.some(match => match.id === positioned.id)
       )
       .map(positioned => ({
         antibioticId: positioned.id,
         gridPosition: positioned.gridPosition,
-        highlightType: 'filter-match',
+        highlightType: 'filter-match' as const,
         intensity: calculateHighlightIntensity(positioned, filterState),
         color: getHighlightColor(positioned, filterState)
       }));
 
     const calculationTime = performance.now() - startTime;
-    
+
     // Performance warning for visual feedback
     if (calculationTime > 50) {
       console.warn(`Visual highlight calculation took ${calculationTime.toFixed(2)}ms (target: <50ms)`);
@@ -242,15 +341,18 @@ const NorthwesternFilteringSystem = ({
   }, [filterState]);
 
   // Calculate highlight intensity based on filter match quality
-  const calculateHighlightIntensity = useCallback((positioned, state) => {
-    if (!positioned.northwesternSpectrum || !state.northwesternCategories) return 0.5;
+  const calculateHighlightIntensity = useCallback((positioned: PositionedAntibiotic, state: FilterState): number => {
+    const spectrum = positioned.northwesternSpectrum;
+    const categories = state?.northwesternCategories;
+
+    if (!spectrum || !categories) return 0.5;
 
     let matchScore = 0;
     let totalPossible = 0;
 
-    Object.entries(state.northwesternCategories).forEach(([category, criteria]) => {
-      if (criteria.enabled) {
-        const coverage = positioned.northwesternSpectrum[category] || 0;
+    Object.entries(categories).forEach(([category, criteria]: [string, any]) => {
+      if (criteria?.enabled) {
+        const coverage = spectrum[category] || 0;
         matchScore += coverage;
         totalPossible += 2; // Max coverage is 2
       }
@@ -260,13 +362,13 @@ const NorthwesternFilteringSystem = ({
   }, []);
 
   // Get highlight color based on filter type
-  const getHighlightColor = useCallback((positioned, state) => {
+  const getHighlightColor = useCallback((positioned: PositionedAntibiotic, state: FilterState): string => {
     // Emergency scenarios get red highlighting
-    if (state.emergencyMode) return '#f44336';
-    
+    if (state?.emergencyMode) return '#f44336';
+
     // Clinical scenarios get scenario-specific colors
-    if (state.clinicalScenario) {
-      const scenarioColors = {
+    if (state?.clinicalScenario) {
+      const scenarioColors: Record<string, string> = {
         icuSepsis: '#ff5722',
         mrsaCoverage: '#e91e63',
         outpatientUTI: '#2196f3',
@@ -280,60 +382,60 @@ const NorthwesternFilteringSystem = ({
   }, []);
 
   // Handle filter state changes from control panel
-  const handleFilterChange = useCallback((newState) => {
+  const handleFilterChange = useCallback((newState: FilterState): void => {
     setFilterState(newState);
   }, []);
 
   // Handle clinical scenario application
-  const handleScenarioApply = useCallback((scenarioKey) => {
+  const handleScenarioApply = useCallback((scenarioKey: string): void => {
     // Generate clinical decision support
     if (filteredResults?.matchingAntibiotics) {
       const scenarioResults = applyClinicalScenario(
-        antibiotics, 
+        antibiotics,
         scenarioKey
       );
-      
-      if (scenarioResults.matchingAntibiotics) {
+
+      if (scenarioResults?.matchingAntibiotics) {
         const decisionSupport = generateClinicalDecisionSupport(scenarioResults);
-        
+
         // Update results with clinical context
-        setFilteredResults(prevResults => ({
+        setFilteredResults(prevResults => prevResults ? {
           ...prevResults,
           clinicalScenario: scenarioKey,
           decisionSupport,
-          clinicalGuidance: decisionSupport.decisionSupport
-        }));
+          clinicalGuidance: decisionSupport?.decisionSupport
+        } : null);
       }
     }
   }, [antibiotics, filteredResults]);
 
   // Handle filter reset
-  const handleFilterReset = useCallback(() => {
+  const handleFilterReset = useCallback((): void => {
     const newState = new FilterState();
     setFilterState(newState);
     setFilteredResults(null);
     setVisualHighlights([]);
     setValidationResults({ isValid: true });
-    
+
     // Clear visual feedback
     onVisualFeedback?.([]);
   }, [onVisualFeedback]);
 
   // Handle filter suggestion application
-  const handleSuggestionApply = useCallback((suggestion) => {
+  const handleSuggestionApply = useCallback((suggestion: FilterSuggestion): void => {
     const newState = new FilterState();
-    
+
     if (suggestion.type === 'scenario') {
-      newState.applyScenario(suggestion.scenarioKey);
+      newState.applyScenario?.(suggestion.scenarioKey);
     } else if (suggestion.filterConfig) {
-      newState.updateFilter(suggestion.filterConfig);
+      newState.updateFilter?.(suggestion.filterConfig);
     }
-    
+
     setFilterState(newState);
   }, []);
 
   // Emergency mode optimizations
-  const emergencyOptimizations = useMemo(() => {
+  const emergencyOptimizations = useMemo((): EmergencyOptimizations => {
     if (!emergencyMode) return {};
 
     return {
@@ -347,18 +449,18 @@ const NorthwesternFilteringSystem = ({
   // Component performance monitoring
   useEffect(() => {
     const componentLoadTime = Date.now() - componenMountTime.current;
-    
+
     if (componentLoadTime > 1000) {
       console.warn(`Northwestern Filtering System load time: ${componentLoadTime}ms (target: <1000ms)`);
     }
   }, []);
 
   // Accessibility announcements for screen readers
-  const screenReaderAnnouncement = useMemo(() => {
+  const screenReaderAnnouncement = useMemo((): string => {
     if (!filteredResults) return '';
-    
+
     const { filteredCount, totalCount } = filteredResults;
-    
+
     if (filteredCount === 0) {
       return 'No antibiotics match the current filter criteria';
     } else if (filteredCount === totalCount) {
@@ -369,16 +471,16 @@ const NorthwesternFilteringSystem = ({
   }, [filteredResults]);
 
   return (
-    <div 
+    <div
       className={`northwestern-filtering-system northwestern-filtering-system--${screenSize} ${emergencyMode ? 'northwestern-filtering-system--emergency' : ''} ${className}`}
       data-emergency-mode={emergencyMode}
       data-screen-size={screenSize}
-      style={emergencyOptimizations}
+      style={emergencyOptimizations as React.CSSProperties}
     >
       {/* Screen Reader Announcements */}
-      <div 
-        className="sr-only" 
-        role="status" 
+      <div
+        className="sr-only"
+        role="status"
         aria-live="polite"
         aria-atomic="true"
       >
@@ -413,7 +515,7 @@ const NorthwesternFilteringSystem = ({
           {process.env.NODE_ENV === 'development' && performanceMetrics.filterTime && (
             <div className="performance-metrics">
               <span>Filter: {performanceMetrics.filterTime.toFixed(2)}ms</span>
-              <span>Total: {performanceMetrics.totalTime.toFixed(2)}ms</span>
+              <span>Total: {performanceMetrics.totalTime?.toFixed(2)}ms</span>
               {performanceMetrics.cacheHit && <span>Cached ✓</span>}
             </div>
           )}
@@ -432,7 +534,7 @@ const NorthwesternFilteringSystem = ({
       )}
 
       {/* Filter Suggestions */}
-      {enableFilterSuggestions && filterSuggestions.length > 0 && filterState.isEmpty() && (
+      {enableFilterSuggestions && filterSuggestions.length > 0 && filterState.isEmpty?.() && (
         <div className="filter-suggestions">
           <h3 className="suggestions-title">Suggested Filters</h3>
           <div className="suggestions-list">
@@ -458,13 +560,13 @@ const NorthwesternFilteringSystem = ({
       {filteredResults?.decisionSupport && (
         <div className="clinical-decision-support">
           <h3 className="decision-support-title">Clinical Guidance</h3>
-          
+
           {/* First-line Recommendations */}
-          {filteredResults.decisionSupport.recommendations.firstLine.length > 0 && (
+          {filteredResults.decisionSupport.recommendations?.firstLine?.length > 0 && (
             <div className="recommendation-section">
               <h4>First-line Options</h4>
               <div className="antibiotic-recommendations">
-                {filteredResults.decisionSupport.recommendations.firstLine.slice(0, 5).map(antibiotic => (
+                {filteredResults.decisionSupport.recommendations.firstLine.slice(0, 5).map((antibiotic: Antibiotic) => (
                   <div key={antibiotic.id} className="antibiotic-recommendation">
                     <span className="antibiotic-name">{antibiotic.name}</span>
                     <span className="antibiotic-class">{antibiotic.class}</span>
@@ -475,11 +577,11 @@ const NorthwesternFilteringSystem = ({
           )}
 
           {/* Clinical Considerations */}
-          {filteredResults.decisionSupport.recommendations.considerations.length > 0 && (
+          {filteredResults.decisionSupport.recommendations?.considerations?.length > 0 && (
             <div className="clinical-considerations">
               <h4>Clinical Considerations</h4>
               <ul>
-                {filteredResults.decisionSupport.recommendations.considerations.map((consideration, index) => (
+                {filteredResults.decisionSupport.recommendations.considerations.map((consideration: string, index: number) => (
                   <li key={index}>{consideration}</li>
                 ))}
               </ul>
@@ -487,7 +589,7 @@ const NorthwesternFilteringSystem = ({
           )}
 
           {/* Evidence Basis */}
-          {filteredResults.decisionSupport.decisionSupport.evidence && (
+          {filteredResults.decisionSupport.decisionSupport?.evidence && (
             <div className="evidence-basis">
               <strong>Evidence:</strong> {filteredResults.decisionSupport.decisionSupport.evidence}
             </div>
@@ -522,41 +624,6 @@ const NorthwesternFilteringSystem = ({
       )}
     </div>
   );
-};
-
-// PropTypes for type safety
-NorthwesternFilteringSystem.propTypes = {
-  antibiotics: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      class: PropTypes.string.isRequired,
-      northwesternSpectrum: PropTypes.object.isRequired,
-      cellWallActive: PropTypes.bool,
-      routeColor: PropTypes.oneOf(['red', 'blue', 'purple']),
-      generation: PropTypes.string
-    })
-  ).isRequired,
-  spatialLayout: PropTypes.shape({
-    positioned: PropTypes.arrayOf(PropTypes.object),
-    groups: PropTypes.object,
-    layout: PropTypes.object
-  }),
-  onFilteredResults: PropTypes.func,
-  onVisualFeedback: PropTypes.func,
-  onFilterStateChange: PropTypes.func,
-  screenSize: PropTypes.oneOf(['mobile', 'tablet', 'desktop']),
-  emergencyMode: PropTypes.bool,
-  clinicalContext: PropTypes.string,
-  className: PropTypes.string,
-  enableRealTimeFiltering: PropTypes.bool,
-  filterUpdateDebounce: PropTypes.number,
-  enableVisualFeedback: PropTypes.bool,
-  visualFeedbackDebounce: PropTypes.number,
-  enableStatePersistence: PropTypes.bool,
-  persistenceKey: PropTypes.string,
-  enableFilterSuggestions: PropTypes.bool,
-  maxSuggestions: PropTypes.number
 };
 
 export default NorthwesternFilteringSystem;

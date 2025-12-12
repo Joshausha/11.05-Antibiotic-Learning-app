@@ -1,41 +1,126 @@
 /**
- * Optimized Northwestern Integration Component
+ * Optimized Northwestern Integration Component (TypeScript)
  *
  * Complete Phase 3 system integration with performance enhancements, lazy loading optimization,
  * error recovery, and clinical accessibility validation for Northwestern antibiotic system.
- *
- * Refactored in Phase 4 to use extracted modules for better maintainability.
- *
- * @component
  */
 
-import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
-import PropTypes from 'prop-types';
-import ErrorBoundary from './ErrorBoundary.js';
-import LoadingSpinner from './LoadingSpinner.js';
-import { useResponsive } from '../hooks/useResponsive.js';
-import { useErrorHandler } from '../hooks/useErrorHandler.js';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+  Suspense,
+  lazy,
+  FC,
+  ReactNode
+} from 'react';
+import ErrorBoundary from './ErrorBoundary';
+import LoadingSpinner from './LoadingSpinner';
+import { useResponsive } from '../hooks/useResponsive';
+import { useErrorHandler } from '../hooks/useErrorHandler';
 import useNorthwesternErrorRecovery from '../hooks/useNorthwesternErrorRecovery';
 import NorthwesternPerformanceOptimizer from '../utils/northwesternPerformanceOptimizer';
 import ClinicalPerformanceMonitor from '../utils/clinicalPerformanceMonitor';
 import {
   ACCESSIBILITY_CONFIG,
   getLoadingPriority
-} from '../config/northwesternIntegrationConfig.js';
-import NorthwesternFallbackInterface from './northwestern/NorthwesternFallbackInterface.js';
-import NorthwesternLoadingInterface from './northwestern/NorthwesternLoadingInterface.js';
+} from '../config/northwesternIntegrationConfig';
+import NorthwesternFallbackInterface from './northwestern/NorthwesternFallbackInterface';
+import NorthwesternLoadingInterface from './northwestern/NorthwesternLoadingInterface';
 import './northwestern/OptimizedNorthwesternIntegration.css';
 
+/**
+ * Type Definitions
+ */
+
+type SystemStatus = 'initializing' | 'ready' | 'fallback-mode' | 'error';
+type ClinicalContext = 'emergency' | 'clinical' | 'education';
+type PerformanceTarget = 'emergency' | 'clinical' | 'education';
+type UrgencyLevel = 'standard' | 'urgent' | 'emergency';
+type ScreenSize = 'mobile' | 'tablet' | 'desktop';
+
+interface Antibiotic {
+  id: string | number;
+  name: string;
+  class: string;
+  northwesternSpectrum?: Record<string, number>;
+  routes?: string[];
+  routeColor?: 'red' | 'blue' | 'purple';
+  [key: string]: any;
+}
+
+interface PerformanceMetrics {
+  memoryAnalytics: {
+    currentUsage: string;
+    [key: string]: any;
+  };
+  sessionInfo: {
+    duration: string;
+    [key: string]: any;
+  };
+  clinicalReadiness: {
+    level: string;
+    [key: string]: any;
+  };
+  alertSummary: {
+    totalAlerts: number;
+    criticalAlerts: number;
+    [key: string]: any;
+  };
+  [key: string]: any;
+}
+
+interface AccessibilityState {
+  visualization: {
+    reducedMotion: boolean;
+    highContrast: boolean;
+    [key: string]: boolean;
+  };
+  announcements?: {
+    assertiveDelay: number;
+    politeDelay: number;
+    [key: string]: number;
+  };
+  [key: string]: any;
+}
+
+interface OptimizedNorthwesternIntegrationProps {
+  antibiotics?: Antibiotic[];
+  emergencyMode?: boolean;
+  clinicalContext?: ClinicalContext;
+  enableMobileOptimization?: boolean;
+  enablePerformanceMonitoring?: boolean;
+  enableErrorRecovery?: boolean;
+  enableAccessibilityEnhancements?: boolean;
+  onClinicalDecision?: (decision: any, context: any) => void;
+  onPerformanceAlert?: (alert: any) => void;
+  onErrorRecovery?: (error: any) => void;
+  className?: string;
+  currentPatient?: any;
+  clinicalScenario?: string | null;
+  urgencyLevel?: UrgencyLevel;
+  performanceTarget?: PerformanceTarget;
+  memoryLimit?: number;
+  screenReaderMode?: boolean;
+  highContrastMode?: boolean;
+  reducedMotionMode?: boolean;
+  enableOfflineMode?: boolean;
+  enableBatteryOptimization?: boolean;
+  debugMode?: boolean;
+}
+
 // Lazy load components based on clinical priority
-const NorthwesternSpatialLayout = lazy(() => import('./NorthwesternSpatialLayout.js'));
-const NorthwesternGroupOrganization = lazy(() => import('./NorthwesternGroupOrganization.js'));
-const NorthwesternFilteringSystem = lazy(() => import('./NorthwesternFilteringSystem.js'));
-const MobileClinicalWorkflow = lazy(() => import('./MobileClinicalWorkflow.js'));
+const NorthwesternSpatialLayout = lazy(() => import('./NorthwesternSpatialLayout'));
+const NorthwesternGroupOrganization = lazy(() => import('./NorthwesternGroupOrganization'));
+const NorthwesternFilteringSystem = lazy(() => import('./NorthwesternFilteringSystem'));
+const MobileClinicalWorkflow = lazy(() => import('./MobileClinicalWorkflow'));
 
 /**
  * Optimized Northwestern Integration Component
  */
-const OptimizedNorthwesternIntegration = ({
+const OptimizedNorthwesternIntegration: FC<OptimizedNorthwesternIntegrationProps> = ({
   antibiotics = [],
   emergencyMode = false,
   clinicalContext = 'clinical',
@@ -60,16 +145,16 @@ const OptimizedNorthwesternIntegration = ({
   debugMode = false
 }) => {
   // Refs for performance tracking
-  const performanceOptimizer = useRef(null);
-  const performanceMonitor = useRef(null);
-  const componentLoadOrder = useRef([]);
-  const accessibilityAnnouncer = useRef(null);
-  const integrationStartTime = useRef(Date.now());
+  const performanceOptimizer = useRef<NorthwesternPerformanceOptimizer | null>(null);
+  const performanceMonitor = useRef<ClinicalPerformanceMonitor | null>(null);
+  const componentLoadOrder = useRef<string[]>([]);
+  const accessibilityAnnouncer = useRef<HTMLDivElement | null>(null);
+  const integrationStartTime = useRef<number>(Date.now());
 
   // State management
-  const [systemStatus, setSystemStatus] = useState('initializing');
-  const [accessibilityState, setAccessibilityState] = useState(ACCESSIBILITY_CONFIG);
-  const [performanceMetrics, setPerformanceMetrics] = useState(null);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus>('initializing');
+  const [accessibilityState, setAccessibilityState] = useState<AccessibilityState>(ACCESSIBILITY_CONFIG);
+  const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics | null>(null);
 
   // Custom hooks
   const { screenSize, isTouchDevice, isLowPowerMode } = useResponsive();
@@ -93,25 +178,27 @@ const OptimizedNorthwesternIntegration = ({
   });
 
   // Component loading prioritization
-  const loadingPriority = useMemo(() => {
+  const loadingPriority = useMemo((): any[] => {
     return getLoadingPriority(clinicalContext, emergencyMode, isTouchDevice, enableMobileOptimization);
   }, [clinicalContext, emergencyMode, isTouchDevice, enableMobileOptimization]);
 
   // Screen reader announcement utility
-  function announceToScreenReader(message, priority = 'polite') {
+  function announceToScreenReader(message: string, priority: 'polite' | 'assertive' = 'polite'): void {
     if (!accessibilityAnnouncer.current || !screenReaderMode) return;
 
     const delay = priority === 'assertive' ?
-      accessibilityState.announcements.assertiveDelay :
-      accessibilityState.announcements.politeDelay;
+      (accessibilityState.announcements?.assertiveDelay || 100) :
+      (accessibilityState.announcements?.politeDelay || 300);
 
     setTimeout(() => {
-      accessibilityAnnouncer.current.textContent = message;
-      setTimeout(() => {
-        if (accessibilityAnnouncer.current) {
-          accessibilityAnnouncer.current.textContent = '';
-        }
-      }, 3000);
+      if (accessibilityAnnouncer.current) {
+        accessibilityAnnouncer.current.textContent = message;
+        setTimeout(() => {
+          if (accessibilityAnnouncer.current) {
+            accessibilityAnnouncer.current.textContent = '';
+          }
+        }, 3000);
+      }
     }, delay);
   }
 
@@ -134,7 +221,7 @@ const OptimizedNorthwesternIntegration = ({
         enableClinicalAnalytics: true
       });
 
-      performanceMonitor.current.startClinicalWorkflow(
+      performanceMonitor.current.startClinicalWorkflow?.(
         clinicalScenario || 'antibiotic-selection',
         urgencyLevel
       );
@@ -148,8 +235,8 @@ const OptimizedNorthwesternIntegration = ({
     setSystemStatus('ready');
 
     return () => {
-      if (performanceOptimizer.current) performanceOptimizer.current.dispose();
-      if (performanceMonitor.current) performanceMonitor.current.dispose();
+      performanceOptimizer.current?.dispose?.();
+      performanceMonitor.current?.dispose?.();
     };
   }, [emergencyMode, clinicalContext, enablePerformanceMonitoring, enableAccessibilityEnhancements]);
 
@@ -157,8 +244,8 @@ const OptimizedNorthwesternIntegration = ({
   useEffect(() => {
     if (!enableOfflineMode) return;
 
-    const handleOnline = () => setOfflineMode(false);
-    const handleOffline = () => setOfflineMode(true);
+    const handleOnline = (): void => setOfflineMode(false);
+    const handleOffline = (): void => setOfflineMode(true);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -176,11 +263,13 @@ const OptimizedNorthwesternIntegration = ({
     if (!performanceMonitor.current || !enablePerformanceMonitoring) return;
 
     const updateInterval = setInterval(() => {
-      const metrics = performanceMonitor.current.generateClinicalPerformanceReport();
-      setPerformanceMetrics(metrics);
+      const metrics = performanceMonitor.current?.generateClinicalPerformanceReport?.();
+      if (metrics) {
+        setPerformanceMetrics(metrics);
 
-      if (metrics.alertSummary.criticalAlerts > 0) {
-        onPerformanceAlert?.(metrics.alertSummary);
+        if (metrics.alertSummary?.criticalAlerts > 0) {
+          onPerformanceAlert?.(metrics.alertSummary);
+        }
       }
     }, 5000);
 
@@ -188,7 +277,7 @@ const OptimizedNorthwesternIntegration = ({
   }, [enablePerformanceMonitoring, onPerformanceAlert]);
 
   // Initialize accessibility features
-  const initializeAccessibilityFeatures = useCallback(() => {
+  const initializeAccessibilityFeatures = useCallback((): void => {
     if (!accessibilityAnnouncer.current) {
       const announcer = document.createElement('div');
       announcer.setAttribute('aria-live', 'polite');
@@ -218,11 +307,11 @@ const OptimizedNorthwesternIntegration = ({
   }, [reducedMotionMode, highContrastMode]);
 
   // Component loading handler
-  const handleComponentLoad = useCallback((componentName) => {
+  const handleComponentLoad = useCallback((componentName: string): void => {
     setLoadedComponents(prev => new Set(prev.add(componentName)));
 
     if (performanceMonitor.current) {
-      performanceMonitor.current.recordRenderingMetric({
+      performanceMonitor.current.recordRenderingMetric?.({
         type: 'component-load',
         component: componentName,
         loadOrder: componentLoadOrder.current.length + 1,
@@ -238,9 +327,9 @@ const OptimizedNorthwesternIntegration = ({
   }, [screenReaderMode, setLoadedComponents]);
 
   // Clinical decision handler
-  const handleClinicalDecision = useCallback((decision, context) => {
+  const handleClinicalDecision = useCallback((decision: any, context: any): void => {
     if (performanceMonitor.current) {
-      performanceMonitor.current.recordClinicalMetric({
+      performanceMonitor.current.recordClinicalMetric?.({
         type: 'clinical-decision',
         decision: decision.type || 'antibiotic-selection',
         antibiotic: decision.antibiotic?.name,
@@ -435,40 +524,6 @@ const OptimizedNorthwesternIntegration = ({
       )}
     </div>
   );
-};
-
-// PropTypes for comprehensive type checking
-OptimizedNorthwesternIntegration.propTypes = {
-  antibiotics: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      class: PropTypes.string.isRequired,
-      northwesternSpectrum: PropTypes.object,
-      routes: PropTypes.arrayOf(PropTypes.string)
-    })
-  ).isRequired,
-  emergencyMode: PropTypes.bool,
-  clinicalContext: PropTypes.oneOf(['emergency', 'clinical', 'education']),
-  enableMobileOptimization: PropTypes.bool,
-  enablePerformanceMonitoring: PropTypes.bool,
-  enableErrorRecovery: PropTypes.bool,
-  enableAccessibilityEnhancements: PropTypes.bool,
-  onClinicalDecision: PropTypes.func,
-  onPerformanceAlert: PropTypes.func,
-  onErrorRecovery: PropTypes.func,
-  className: PropTypes.string,
-  currentPatient: PropTypes.object,
-  clinicalScenario: PropTypes.string,
-  urgencyLevel: PropTypes.oneOf(['standard', 'urgent', 'emergency']),
-  performanceTarget: PropTypes.oneOf(['emergency', 'clinical', 'education']),
-  memoryLimit: PropTypes.number,
-  screenReaderMode: PropTypes.bool,
-  highContrastMode: PropTypes.bool,
-  reducedMotionMode: PropTypes.bool,
-  enableOfflineMode: PropTypes.bool,
-  enableBatteryOptimization: PropTypes.bool,
-  debugMode: PropTypes.bool
 };
 
 export default OptimizedNorthwesternIntegration;

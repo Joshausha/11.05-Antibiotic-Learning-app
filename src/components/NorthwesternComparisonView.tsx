@@ -1,12 +1,10 @@
 /**
- * Northwestern Comparison View Component
+ * Northwestern Comparison View Component (TypeScript)
  *
  * Side-by-side comparison of 2-4 antibiotics using Northwestern 8-segment pie charts.
  * Enables systematic antibiotic coverage comparison for clinical decision support and
  * medical education.
  *
- * Created by: Agent - Phase 7 Visualization Enhancement
- * Medical Accuracy: Validated against EnhancedAntibioticData.ts
  * Performance Target: <1000ms rendering, 60fps synchronized animations
  * Clinical Integration: <30 second emergency access maintained
  *
@@ -16,31 +14,75 @@
  * - Segment-by-segment coverage difference highlighting
  * - Clinical decision support tooltips
  * - Responsive grid layouts (2/3/4 columns)
- * - Northwestern Animation System integration
- *
- * @component
- * @example
- * <NorthwesternComparisonView
- *   selectedAntibiotics={[antibiotic1, antibiotic2, antibiotic3]}
- *   onAntibioticDeselect={(id) => removeAntibiotic(id)}
- *   emergencyMode={false}
- *   educationLevel="resident"
- * />
  */
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useCallback, useMemo, useRef, FC } from 'react';
 import { X, AlertCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import NorthwesternPieChart, { NORTHWESTERN_SEGMENTS } from './NorthwesternPieChart';
 
 /**
- * Calculate coverage differences between antibiotics for a specific segment
- * @param {Array} antibiotics - Array of antibiotic objects
- * @param {string} segmentKey - Northwestern segment key
- * @returns {Object} Coverage analysis with min, max, range, and consistency
+ * Type Definitions
  */
-const calculateCoverageDifferences = (antibiotics, segmentKey) => {
-  const coverages = antibiotics.map(ab => ab.northwesternSpectrum[segmentKey]);
+
+interface AntibioticSpectrum {
+  MRSA: number;
+  VRE_faecium: number;
+  anaerobes: number;
+  atypicals: number;
+  pseudomonas: number;
+  gramNegative: number;
+  MSSA: number;
+  enterococcus_faecalis: number;
+  [key: string]: number;
+}
+
+interface Antibiotic {
+  id: string | number;
+  name: string;
+  class: string;
+  route: string | string[];
+  northwesternSpectrum: AntibioticSpectrum;
+  routeColor: 'red' | 'blue' | 'purple';
+  [key: string]: any;
+}
+
+interface CoverageDifference {
+  min: number;
+  max: number;
+  range: number;
+  hasVariation: boolean;
+  consistent: boolean;
+  coverages: number[];
+}
+
+interface CoverageAnalysis {
+  [key: string]: CoverageDifference & {
+    insight: string;
+    segment: string;
+    description: string;
+  };
+}
+
+interface ComparisonStats {
+  totalVariation: number;
+  consistentSegments: number;
+  variableSegments: number;
+  similarityScore: string;
+}
+
+interface NorthwesternComparisonViewProps {
+  selectedAntibiotics?: Antibiotic[];
+  onAntibioticDeselect?: (id: string | number) => void;
+  emergencyMode?: boolean;
+  educationLevel?: 'student' | 'resident' | 'attending';
+  className?: string;
+}
+
+/**
+ * Calculate coverage differences between antibiotics for a specific segment
+ */
+const calculateCoverageDifferences = (antibiotics: Antibiotic[], segmentKey: string): CoverageDifference => {
+  const coverages = antibiotics.map(ab => ab.northwesternSpectrum[segmentKey] || 0);
   const min = Math.min(...coverages);
   const max = Math.max(...coverages);
   const range = max - min;
@@ -57,11 +99,8 @@ const calculateCoverageDifferences = (antibiotics, segmentKey) => {
 
 /**
  * Get comparison insight for a segment
- * @param {Object} differences - Coverage differences object
- * @param {string} segmentLabel - Human-readable segment label
- * @returns {string} Clinical insight text
  */
-const getComparisonInsight = (differences, segmentLabel) => {
+const getComparisonInsight = (differences: CoverageDifference, segmentLabel: string): string => {
   if (differences.consistent) {
     const level = differences.min === 0 ? 'No' : differences.min === 1 ? 'Moderate' : 'Good';
     return `${level} coverage across all antibiotics for ${segmentLabel}`;
@@ -74,7 +113,10 @@ const getComparisonInsight = (differences, segmentLabel) => {
   return `Significant coverage difference for ${segmentLabel} (${differences.min}-${differences.max})`;
 };
 
-const NorthwesternComparisonView = ({
+/**
+ * Northwestern Comparison View Component
+ */
+const NorthwesternComparisonView: FC<NorthwesternComparisonViewProps> = ({
   selectedAntibiotics = [],
   onAntibioticDeselect,
   emergencyMode = false,
@@ -82,23 +124,22 @@ const NorthwesternComparisonView = ({
   className = ''
 }) => {
   // State for synchronized interactions
-  const [hoveredSegment, setHoveredSegment] = useState(null);
-  const [hoveredAntibioticId, setHoveredAntibioticId] = useState(null);
-  const [selectedSegment, setSelectedSegment] = useState(null);
-  const [showDifferences, setShowDifferences] = useState(true);
-  const [comparisonMode, setComparisonMode] = useState('side-by-side'); // 'side-by-side', 'overlay', 'difference'
+  const [hoveredSegment, setHoveredSegment] = useState<string | null>(null);
+  const [hoveredAntibioticId, setHoveredAntibioticId] = useState<string | number | null>(null);
+  const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
+  const [showDifferences, setShowDifferences] = useState<boolean>(true);
 
-  const comparisonRef = useRef(null);
+  const comparisonRef = useRef<HTMLDivElement>(null);
 
   // Validate antibiotics have Northwestern spectrum data
-  const validAntibiotics = useMemo(() => {
+  const validAntibiotics = useMemo((): Antibiotic[] => {
     return selectedAntibiotics.filter(ab =>
       ab && ab.northwesternSpectrum && ab.routeColor
     );
   }, [selectedAntibiotics]);
 
   // Calculate grid layout based on number of antibiotics
-  const gridColumns = useMemo(() => {
+  const gridColumns = useMemo((): number => {
     const count = validAntibiotics.length;
     if (count <= 2) return 2;
     if (count === 3) return 3;
@@ -106,12 +147,12 @@ const NorthwesternComparisonView = ({
   }, [validAntibiotics.length]);
 
   // Calculate comprehensive coverage analysis for all segments
-  const coverageAnalysis = useMemo(() => {
+  const coverageAnalysis = useMemo((): CoverageAnalysis | null => {
     if (validAntibiotics.length < 2) return null;
 
-    const analysis = {};
+    const analysis: CoverageAnalysis = {};
 
-    NORTHWESTERN_SEGMENTS.forEach(segment => {
+    NORTHWESTERN_SEGMENTS.forEach((segment: any) => {
       const differences = calculateCoverageDifferences(validAntibiotics, segment.key);
       const insight = getComparisonInsight(differences, segment.label);
 
@@ -127,7 +168,7 @@ const NorthwesternComparisonView = ({
   }, [validAntibiotics]);
 
   // Calculate overall comparison statistics
-  const comparisonStats = useMemo(() => {
+  const comparisonStats = useMemo((): ComparisonStats | null => {
     if (!coverageAnalysis) return null;
 
     const segments = Object.values(coverageAnalysis);
@@ -144,29 +185,21 @@ const NorthwesternComparisonView = ({
   }, [coverageAnalysis]);
 
   // Handle synchronized segment hover
-  const handleSegmentHover = useCallback((segment, coverage, context, antibioticId) => {
+  const handleSegmentHover = useCallback((segment: string, coverage: number, context: any, antibioticId: string | number): void => {
     setHoveredSegment(segment);
     setHoveredAntibioticId(antibioticId);
   }, []);
 
   // Handle segment click for detailed comparison
-  const handleSegmentClick = useCallback((segment, antibiotic) => {
+  const handleSegmentClick = useCallback((segment: string, antibiotic: Antibiotic): void => {
     setSelectedSegment(segment === selectedSegment ? null : segment);
   }, [selectedSegment]);
 
   // Handle mouse leave to clear hover state
-  const handleMouseLeave = useCallback(() => {
+  const handleMouseLeave = useCallback((): void => {
     setHoveredSegment(null);
     setHoveredAntibioticId(null);
   }, []);
-
-  // Get highlighted segments based on current comparison mode
-  const getHighlightedSegments = useCallback((antibioticId) => {
-    if (!hoveredSegment) return [];
-
-    // Always highlight the hovered segment for all wheels
-    return [hoveredSegment];
-  }, [hoveredSegment]);
 
   // Empty state when no antibiotics selected
   if (validAntibiotics.length === 0) {
@@ -219,7 +252,6 @@ const NorthwesternComparisonView = ({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Comparison Mode Toggle */}
             <div className="flex items-center gap-2 text-sm">
               <label className="flex items-center gap-1">
                 <input
@@ -311,10 +343,10 @@ const NorthwesternComparisonView = ({
                   size="medium"
                   interactive={true}
                   showLabels={false}
-                  onSegmentHover={(segment, coverage, context) =>
+                  onSegmentHover={(segment: string, coverage: number, context: any) =>
                     handleSegmentHover(segment, coverage, context, antibiotic.id)
                   }
-                  onSegmentClick={(segment) => handleSegmentClick(segment, antibiotic)}
+                  onSegmentClick={(segment: string) => handleSegmentClick(segment, antibiotic)}
                   hoveredSegment={hoveredSegment}
                   selectedSegments={selectedSegment ? [selectedSegment] : []}
                   educationLevel={educationLevel}
@@ -326,7 +358,7 @@ const NorthwesternComparisonView = ({
               {/* Hover Indicator */}
               {hoveredSegment && hoveredAntibioticId === antibiotic.id && (
                 <div className="mt-3 p-2 bg-blue-100 rounded text-xs text-blue-800 text-center">
-                  Hovering: {NORTHWESTERN_SEGMENTS.find(s => s.key === hoveredSegment)?.label}
+                  Hovering: {NORTHWESTERN_SEGMENTS.find((s: any) => s.key === hoveredSegment)?.label}
                 </div>
               )}
             </div>
@@ -358,7 +390,7 @@ const NorthwesternComparisonView = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {NORTHWESTERN_SEGMENTS.map(segment => {
+                  {NORTHWESTERN_SEGMENTS.map((segment: any) => {
                     const analysis = coverageAnalysis[segment.key];
 
                     return (
@@ -411,7 +443,7 @@ const NorthwesternComparisonView = ({
         {selectedSegment && coverageAnalysis && (
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <h4 className="font-semibold text-blue-900 mb-2">
-              {NORTHWESTERN_SEGMENTS.find(s => s.key === selectedSegment)?.label} - Detailed Analysis
+              {NORTHWESTERN_SEGMENTS.find((s: any) => s.key === selectedSegment)?.label} - Detailed Analysis
             </h4>
             <p className="text-sm text-blue-800 mb-3">
               {coverageAnalysis[selectedSegment].insight}
@@ -436,31 +468,6 @@ const NorthwesternComparisonView = ({
       </div>
     </div>
   );
-};
-
-// PropTypes validation
-NorthwesternComparisonView.propTypes = {
-  selectedAntibiotics: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-    name: PropTypes.string.isRequired,
-    class: PropTypes.string.isRequired,
-    route: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]).isRequired,
-    northwesternSpectrum: PropTypes.shape({
-      MRSA: PropTypes.oneOf([0, 1, 2]).isRequired,
-      VRE_faecium: PropTypes.oneOf([0, 1, 2]).isRequired,
-      anaerobes: PropTypes.oneOf([0, 1, 2]).isRequired,
-      atypicals: PropTypes.oneOf([0, 1, 2]).isRequired,
-      pseudomonas: PropTypes.oneOf([0, 1, 2]).isRequired,
-      gramNegative: PropTypes.oneOf([0, 1, 2]).isRequired,
-      MSSA: PropTypes.oneOf([0, 1, 2]).isRequired,
-      enterococcus_faecalis: PropTypes.oneOf([0, 1, 2]).isRequired
-    }).isRequired,
-    routeColor: PropTypes.oneOf(['red', 'blue', 'purple']).isRequired
-  })),
-  onAntibioticDeselect: PropTypes.func,
-  emergencyMode: PropTypes.bool,
-  educationLevel: PropTypes.oneOf(['student', 'resident', 'attending']),
-  className: PropTypes.string
 };
 
 export default NorthwesternComparisonView;

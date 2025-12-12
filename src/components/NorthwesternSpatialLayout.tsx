@@ -1,35 +1,13 @@
 /**
  * Northwestern Spatial Layout Component
- * 
- * Core spatial organization system for 30 antibiotics based on Northwestern 
+ *
+ * Core spatial organization system for 30 antibiotics based on Northwestern
  * methodology with drug class groupings and responsive grid positioning.
- * 
- * Created by: Agent 3.1 - Spatial Layout Architect  
- * Phase: 3 - Spatial Organization System
- * Integration: Builds on Phase 2 EnhancedNorthwesternPieChart components
- * 
- * Features:
- * - Grid-based positioning system (3x10 mobile, 5x6 tablet, 6x5 desktop)
- * - Northwestern spatial grouping by drug class and mechanism
- * - Responsive layout with clinical device optimization
- * - Integration with Phase 2 pie chart components
- * - <1000ms rendering performance for 30 antibiotics
- * - Medical emergency <30 second access compliance
- * 
- * @component
- * @example
- * <NorthwesternSpatialLayout
- *   antibiotics={enhancedAntibioticData}
- *   viewMode="clustered"
- *   screenSize="tablet" 
- *   showConnections={true}
- *   onAntibioticSelect={(antibiotic) => console.log(antibiotic)}
- * />
+ * TypeScript Migration - Full type safety with medical domain validation
  */
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import PropTypes from 'prop-types';
-import EnhancedNorthwesternPieChart from './EnhancedNorthwesternPieChart.js';
+import React, { useState, useEffect, useMemo, useCallback, useRef, FC } from 'react';
+import EnhancedNorthwesternPieChart from './EnhancedNorthwesternPieChart';
 import '../styles/NorthwesternSpatialLayout.css';
 import {
   GRID_CONFIGURATIONS,
@@ -44,73 +22,144 @@ import {
   calculateResponsiveLayout,
   getGroupBoundaries,
   performanceUtils,
-  validationUtils
+  validationUtils,
 } from '../utils/northwesternSpatialAlgorithms';
 
-/**
- * View mode configuration for comparison vs exploration views
- */
-const VIEW_MODE_CONFIG = {
+// Types
+interface Antibiotic {
+  id: string | number;
+  name: string;
+  class: string;
+  northwesternSpectrum: Record<string, number>;
+  cellWallActive?: boolean;
+  routeColor?: 'red' | 'blue' | 'purple';
+  generation?: string;
+  [key: string]: any;
+}
+
+interface GridPosition {
+  row: number;
+  col: number;
+  group: string;
+}
+
+interface PositionedAntibiotic extends Antibiotic {
+  gridPosition: GridPosition;
+}
+
+interface SpatialGroup {
+  name: string;
+  antibiotics: Antibiotic[];
+  color: string;
+  priority: number;
+}
+
+interface Layout {
+  gridTemplate: string;
+  gap: string;
+  chartSize: 'small' | 'large';
+  [key: string]: any;
+}
+
+interface SpatialLayoutResult {
+  positioned: PositionedAntibiotic[];
+  layout: Layout | null;
+  groups: Record<string, SpatialGroup>;
+  validation: any;
+  performance: {
+    calculationTime: number;
+    antibioticCount: number;
+    gridCells: number;
+  };
+}
+
+interface ViewModeConfig {
+  [key: string]: {
+    chartSize: 'small' | 'large';
+    showLabels: boolean;
+    cardPadding: string;
+    minCardHeight: string;
+    maxColumns: Record<string, number>;
+  };
+}
+
+interface NorthwesternSpatialLayoutProps {
+  antibiotics?: Antibiotic[];
+  viewMode?: 'comparison' | 'exploration';
+  groupingMode?: 'drugClass' | 'route' | 'alphabetical' | 'coverage';
+  screenSize?: 'mobile' | 'tablet' | 'desktop';
+  showConnections?: boolean;
+  highlightedClasses?: string[];
+  onAntibioticSelect?: (antibiotic: Antibiotic) => void;
+  onGroupSelect?: (groupKey: string, antibiotics: Antibiotic[]) => void;
+  onViewModeChange?: (mode: 'comparison' | 'exploration') => void;
+  onGroupingModeChange?: (mode: string) => void;
+  className?: string;
+  enableVirtualization?: boolean;
+  renderBufferSize?: number;
+  emergencyMode?: boolean;
+  clinicalContext?: 'education' | 'clinical' | 'emergency';
+}
+
+const VIEW_MODE_CONFIG: ViewModeConfig = {
   comparison: {
     chartSize: 'small',
     showLabels: false,
     cardPadding: '8px',
     minCardHeight: '140px',
-    maxColumns: { mobile: 3, tablet: 5, desktop: 6 }
+    maxColumns: { mobile: 3, tablet: 5, desktop: 6 },
   },
   exploration: {
     chartSize: 'large',
     showLabels: true,
     cardPadding: '16px',
     minCardHeight: '320px',
-    maxColumns: { mobile: 1, tablet: 2, desktop: 3 }
-  }
+    maxColumns: { mobile: 1, tablet: 2, desktop: 3 },
+  },
 };
 
-/**
- * Northwestern Spatial Layout Component
- * Organizes antibiotics in clinically-relevant spatial groupings
- */
-const NorthwesternSpatialLayout = ({
+const NorthwesternSpatialLayout: FC<NorthwesternSpatialLayoutProps> = ({
   antibiotics = [],
-  viewMode = 'comparison',           // 'comparison' | 'exploration'
-  groupingMode = 'drugClass',        // 'drugClass' | 'route' | 'alphabetical' | 'coverage'
+  viewMode = 'comparison',
+  groupingMode = 'drugClass',
   screenSize: propScreenSize,
   showConnections = false,
   highlightedClasses = [],
   onAntibioticSelect,
   onGroupSelect,
-  onViewModeChange,                  // Callback when view mode changes
-  onGroupingModeChange,              // Callback when grouping mode changes
+  onViewModeChange,
+  onGroupingModeChange,
   className = '',
-  // Performance and optimization props
   enableVirtualization = false,
   renderBufferSize = 5,
-  // Clinical workflow props
   emergencyMode = false,
-  clinicalContext = 'education'
+  clinicalContext = 'education',
 }) => {
-  // Refs for performance monitoring and responsive behavior
-  const containerRef = useRef(null);
-  const renderStartTime = useRef(Date.now());
-  const [isRendering, setIsRendering] = useState(true);
-  
-  // State management
-  const [containerDimensions, setContainerDimensions] = useState({ width: 1024, height: 600 });
-  const [hoveredAntibiotic, setHoveredAntibiotic] = useState(null);
-  const [selectedGroup, setSelectedGroup] = useState(null);
-  const [viewportInfo, setViewportInfo] = useState({ scrollY: 0, height: 600 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const renderStartTime = useRef<number>(Date.now());
+  const [isRendering, setIsRendering] = useState<boolean>(true);
+  const [containerDimensions, setContainerDimensions] = useState<{ width: number; height: number }>({
+    width: 1024,
+    height: 600,
+  });
+  const [hoveredAntibiotic, setHoveredAntibiotic] = useState<PositionedAntibiotic | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [viewportInfo, setViewportInfo] = useState<{ scrollY: number; height: number }>({
+    scrollY: 0,
+    height: 600,
+  });
 
-  // Determine screen size breakpoint
-  const screenSize = propScreenSize || determineBreakpoint(containerDimensions.width);
+  const screenSize = (propScreenSize || determineBreakpoint(containerDimensions.width)) as
+    | 'mobile'
+    | 'tablet'
+    | 'desktop';
   const gridConfig = GRID_CONFIGURATIONS[screenSize];
 
-  // Responsive dimensions observer
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const resizeObserver = new ResizeObserver(entries => {
+    const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
         setContainerDimensions({ width, height });
@@ -118,22 +167,19 @@ const NorthwesternSpatialLayout = ({
     });
 
     resizeObserver.observe(container);
-    
-    // Initial measurement
     const { width, height } = container.getBoundingClientRect();
     setContainerDimensions({ width, height });
 
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Viewport tracking for virtualization
   useEffect(() => {
     if (!enableVirtualization) return;
 
-    const handleScroll = () => {
+    const handleScroll = (): void => {
       setViewportInfo({
         scrollY: window.scrollY,
-        height: window.innerHeight
+        height: window.innerHeight,
       });
     };
 
@@ -141,19 +187,22 @@ const NorthwesternSpatialLayout = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, [enableVirtualization]);
 
-  // Get view mode configuration
   const viewConfig = VIEW_MODE_CONFIG[viewMode] || VIEW_MODE_CONFIG.comparison;
 
-  // Core spatial layout calculation
-  const spatialLayout = useMemo(() => {
+  const spatialLayout = useMemo((): SpatialLayoutResult => {
     if (!antibiotics.length) {
-      return { positioned: [], layout: null, groups: {}, validation: null };
+      return {
+        positioned: [],
+        layout: null,
+        groups: {},
+        validation: null,
+        performance: { calculationTime: 0, antibioticCount: 0, gridCells: 0 },
+      };
     }
 
     const startTime = performance.now();
 
-    // Step 1: Group antibiotics based on selected grouping mode
-    let grouped;
+    let grouped: Record<string, Antibiotic[]>;
     switch (groupingMode) {
       case 'route':
         grouped = groupByRoute(antibiotics);
@@ -170,48 +219,43 @@ const NorthwesternSpatialLayout = ({
         break;
     }
 
-    // Step 2: Apply spatial grouping (for drug class mode) or flat positioning (for other modes)
-    let spatialGroups;
+    let spatialGroups: Record<string, SpatialGroup>;
     if (groupingMode === 'drugClass') {
       spatialGroups = applySpatialGrouping(grouped);
     } else {
-      // For non-drugClass groupings, create simple spatial groups from the grouped data
       spatialGroups = {};
       Object.keys(grouped).forEach((groupKey, index) => {
         spatialGroups[groupKey] = {
           name: groupKey,
           antibiotics: grouped[groupKey],
           color: ['#e3f2fd', '#f3e5f5', '#e8f5e8', '#fff3e0'][index % 4],
-          priority: index + 1
+          priority: index + 1,
         };
       });
     }
 
-    // Step 3: Calculate grid coordinates with view mode adjustments
     const effectiveGridConfig = {
       ...gridConfig,
-      columns: viewConfig.maxColumns[screenSize] || gridConfig.columns
+      columns: viewConfig.maxColumns[screenSize] || gridConfig.columns,
     };
     const positioned = calculateGridCoordinates(spatialGroups, effectiveGridConfig);
 
-    // Step 4: Generate responsive layout properties
     const layout = calculateResponsiveLayout(
       containerDimensions.width,
       containerDimensions.height,
       antibiotics.length
     );
 
-    // Override chart size based on view mode
     layout.chartSize = viewConfig.chartSize;
 
-    // Step 5: Validate Northwestern compliance
     const validation = validationUtils.validateNorthwesternCompliance(positioned);
 
     const calculationTime = performance.now() - startTime;
 
-    // Log performance metrics for monitoring
     if (calculationTime > 100) {
-      console.warn(`Spatial layout calculation took ${calculationTime.toFixed(2)}ms (target: <100ms)`);
+      console.warn(
+        `Spatial layout calculation took ${calculationTime.toFixed(2)}ms (target: <100ms)`
+      );
     }
 
     return {
@@ -222,13 +266,12 @@ const NorthwesternSpatialLayout = ({
       performance: {
         calculationTime,
         antibioticCount: antibiotics.length,
-        gridCells: effectiveGridConfig.columns * gridConfig.rows
-      }
+        gridCells: effectiveGridConfig.columns * gridConfig.rows,
+      },
     };
   }, [antibiotics, screenSize, containerDimensions, gridConfig, groupingMode, viewConfig]);
 
-  // Performance optimization - visible positions for virtualization
-  const visiblePositions = useMemo(() => {
+  const visiblePositions = useMemo((): PositionedAntibiotic[] => {
     if (!enableVirtualization || !spatialLayout.positioned.length) {
       return spatialLayout.positioned;
     }
@@ -236,32 +279,30 @@ const NorthwesternSpatialLayout = ({
     return performanceUtils.getVisiblePositions(
       {
         ...viewportInfo,
-        cellHeight: gridConfig.cellHeight
+        cellHeight: gridConfig.cellHeight,
       },
       spatialLayout.positioned
     );
   }, [spatialLayout.positioned, viewportInfo, gridConfig, enableVirtualization]);
 
-  // Render priority calculation for performance
-  const prioritizedPositions = useMemo(() => {
+  const prioritizedPositions = useMemo((): PositionedAntibiotic[] => {
     const userFocus = {
       activeGroup: selectedGroup,
-      hoveredPosition: hoveredAntibiotic?.gridPosition
+      hoveredPosition: hoveredAntibiotic?.gridPosition,
     };
 
     return performanceUtils.calculateRenderPriority(visiblePositions, userFocus);
   }, [visiblePositions, selectedGroup, hoveredAntibiotic]);
 
-  // Event handlers
-  const handleAntibioticHover = useCallback((antibiotic, isHovering) => {
+  const handleAntibioticHover = useCallback((antibiotic: PositionedAntibiotic, isHovering: boolean): void => {
     setHoveredAntibiotic(isHovering ? antibiotic : null);
   }, []);
 
-  const handleAntibioticClick = useCallback((antibiotic) => {
+  const handleAntibioticClick = useCallback((antibiotic: PositionedAntibiotic): void => {
     onAntibioticSelect?.(antibiotic);
   }, [onAntibioticSelect]);
 
-  const handleGroupClick = useCallback((groupKey) => {
+  const handleGroupClick = useCallback((groupKey: string): void => {
     const group = spatialLayout.groups[groupKey];
     if (group) {
       setSelectedGroup(selectedGroup === groupKey ? null : groupKey);
@@ -269,29 +310,26 @@ const NorthwesternSpatialLayout = ({
     }
   }, [spatialLayout.groups, selectedGroup, onGroupSelect]);
 
-  // Component mounting performance tracking
   useEffect(() => {
     const renderTime = Date.now() - renderStartTime.current;
-    
+
     if (renderTime > 1000) {
       console.warn(`Northwestern Spatial Layout render took ${renderTime}ms (target: <1000ms)`);
     }
-    
+
     setIsRendering(false);
   }, [spatialLayout]);
 
-  // Emergency mode optimization - priority rendering
   const emergencyOptimizations = useMemo(() => {
     if (!emergencyMode) return {};
 
     return {
-      animationDuration: 0, // Disable animations in emergency mode
-      chartSize: 'small', // Use smaller charts for faster rendering
-      maxConcurrentRenders: 10 // Limit concurrent renders
+      animationDuration: 0,
+      chartSize: 'small',
+      maxConcurrentRenders: 10,
     };
   }, [emergencyMode]);
 
-  // CSS Grid layout properties
   const gridStyles = useMemo(() => {
     if (!spatialLayout.layout) return {};
 
@@ -302,23 +340,25 @@ const NorthwesternSpatialLayout = ({
       width: '100%',
       height: '100%',
       padding: '16px',
-      position: 'relative',
-      ...emergencyOptimizations
+      position: 'relative' as const,
+      ...emergencyOptimizations,
     };
   }, [spatialLayout.layout, emergencyOptimizations]);
 
-  // Group boundaries for visual organization (Agent 3.2 integration point)
   const groupBoundaries = useMemo(() => {
-    return Object.keys(SPATIAL_GROUPS).map(groupKey => {
-      const boundary = getGroupBoundaries(groupKey, gridConfig);
-      return boundary ? { ...boundary, key: groupKey } : null;
-    }).filter(Boolean);
+    return Object.keys(SPATIAL_GROUPS)
+      .map((groupKey) => {
+        const boundary = getGroupBoundaries(groupKey, gridConfig);
+        return boundary ? { ...boundary, key: groupKey } : null;
+      })
+      .filter(Boolean);
   }, [gridConfig]);
 
-  // Loading state
   if (isRendering || !spatialLayout.positioned.length) {
     return (
-      <div className={`northwestern-spatial-layout northwestern-spatial-layout--loading ${className}`}>
+      <div
+        className={`northwestern-spatial-layout northwestern-spatial-layout--loading ${className}`}
+      >
         <div className="spatial-loading">
           <div className="loading-skeleton">
             <div className="loading-grid">
@@ -335,20 +375,21 @@ const NorthwesternSpatialLayout = ({
     );
   }
 
-  // Error state
   if (spatialLayout.validation && !spatialLayout.validation.isValid) {
     return (
-      <div className={`northwestern-spatial-layout northwestern-spatial-layout--error ${className}`}>
+      <div
+        className={`northwestern-spatial-layout northwestern-spatial-layout--error ${className}`}
+      >
         <div className="spatial-error">
           <h3>Northwestern Layout Validation Failed</h3>
           <ul>
-            {spatialLayout.validation.errors.map((error, index) => (
-              <li key={index} className="error-item">{error}</li>
+            {spatialLayout.validation.errors.map((error: string, index: number) => (
+              <li key={index} className="error-item">
+                {error}
+              </li>
             ))}
           </ul>
-          <button onClick={() => window.location.reload()}>
-            Retry Layout
-          </button>
+          <button onClick={() => window.location.reload()}>Retry Layout</button>
         </div>
       </div>
     );
@@ -363,9 +404,8 @@ const NorthwesternSpatialLayout = ({
       data-emergency-mode={emergencyMode}
       data-grouping-mode={groupingMode}
     >
-      {/* View Mode Controls and Grouping Selector */}
+      {/* View Mode Controls */}
       <div className="spatial-layout-controls">
-        {/* View Mode Toggle */}
         <div className="view-mode-toggle" role="tablist" aria-label="View mode">
           <button
             role="tab"
@@ -385,7 +425,6 @@ const NorthwesternSpatialLayout = ({
           </button>
         </div>
 
-        {/* Grouping Selector */}
         <div className="grouping-selector">
           <label htmlFor="grouping-mode">Group by:</label>
           <select
@@ -402,52 +441,43 @@ const NorthwesternSpatialLayout = ({
         </div>
       </div>
 
-      {/* Shared Coverage Legend */}
+      {/* Coverage Legend */}
       <div className="shared-coverage-legend" aria-label="Coverage legend">
         <div className="legend-section">
           <span className="legend-title">Coverage:</span>
           <div className="legend-items">
-            <div className="legend-item">
-              <span className="legend-dot legend-dot--none"></span>
-              <span className="legend-label">None</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-dot legend-dot--limited"></span>
-              <span className="legend-label">Limited</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-dot legend-dot--excellent"></span>
-              <span className="legend-label">Excellent</span>
-            </div>
-          </div>
-        </div>
-        <div className="legend-section route-legend">
-          <span className="legend-title">Route:</span>
-          <div className="legend-items">
-            <span className="route-indicator route-indicator--oral">Oral</span>
-            <span className="route-indicator route-indicator--iv">IV</span>
-            <span className="route-indicator route-indicator--both">Both</span>
+            {['none', 'limited', 'excellent'].map((level) => (
+              <div key={level} className="legend-item">
+                <span className={`legend-dot legend-dot--${level}`}></span>
+                <span className="legend-label">{level.charAt(0).toUpperCase() + level.slice(1)}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Group boundaries visual (Agent 3.2 integration point) */}
+      {/* Group Boundaries */}
       {showConnections && groupingMode === 'drugClass' && (
         <div className="group-boundaries">
-          {groupBoundaries.map(boundary => (
+          {groupBoundaries.map((boundary: any) => (
             <div
               key={boundary.key}
-              className={`group-boundary group-boundary--${boundary.key} ${selectedGroup === boundary.key ? 'group-boundary--selected' : ''}`}
+              className={`group-boundary group-boundary--${boundary.key} ${
+                selectedGroup === boundary.key ? 'group-boundary--selected' : ''
+              }`}
               style={{
                 gridRowStart: boundary.startRow + 1,
                 gridRowEnd: boundary.endRow + 1,
                 gridColumnStart: boundary.startCol + 1,
                 gridColumnEnd: boundary.endCol + 1,
                 backgroundColor: boundary.color,
-                border: selectedGroup === boundary.key ? '2px solid #1976d2' : '1px solid rgba(0,0,0,0.1)',
+                border:
+                  selectedGroup === boundary.key
+                    ? '2px solid #1976d2'
+                    : '1px solid rgba(0,0,0,0.1)',
                 borderRadius: '8px',
                 padding: '4px',
-                zIndex: 1
+                zIndex: 1,
               }}
               onClick={() => handleGroupClick(boundary.key)}
             >
@@ -462,7 +492,7 @@ const NorthwesternSpatialLayout = ({
         </div>
       )}
 
-      {/* Main spatial grid */}
+      {/* Spatial Grid */}
       <div className="spatial-grid" style={gridStyles}>
         {prioritizedPositions.map((positionedAntibiotic, index) => {
           const { gridPosition, ...antibiotic } = positionedAntibiotic;
@@ -473,7 +503,9 @@ const NorthwesternSpatialLayout = ({
           return (
             <div
               key={antibiotic.id}
-              className={`antibiotic-position antibiotic-position--${gridPosition.row}-${gridPosition.col} ${isHighlighted ? 'antibiotic-position--highlighted' : ''} ${isHovered ? 'antibiotic-position--hovered' : ''} ${isGroupSelected ? 'antibiotic-position--group-selected' : ''}`}
+              className={`antibiotic-position ${isHighlighted ? 'antibiotic-position--highlighted' : ''} ${
+                isHovered ? 'antibiotic-position--hovered' : ''
+              } ${isGroupSelected ? 'antibiotic-position--group-selected' : ''}`}
               style={{
                 gridRow: gridPosition.row + 1,
                 gridColumn: gridPosition.col + 1,
@@ -487,7 +519,6 @@ const NorthwesternSpatialLayout = ({
               onMouseLeave={() => handleAntibioticHover(positionedAntibiotic, false)}
               onClick={() => handleAntibioticClick(positionedAntibiotic)}
             >
-              {/* Integrated Phase 2 Enhanced Northwestern Pie Chart */}
               <EnhancedNorthwesternPieChart
                 antibiotic={antibiotic}
                 size={viewConfig.chartSize}
@@ -498,73 +529,32 @@ const NorthwesternSpatialLayout = ({
                 showCoverageIndicators={false}
                 showRouteIndicators={false}
                 showDebugInfo={false}
-                onSegmentHover={(segment, coverage) => {
-                  // Forward to parent for detailed interactions (Agent 3.3 integration)
-                }}
-                onSegmentClick={(segment) => {
-                  // Forward to parent for detailed interactions (Agent 3.3 integration)
-                }}
               />
-              
-              {/* Position label */}
+
               <div className="position-label">
                 <span className="antibiotic-name">{antibiotic.name}</span>
-                {screenSize !== 'mobile' && (
-                  <span className="drug-class">{antibiotic.class}</span>
-                )}
+                {screenSize !== 'mobile' && <span className="drug-class">{antibiotic.class}</span>}
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Performance and validation info (development mode) */}
+      {/* Debug Info */}
       {process.env.NODE_ENV === 'development' && (
         <div className="spatial-debug-info">
           <div className="performance-metrics">
             <span>Render: {spatialLayout.performance.calculationTime.toFixed(2)}ms</span>
             <span>Antibiotics: {spatialLayout.performance.antibioticCount}</span>
-            <span>Grid: {gridConfig.columns}×{gridConfig.rows}</span>
+            <span>
+              Grid: {gridConfig.columns}×{gridConfig.rows}
+            </span>
             <span>Breakpoint: {screenSize}</span>
-            {spatialLayout.validation.warnings.length > 0 && (
-              <span className="validation-warnings">
-                ⚠️ {spatialLayout.validation.warnings.length} warnings
-              </span>
-            )}
           </div>
         </div>
       )}
     </div>
   );
-};
-
-// PropTypes for type safety
-NorthwesternSpatialLayout.propTypes = {
-  antibiotics: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-      name: PropTypes.string.isRequired,
-      class: PropTypes.string.isRequired,
-      northwesternSpectrum: PropTypes.object.isRequired,
-      cellWallActive: PropTypes.bool,
-      routeColor: PropTypes.oneOf(['red', 'blue', 'purple']),
-      generation: PropTypes.string
-    })
-  ).isRequired,
-  viewMode: PropTypes.oneOf(['comparison', 'exploration']),
-  groupingMode: PropTypes.oneOf(['drugClass', 'route', 'alphabetical', 'coverage']),
-  screenSize: PropTypes.oneOf(['mobile', 'tablet', 'desktop']),
-  showConnections: PropTypes.bool,
-  highlightedClasses: PropTypes.arrayOf(PropTypes.string),
-  onAntibioticSelect: PropTypes.func,
-  onGroupSelect: PropTypes.func,
-  onViewModeChange: PropTypes.func,
-  onGroupingModeChange: PropTypes.func,
-  className: PropTypes.string,
-  enableVirtualization: PropTypes.bool,
-  renderBufferSize: PropTypes.number,
-  emergencyMode: PropTypes.bool,
-  clinicalContext: PropTypes.oneOf(['education', 'clinical', 'emergency'])
 };
 
 export default NorthwesternSpatialLayout;
