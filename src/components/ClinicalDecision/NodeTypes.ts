@@ -9,4 +9,6 @@ export const NODE_TYPES = {
   OUTCOME: 'outcome',
   INPUT: 'input',
   WARNING: 'warning'
-};
+} as const;
+
+export type NodeTypeValue = typeof NODE_TYPES[keyof typeof NODE_TYPES];

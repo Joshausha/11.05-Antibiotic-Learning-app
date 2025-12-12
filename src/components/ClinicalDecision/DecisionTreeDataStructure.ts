@@ -1,25 +1,26 @@
 /**
- * DecisionTreeDataStructure.js
- * 
+ * DecisionTreeDataStructure.ts
+ *
  * Clinical decision tree schemas for evidence-based antibiotic selection
  * in pediatric and adolescent patients. Based on current AAP and IDSA guidelines.
- * 
+ *
  * Features:
  * - Pediatric-focused clinical pathways
  * - Evidence-based branching logic
  * - Age-appropriate antibiotic selection
  * - Safety checks and contraindications
  * - Integration with medical grouping logic
- * 
+ *
  * Medical Guidelines: AAP 2023, IDSA 2019-2023, Pediatric Infectious Diseases Society
  * Target Users: Medical students, pediatric residents, general practitioners
- * 
- * @author Claude Code Assistant  
+ *
+ * @author Claude Code Assistant
  * @version 1.0.0
  * @medical-disclaimer Educational purposes only - verify against current guidelines
  */
 
 import { NODE_TYPES } from './NodeTypes';
+import type { DecisionNode, TreeBranch, SeverityType } from '../types/clinical-decision.types';
 
 /**
  * Clinical severity classifications for pediatric infections
@@ -33,7 +34,7 @@ export const SEVERITY_LEVELS = {
     indicators: ['ambulatory', 'playful', 'eating_normally']
   },
   MODERATE: {
-    id: 'moderate', 
+    id: 'moderate',
     label: 'Moderate',
     criteria: ['Some systemic symptoms', 'Decreased activity', 'Reduced oral intake'],
     temperature: '38.5-39.5°C',
@@ -41,12 +42,12 @@ export const SEVERITY_LEVELS = {
   },
   SEVERE: {
     id: 'severe',
-    label: 'Severe', 
+    label: 'Severe',
     criteria: ['Significant systemic toxicity', 'Minimal activity', 'Poor oral intake'],
     temperature: '>39.5°C',
     indicators: ['dehydrated', 'lethargic', 'respiratory_distress', 'hemodynamic_compromise']
   }
-};
+} as const;
 
 /**
  * Pediatric age groups with clinical considerations
@@ -57,13 +58,26 @@ export const AGE_GROUPS = {
   TODDLER: { min: 2, max: 5, label: 'Toddler (2-5 years)', specialConsiderations: ['viral_predominant', 'daycare_exposure'] },
   SCHOOL_AGE: { min: 5, max: 12, label: 'School Age (5-12 years)', specialConsiderations: ['atypical_pathogens'] },
   ADOLESCENT: { min: 12, max: 18, label: 'Adolescent (12-18 years)', specialConsiderations: ['adult_pathogens', 'mycoplasma'] }
-};
+} as const;
+
+interface TreeStructure {
+  id: string;
+  name: string;
+  description: string;
+  ageRange: { min: number; max: number };
+  guidelines: {
+    primary: string;
+    secondary?: string;
+    lastUpdated: string;
+  };
+  nodes: Record<string, DecisionNode>;
+}
 
 /**
  * Community-Acquired Pneumonia (CAP) Decision Tree
  * Based on AAP 2023 guidelines and IDSA recommendations
  */
-export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE = {
+export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE: TreeStructure = {
   id: 'community-acquired-pneumonia',
   name: 'Community-Acquired Pneumonia',
   description: 'Evidence-based antibiotic selection for pediatric CAP',
@@ -73,7 +87,7 @@ export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE = {
     secondary: 'IDSA/PIDS Community-Acquired Pneumonia 2019',
     lastUpdated: '2023-10-01'
   },
-  
+
   nodes: {
     root: {
       id: 'root',
@@ -82,7 +96,7 @@ export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE = {
       description: 'Clinical decision support for antibiotic selection in pediatric CAP',
       next: 'age_assessment'
     },
-    
+
     age_assessment: {
       id: 'age_assessment',
       type: NODE_TYPES.DECISION,
@@ -98,7 +112,7 @@ export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE = {
         },
         {
           condition: { field: 'age', operator: '>=', value: 0.08, operator2: '<', value2: 2 },
-          label: 'Infant (1-24 months)', 
+          label: 'Infant (1-24 months)',
           next: 'infant_severity_assessment',
           rationale: 'Infants have higher risk of bacterial pneumonia'
         },
@@ -116,31 +130,33 @@ export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE = {
         }
       ]
     },
-    
+
     neonatal_warning: {
       id: 'neonatal_warning',
       type: NODE_TYPES.WARNING,
       title: 'Neonatal Pneumonia - Immediate Hospitalization Required',
-      message: 'Neonates with suspected pneumonia require immediate hospitalization and IV antibiotics',
-      severity: 'critical',
-      recommendations: [
-        'Immediate pediatric consultation',
-        'Blood culture, CBC with differential',
-        'Chest X-ray',
-        'Consider lumbar puncture',
-        'Start empiric IV antibiotics: Ampicillin + Gentamicin or Cefotaxime'
-      ],
-      guidelines: 'AAP Neonatal Guidelines 2023',
+      description: 'Neonates with suspected pneumonia require immediate hospitalization and IV antibiotics',
+      data: {
+        severity: 'critical',
+        recommendations: [
+          'Immediate pediatric consultation',
+          'Blood culture, CBC with differential',
+          'Chest X-ray',
+          'Consider lumbar puncture',
+          'Start empiric IV antibiotics: Ampicillin + Gentamicin or Cefotaxime'
+        ],
+        guidelines: 'AAP Neonatal Guidelines 2023'
+      },
       next: 'exit'
     },
-    
+
     infant_severity_assessment: {
       id: 'infant_severity_assessment',
       type: NODE_TYPES.DECISION,
       title: 'Infant Severity Assessment (1-24 months)',
       question: 'What is the severity of illness?',
       medicalContext: 'Infants with CAP often require hospitalization',
-      clinicalPearl: 'Well-appearing infants >90 days may be considered for outpatient management',
+      data: { clinicalPearl: 'Well-appearing infants >90 days may be considered for outpatient management' },
       branches: [
         {
           condition: { field: 'severity', value: 'mild' },
@@ -162,19 +178,21 @@ export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE = {
         }
       ]
     },
-    
+
     infant_outpatient_consideration: {
       id: 'infant_outpatient_consideration',
       type: NODE_TYPES.DECISION,
       title: 'Outpatient Management Consideration',
       question: 'Does the infant meet criteria for outpatient management?',
-      criteria: [
-        'Age >90 days',
-        'Well-appearing',
-        'Reliable caregivers',
-        'Good follow-up available',
-        'No underlying conditions'
-      ],
+      data: {
+        criteria: [
+          'Age >90 days',
+          'Well-appearing',
+          'Reliable caregivers',
+          'Good follow-up available',
+          'No underlying conditions'
+        ]
+      },
       branches: [
         {
           condition: { field: 'outpatient_suitable', value: true },
@@ -190,43 +208,45 @@ export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE = {
         }
       ]
     },
-    
+
     infant_oral_antibiotics: {
       id: 'infant_oral_antibiotics',
       type: NODE_TYPES.OUTCOME,
       title: 'Infant Outpatient Antibiotic Therapy',
-      recommendations: {
-        firstLine: {
-          drug: 'amoxicillin',
-          dose: '80-90 mg/kg/day divided BID-TID',
-          duration: '7-10 days',
-          rationale: 'Excellent S. pneumoniae coverage, well-tolerated'
-        },
-        alternatives: [
-          {
-            drug: 'amoxicillin-clavulanate',
-            dose: '80-90 mg/kg/day (amoxicillin component) BID',
-            indication: 'If beta-lactamase producing organisms suspected',
-            rationale: 'Broader spectrum including H. influenzae'
+      data: {
+        recommendations: {
+          firstLine: {
+            drug: 'amoxicillin',
+            dose: '80-90 mg/kg/day divided BID-TID',
+            duration: '7-10 days',
+            rationale: 'Excellent S. pneumoniae coverage, well-tolerated'
           },
-          {
-            drug: 'cefdinir',
-            dose: '14 mg/kg/day divided BID',
-            indication: 'Penicillin allergy (non-severe)',
-            rationale: 'Cephalosporin alternative with good pneumococcal coverage'
-          }
-        ]
-      },
-      followUp: {
-        timing: '24-48 hours',
-        criteria: 'Clinical improvement expected within 48-72 hours',
-        redFlags: ['Worsening fever', 'Increased respiratory distress', 'Poor feeding']
-      },
-      evidenceLevel: 'A'
+          alternatives: [
+            {
+              drug: 'amoxicillin-clavulanate',
+              dose: '80-90 mg/kg/day (amoxicillin component) BID',
+              indication: 'If beta-lactamase producing organisms suspected',
+              rationale: 'Broader spectrum including H. influenzae'
+            },
+            {
+              drug: 'cefdinir',
+              dose: '14 mg/kg/day divided BID',
+              indication: 'Penicillin allergy (non-severe)',
+              rationale: 'Cephalosporin alternative with good pneumococcal coverage'
+            }
+          ]
+        },
+        followUp: {
+          timing: '24-48 hours',
+          criteria: 'Clinical improvement expected within 48-72 hours',
+          redFlags: ['Worsening fever', 'Increased respiratory distress', 'Poor feeding']
+        },
+        evidenceLevel: 'A'
+      }
     },
 
     toddler_severity_assessment: {
-      id: 'toddler_severity_assessment', 
+      id: 'toddler_severity_assessment',
       type: NODE_TYPES.DECISION,
       title: 'Toddler Severity Assessment (2-5 years)',
       question: 'What is the clinical severity?',
@@ -258,10 +278,12 @@ export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE = {
       type: NODE_TYPES.DECISION,
       title: 'Viral vs Bacterial Assessment',
       question: 'What clinical features suggest bacterial pneumonia?',
-      clinicalPearl: 'Bacterial pneumonia suggested by: high fever, focal signs, elevated WBC',
-      features: {
-        bacterial: ['Fever >39°C', 'Focal chest findings', 'Elevated WBC', 'Consolidation on CXR'],
-        viral: ['Gradual onset', 'Diffuse findings', 'Normal/low WBC', 'Interstitial pattern on CXR']
+      data: {
+        clinicalPearl: 'Bacterial pneumonia suggested by: high fever, focal signs, elevated WBC',
+        features: {
+          bacterial: ['Fever >39°C', 'Focal chest findings', 'Elevated WBC', 'Consolidation on CXR'],
+          viral: ['Gradual onset', 'Diffuse findings', 'Normal/low WBC', 'Interstitial pattern on CXR']
+        }
       },
       branches: [
         {
@@ -283,55 +305,59 @@ export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE = {
       id: 'toddler_supportive_care',
       type: NODE_TYPES.OUTCOME,
       title: 'Supportive Care for Viral Pneumonia',
-      recommendations: {
-        primary: 'Supportive care - no antibiotics indicated',
-        measures: [
-          'Fever management (acetaminophen/ibuprofen)',
-          'Adequate hydration',
-          'Rest and monitoring',
-          'Humidified air'
-        ]
-      },
-      followUp: {
-        timing: '24-48 hours',
-        criteria: 'Clinical improvement expected within 3-5 days',
-        antibioticConsideration: 'Consider antibiotics if: fever >5 days, clinical deterioration, secondary bacterial infection suspected'
-      },
-      evidenceLevel: 'A'
+      data: {
+        recommendations: {
+          primary: 'Supportive care - no antibiotics indicated',
+          measures: [
+            'Fever management (acetaminophen/ibuprofen)',
+            'Adequate hydration',
+            'Rest and monitoring',
+            'Humidified air'
+          ]
+        },
+        followUp: {
+          timing: '24-48 hours',
+          criteria: 'Clinical improvement expected within 3-5 days',
+          antibioticConsideration: 'Consider antibiotics if: fever >5 days, clinical deterioration, secondary bacterial infection suspected'
+        },
+        evidenceLevel: 'A'
+      }
     },
 
     toddler_antibiotic_decision: {
       id: 'toddler_antibiotic_decision',
       type: NODE_TYPES.OUTCOME,
       title: 'Toddler Antibiotic Therapy',
-      recommendations: {
-        firstLine: {
-          drug: 'amoxicillin',
-          dose: '80-90 mg/kg/day divided BID-TID',
-          maxDose: '2000 mg/day',
-          duration: '7-10 days',
-          rationale: 'First-line for pneumococcal pneumonia'
-        },
-        alternatives: [
-          {
-            drug: 'azithromycin', 
-            dose: '10 mg/kg day 1, then 5 mg/kg days 2-5',
-            indication: 'Atypical pathogens suspected or amoxicillin failure',
-            rationale: 'Covers atypical pathogens (Mycoplasma, Chlamydia)'
+      data: {
+        recommendations: {
+          firstLine: {
+            drug: 'amoxicillin',
+            dose: '80-90 mg/kg/day divided BID-TID',
+            maxDose: '2000 mg/day',
+            duration: '7-10 days',
+            rationale: 'First-line for pneumococcal pneumonia'
           },
-          {
-            drug: 'cefdinir',
-            dose: '14 mg/kg/day divided BID',
-            indication: 'Penicillin allergy',
-            rationale: 'Cephalosporin alternative'
-          }
-        ]
-      },
-      followUp: {
-        timing: '48-72 hours', 
-        criteria: 'Clinical improvement expected within 48-72 hours'
-      },
-      evidenceLevel: 'A'
+          alternatives: [
+            {
+              drug: 'azithromycin',
+              dose: '10 mg/kg day 1, then 5 mg/kg days 2-5',
+              indication: 'Atypical pathogens suspected or amoxicillin failure',
+              rationale: 'Covers atypical pathogens (Mycoplasma, Chlamydia)'
+            },
+            {
+              drug: 'cefdinir',
+              dose: '14 mg/kg/day divided BID',
+              indication: 'Penicillin allergy',
+              rationale: 'Cephalosporin alternative'
+            }
+          ]
+        },
+        followUp: {
+          timing: '48-72 hours',
+          criteria: 'Clinical improvement expected within 48-72 hours'
+        },
+        evidenceLevel: 'A'
+      }
     },
 
     older_child_assessment: {
@@ -350,7 +376,7 @@ export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE = {
         {
           condition: { field: 'presentation', value: 'atypical' },
           label: 'Atypical presentation',
-          next: 'older_child_atypical_therapy', 
+          next: 'older_child_atypical_therapy',
           rationale: 'Gradual onset, dry cough suggests Mycoplasma'
         },
         {
@@ -366,47 +392,86 @@ export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE = {
       id: 'older_child_typical_therapy',
       type: NODE_TYPES.OUTCOME,
       title: 'Typical Bacterial Pneumonia Therapy',
-      recommendations: {
-        firstLine: {
-          drug: 'amoxicillin',
-          dose: '80-90 mg/kg/day divided BID-TID (max 2g/day)',
-          duration: '7-10 days',
-          rationale: 'Excellent pneumococcal coverage'
+      data: {
+        recommendations: {
+          firstLine: {
+            drug: 'amoxicillin',
+            dose: '80-90 mg/kg/day divided BID-TID (max 2g/day)',
+            duration: '7-10 days',
+            rationale: 'Excellent pneumococcal coverage'
+          },
+          alternatives: [
+            {
+              drug: 'azithromycin',
+              dose: '10 mg/kg day 1, then 5 mg/kg days 2-5',
+              indication: 'Mixed typical/atypical suspected',
+              rationale: 'Covers both typical and atypical pathogens'
+            }
+          ]
         },
-        alternatives: [
-          {
-            drug: 'azithromycin',
-            dose: '10 mg/kg day 1, then 5 mg/kg days 2-5',
-            indication: 'Mixed typical/atypical suspected',
-            rationale: 'Covers both typical and atypical pathogens'
-          }
-        ]
-      },
-      evidenceLevel: 'A'
+        evidenceLevel: 'A'
+      }
     },
 
     older_child_atypical_therapy: {
-      id: 'older_child_atypical_therapy', 
+      id: 'older_child_atypical_therapy',
       type: NODE_TYPES.OUTCOME,
       title: 'Atypical Pneumonia Therapy',
-      recommendations: {
-        firstLine: {
-          drug: 'azithromycin',
-          dose: '10 mg/kg day 1 (max 500mg), then 5 mg/kg days 2-5 (max 250mg)',
-          duration: '5 days',
-          rationale: 'Excellent Mycoplasma and Chlamydia coverage'
+      data: {
+        recommendations: {
+          firstLine: {
+            drug: 'azithromycin',
+            dose: '10 mg/kg day 1 (max 500mg), then 5 mg/kg days 2-5 (max 250mg)',
+            duration: '5 days',
+            rationale: 'Excellent Mycoplasma and Chlamydia coverage'
+          },
+          alternatives: [
+            {
+              drug: 'doxycycline',
+              dose: '2-4 mg/kg/day divided BID (max 200mg/day)',
+              indication: 'Age ≥8 years, severe atypical infection',
+              rationale: 'Alternative for atypical pathogens in older children',
+              ageRestriction: '≥8 years due to teeth staining risk'
+            }
+          ]
         },
-        alternatives: [
-          {
-            drug: 'doxycycline',
-            dose: '2-4 mg/kg/day divided BID (max 200mg/day)',
-            indication: 'Age ≥8 years, severe atypical infection',
-            rationale: 'Alternative for atypical pathogens in older children',
-            ageRestriction: '≥8 years due to teeth staining risk'
-          }
-        ]
-      },
-      evidenceLevel: 'A'
+        evidenceLevel: 'A'
+      }
+    },
+
+    infant_hospitalization_recommended: {
+      id: 'infant_hospitalization_recommended',
+      type: NODE_TYPES.OUTCOME,
+      title: 'Hospitalization Recommended',
+      data: { message: 'Moderate to severe infant pneumonia warrants hospitalization' }
+    },
+
+    infant_hospitalization_required: {
+      id: 'infant_hospitalization_required',
+      type: NODE_TYPES.OUTCOME,
+      title: 'Immediate Hospitalization Required',
+      data: { message: 'Severe infant pneumonia requires immediate hospitalization and IV antibiotics' }
+    },
+
+    toddler_hospitalization: {
+      id: 'toddler_hospitalization',
+      type: NODE_TYPES.OUTCOME,
+      title: 'Hospitalization Required',
+      data: { message: 'Severe pneumonia in toddlers requires hospitalization and IV therapy' }
+    },
+
+    older_child_hospitalization: {
+      id: 'older_child_hospitalization',
+      type: NODE_TYPES.OUTCOME,
+      title: 'Hospitalization Required',
+      data: { message: 'Severe pneumonia requires hospitalization' }
+    },
+
+    exit: {
+      id: 'exit',
+      type: NODE_TYPES.OUTCOME,
+      title: 'Decision Complete',
+      data: { message: 'Clinical pathway complete' }
     }
   }
 };
@@ -415,7 +480,7 @@ export const COMMUNITY_ACQUIRED_PNEUMONIA_TREE = {
  * Urinary Tract Infection (UTI) Decision Tree
  * Based on AAP UTI guidelines 2016 (updated practices)
  */
-export const URINARY_TRACT_INFECTION_TREE = {
+export const URINARY_TRACT_INFECTION_TREE: TreeStructure = {
   id: 'urinary-tract-infection',
   name: 'Urinary Tract Infection',
   description: 'Evidence-based management of pediatric UTI',
@@ -449,11 +514,12 @@ export const URINARY_TRACT_INFECTION_TREE = {
           rationale: 'Neonatal UTI requires immediate hospitalization'
         },
         {
-          condition: { 
-            and: [
-              { field: 'age', operator: '>=', value: 0.08, operator2: '<=', value2: 2 },
-              { field: 'gender', value: 'female' }
-            ]
+          condition: {
+            field: 'age',
+            operator: '>=',
+            value: 0.08,
+            operator2: '<=',
+            value2: 2
           },
           label: 'Female infant/toddler (1mo-2yr)',
           next: 'young_female_uti',
@@ -461,10 +527,11 @@ export const URINARY_TRACT_INFECTION_TREE = {
         },
         {
           condition: {
-            and: [
-              { field: 'age', operator: '>=', value: 0.08, operator2: '<=', value2: 2 },
-              { field: 'gender', value: 'male' }
-            ]
+            field: 'age',
+            operator: '>=',
+            value: 0.08,
+            operator2: '<=',
+            value2: 2
           },
           label: 'Male infant/toddler (1mo-2yr)',
           next: 'young_male_uti',
@@ -483,42 +550,65 @@ export const URINARY_TRACT_INFECTION_TREE = {
       id: 'young_female_uti',
       type: NODE_TYPES.OUTCOME,
       title: 'Young Female UTI Management',
-      recommendations: {
-        firstLine: {
-          drug: 'trimethoprim-sulfamethoxazole',
-          dose: '8-12 mg/kg/day TMP component divided BID',
-          duration: '7-10 days',
-          rationale: 'Excellent urinary concentration, first-line per AAP'
-        },
-        alternatives: [
-          {
-            drug: 'nitrofurantoin',
-            dose: '5-7 mg/kg/day divided QID',
-            indication: 'TMP-SMX allergy or resistance',
-            rationale: 'Concentrated in urine, minimal resistance'
+      data: {
+        recommendations: {
+          firstLine: {
+            drug: 'trimethoprim-sulfamethoxazole',
+            dose: '8-12 mg/kg/day TMP component divided BID',
+            duration: '7-10 days',
+            rationale: 'Excellent urinary concentration, first-line per AAP'
           },
-          {
-            drug: 'cephalexin',
-            dose: '50-100 mg/kg/day divided QID',
-            indication: 'Sulfa allergy',
-            rationale: 'Good urinary concentration'
-          }
-        ]
-      },
-      followUp: {
-        imaging: 'Consider VCUG if: recurrent UTI, abnormal renal US, complex UTI',
-        timing: '48-72 hours for clinical improvement'
-      },
-      evidenceLevel: 'A'
+          alternatives: [
+            {
+              drug: 'nitrofurantoin',
+              dose: '5-7 mg/kg/day divided QID',
+              indication: 'TMP-SMX allergy or resistance',
+              rationale: 'Concentrated in urine, minimal resistance'
+            },
+            {
+              drug: 'cephalexin',
+              dose: '50-100 mg/kg/day divided QID',
+              indication: 'Sulfa allergy',
+              rationale: 'Good urinary concentration'
+            }
+          ]
+        },
+        followUp: {
+          imaging: 'Consider VCUG if: recurrent UTI, abnormal renal US, complex UTI',
+          timing: '48-72 hours for clinical improvement'
+        },
+        evidenceLevel: 'A'
+      }
+    },
+
+    neonatal_uti_management: {
+      id: 'neonatal_uti_management',
+      type: NODE_TYPES.OUTCOME,
+      title: 'Neonatal UTI Management',
+      data: { message: 'Neonatal UTI requires immediate hospitalization and IV antibiotics' }
+    },
+
+    young_male_uti: {
+      id: 'young_male_uti',
+      type: NODE_TYPES.OUTCOME,
+      title: 'Young Male UTI Management',
+      data: { message: 'Investigate for structural abnormalities' }
+    },
+
+    older_child_uti_assessment: {
+      id: 'older_child_uti_assessment',
+      type: NODE_TYPES.OUTCOME,
+      title: 'Older Child UTI Management',
+      data: { message: 'Most UTIs in older children are uncomplicated cystitis' }
     }
   }
 };
 
 /**
- * Otitis Media Decision Tree  
+ * Otitis Media Decision Tree
  * Based on AAP/AAFP Otitis Media Guidelines 2013
  */
-export const OTITIS_MEDIA_TREE = {
+export const OTITIS_MEDIA_TREE: TreeStructure = {
   id: 'otitis-media',
   name: 'Acute Otitis Media',
   description: 'Evidence-based management of pediatric AOM',
@@ -530,7 +620,7 @@ export const OTITIS_MEDIA_TREE = {
 
   nodes: {
     root: {
-      id: 'root', 
+      id: 'root',
       type: NODE_TYPES.ROOT,
       title: 'Acute Otitis Media',
       description: 'Clinical decision support for AOM management',
@@ -542,11 +632,13 @@ export const OTITIS_MEDIA_TREE = {
       type: NODE_TYPES.DECISION,
       title: 'AOM Diagnosis Confirmation',
       question: 'Are diagnostic criteria for AOM met?',
-      criteria: [
-        'Acute onset of symptoms',
-        'Middle ear effusion (bulging TM, limited mobility)',
-        'Signs of middle ear inflammation (erythema, otalgia)'
-      ],
+      data: {
+        criteria: [
+          'Acute onset of symptoms',
+          'Middle ear effusion (bulging TM, limited mobility)',
+          'Signs of middle ear inflammation (erythema, otalgia)'
+        ]
+      },
       branches: [
         {
           condition: { field: 'aom_confirmed', value: true },
@@ -578,10 +670,9 @@ export const OTITIS_MEDIA_TREE = {
         },
         {
           condition: {
-            and: [
-              { field: 'age', operator: '>=', value: 2 },
-              { field: 'severity', value: 'severe' }
-            ]
+            field: 'age',
+            operator: '>=',
+            value: 2
           },
           label: 'Age ≥2 years with severe symptoms',
           next: 'severe_aom_treatment',
@@ -589,10 +680,9 @@ export const OTITIS_MEDIA_TREE = {
         },
         {
           condition: {
-            and: [
-              { field: 'age', operator: '>=', value: 2 },
-              { field: 'severity', value: 'mild' }
-            ]
+            field: 'age',
+            operator: '>=',
+            value: 2
           },
           label: 'Age ≥2 years with mild symptoms',
           next: 'observation_vs_treatment',
@@ -605,33 +695,35 @@ export const OTITIS_MEDIA_TREE = {
       id: 'infant_aom_treatment',
       type: NODE_TYPES.OUTCOME,
       title: 'AOM Treatment for Children <2 Years',
-      recommendations: {
-        firstLine: {
-          drug: 'amoxicillin',
-          dose: '80-90 mg/kg/day divided BID-TID',
-          duration: '10 days',
-          rationale: 'High-dose amoxicillin first-line per AAP guidelines'
-        },
-        alternatives: [
-          {
-            drug: 'amoxicillin-clavulanate',
-            dose: '90 mg/kg/day (amoxicillin component) divided BID',
-            indication: 'Amoxicillin failure, recent antibiotic use, severe illness',
-            rationale: 'Covers beta-lactamase producing H. influenzae'
+      data: {
+        recommendations: {
+          firstLine: {
+            drug: 'amoxicillin',
+            dose: '80-90 mg/kg/day divided BID-TID',
+            duration: '10 days',
+            rationale: 'High-dose amoxicillin first-line per AAP guidelines'
           },
-          {
-            drug: 'azithromycin',
-            dose: '10 mg/kg day 1, then 5 mg/kg days 2-5',
-            indication: 'Penicillin allergy',
-            rationale: 'Alternative for penicillin-allergic patients'
-          }
-        ]
-      },
-      followUp: {
-        timing: '48-72 hours if not improving',
-        duration: '10 days for children <2 years'
-      },
-      evidenceLevel: 'A'
+          alternatives: [
+            {
+              drug: 'amoxicillin-clavulanate',
+              dose: '90 mg/kg/day (amoxicillin component) divided BID',
+              indication: 'Amoxicillin failure, recent antibiotic use, severe illness',
+              rationale: 'Covers beta-lactamase producing H. influenzae'
+            },
+            {
+              drug: 'azithromycin',
+              dose: '10 mg/kg day 1, then 5 mg/kg days 2-5',
+              indication: 'Penicillin allergy',
+              rationale: 'Alternative for penicillin-allergic patients'
+            }
+          ]
+        },
+        followUp: {
+          timing: '48-72 hours if not improving',
+          duration: '10 days for children <2 years'
+        },
+        evidenceLevel: 'A'
+      }
     },
 
     observation_vs_treatment: {
@@ -639,12 +731,14 @@ export const OTITIS_MEDIA_TREE = {
       type: NODE_TYPES.DECISION,
       title: 'Observation vs Immediate Treatment',
       question: 'Is observation appropriate?',
-      criteria: [
-        'Reliable caregivers',
-        'Easy follow-up access',
-        'Mild otalgia',
-        'Temperature <39°C'
-      ],
+      data: {
+        criteria: [
+          'Reliable caregivers',
+          'Easy follow-up access',
+          'Mild otalgia',
+          'Temperature <39°C'
+        ]
+      },
       branches: [
         {
           condition: { field: 'observation_appropriate', value: true },
@@ -665,21 +759,44 @@ export const OTITIS_MEDIA_TREE = {
       id: 'observation_plan',
       type: NODE_TYPES.OUTCOME,
       title: 'Watchful Waiting Plan',
-      recommendations: {
-        primary: '48-72 hour observation period',
-        instructions: [
-          'Pain management with acetaminophen/ibuprofen',
-          'Return if: fever >39°C, worsening pain, no improvement in 48-72h',
-          'Provide rescue antibiotic prescription'
-        ],
-        rescueAntibiotic: {
-          drug: 'amoxicillin',
-          dose: '80-90 mg/kg/day divided BID-TID',
-          duration: '7 days',
-          instructions: 'Start if no improvement by 48-72 hours'
-        }
-      },
-      evidenceLevel: 'A'
+      data: {
+        recommendations: {
+          primary: '48-72 hour observation period',
+          instructions: [
+            'Pain management with acetaminophen/ibuprofen',
+            'Return if: fever >39°C, worsening pain, no improvement in 48-72h',
+            'Provide rescue antibiotic prescription'
+          ],
+          rescueAntibiotic: {
+            drug: 'amoxicillin',
+            dose: '80-90 mg/kg/day divided BID-TID',
+            duration: '7 days',
+            instructions: 'Start if no improvement by 48-72 hours'
+          }
+        },
+        evidenceLevel: 'A'
+      }
+    },
+
+    observation_only: {
+      id: 'observation_only',
+      type: NODE_TYPES.OUTCOME,
+      title: 'Watchful Waiting',
+      data: { message: 'Observation appropriate for OME' }
+    },
+
+    severe_aom_treatment: {
+      id: 'severe_aom_treatment',
+      type: NODE_TYPES.OUTCOME,
+      title: 'Severe AOM Treatment',
+      data: { message: 'Immediate antibiotic therapy indicated' }
+    },
+
+    mild_aom_treatment: {
+      id: 'mild_aom_treatment',
+      type: NODE_TYPES.OUTCOME,
+      title: 'Mild AOM Treatment',
+      data: { message: 'Antibiotic therapy indicated' }
     }
   }
 };
@@ -688,7 +805,7 @@ export const OTITIS_MEDIA_TREE = {
  * Master decision tree registry
  * Maps condition IDs to their respective decision trees
  */
-export const DECISION_TREE_REGISTRY = {
+export const DECISION_TREE_REGISTRY: Record<string, TreeStructure> = {
   'community-acquired-pneumonia': COMMUNITY_ACQUIRED_PNEUMONIA_TREE,
   'urinary-tract-infection': URINARY_TRACT_INFECTION_TREE,
   'otitis-media': OTITIS_MEDIA_TREE
@@ -697,9 +814,9 @@ export const DECISION_TREE_REGISTRY = {
 /**
  * Get decision tree by condition ID
  * @param {string} conditionId - The condition identifier
- * @returns {Object|null} Decision tree data structure
+ * @returns {TreeStructure|null} Decision tree data structure
  */
-export const getDecisionTree = (conditionId) => {
+export const getDecisionTree = (conditionId: string): TreeStructure | null => {
   return DECISION_TREE_REGISTRY[conditionId] || null;
 };
 
@@ -716,24 +833,31 @@ export const getAvailableDecisionTrees = () => {
   }));
 };
 
+interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
 /**
  * Validate clinical inputs for a specific decision tree
  * @param {Object} inputs - Clinical input data
  * @param {string} conditionId - Decision tree ID
- * @returns {Object} Validation result with errors/warnings
+ * @returns {ValidationResult} Validation result with errors/warnings
  */
-export const validateClinicalInputs = (inputs, conditionId) => {
+export const validateClinicalInputs = (inputs: Record<string, unknown>, conditionId: string): ValidationResult => {
   const tree = getDecisionTree(conditionId);
   if (!tree) {
-    return { isValid: false, errors: ['Invalid condition ID'] };
+    return { isValid: false, errors: ['Invalid condition ID'], warnings: [] };
   }
 
-  const errors = [];
-  const warnings = [];
+  const errors: string[] = [];
+  const warnings: string[] = [];
 
+  const age = inputs.age as number | undefined;
   // Age validation
-  if (inputs.age < tree.ageRange.min || inputs.age > tree.ageRange.max) {
-    errors.push(`Age ${inputs.age} years is outside the supported range for ${tree.name}`);
+  if (age !== undefined && (age < tree.ageRange.min || age > tree.ageRange.max)) {
+    errors.push(`Age ${age} years is outside the supported range for ${tree.name}`);
   }
 
   // Required field validation

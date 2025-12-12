@@ -1,9 +1,9 @@
 /**
- * GuidelineComparisonPanel.js
- * 
+ * GuidelineComparisonPanel.tsx
+ *
  * Side-by-side comparison panel for different medical guidelines
  * (AAP, IDSA, CDC, etc.) to support evidence-based clinical decisions.
- * 
+ *
  * Features:
  * - Responsive side-by-side layout for guideline comparison
  * - Conflict highlighting for different recommendations
@@ -12,22 +12,52 @@
  * - Last updated timestamps for guideline currency
  * - Accessibility compliance (WCAG 2.1)
  * - Mobile-optimized for bedside clinical use
- * 
+ *
  * Medical Accuracy: Based on current AAP, IDSA, CDC guidelines
  * Educational Level: Medical students, residents, practicing clinicians
- * 
+ *
  * @author Claude Code Assistant
  * @version 1.0.0
  * @medical-disclaimer Educational purposes only - not for clinical practice
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useMemo, useCallback, FC } from 'react';
+import type { GuidelineComparisonPanelProps, AntibioticRecommendation } from '../../types/clinical-decision.types';
+
+interface EvidenceLevel {
+  level: string;
+  label: string;
+  description: string;
+  color: string;
+  priority: number;
+}
+
+interface GuidelineOrganization {
+  name: string;
+  abbreviation: string;
+  color: string;
+  specialty: string;
+}
+
+interface GuidelineData extends AntibioticRecommendation {
+  organization: string;
+  evidenceLevel: string;
+  firstLineRecommendation?: string;
+  dosing?: { amount: string; frequency: string };
+  duration?: string;
+  lastUpdated?: string;
+}
+
+interface ProcessedGuideline extends GuidelineData {
+  conflicts: Array<{ type: string; conflictWith: string; difference: Record<string, unknown> }>;
+  agreements: unknown[];
+  hasConflicts: boolean;
+}
 
 /**
  * Evidence strength levels for medical guidelines
  */
-export const EVIDENCE_LEVELS = {
+export const EVIDENCE_LEVELS: Record<string, EvidenceLevel> = {
   A: {
     level: 'A',
     label: 'Strong Evidence',
@@ -36,7 +66,7 @@ export const EVIDENCE_LEVELS = {
     priority: 1
   },
   B: {
-    level: 'B', 
+    level: 'B',
     label: 'Moderate Evidence',
     description: 'Based on well-designed observational studies',
     color: '#0891b2',
@@ -44,7 +74,7 @@ export const EVIDENCE_LEVELS = {
   },
   C: {
     level: 'C',
-    label: 'Limited Evidence', 
+    label: 'Limited Evidence',
     description: 'Based on expert opinion or case studies',
     color: '#ea580c',
     priority: 3
@@ -61,7 +91,7 @@ export const EVIDENCE_LEVELS = {
 /**
  * Supported medical guideline organizations
  */
-export const GUIDELINE_ORGANIZATIONS = {
+export const GUIDELINE_ORGANIZATIONS: Record<string, GuidelineOrganization> = {
   AAP: {
     name: 'American Academy of Pediatrics',
     abbreviation: 'AAP',
@@ -69,7 +99,7 @@ export const GUIDELINE_ORGANIZATIONS = {
     specialty: 'Pediatric Medicine'
   },
   IDSA: {
-    name: 'Infectious Diseases Society of America', 
+    name: 'Infectious Diseases Society of America',
     abbreviation: 'IDSA',
     color: '#7c3aed',
     specialty: 'Infectious Diseases'
@@ -82,77 +112,55 @@ export const GUIDELINE_ORGANIZATIONS = {
   },
   PIDS: {
     name: 'Pediatric Infectious Diseases Society',
-    abbreviation: 'PIDS', 
+    abbreviation: 'PIDS',
     color: '#dc2626',
     specialty: 'Pediatric Infectious Diseases'
   }
 };
 
+interface GuidelineComparisonPanelState {
+  expandedSections: Set<string>;
+  selectedGuideline: GuidelineData | null;
+  showDetailsPanel: boolean;
+}
+
 /**
  * Guideline comparison panel component
  * Displays multiple guidelines side-by-side with difference highlighting
  */
-const GuidelineComparisonPanel = ({
+const GuidelineComparisonPanel: FC<GuidelineComparisonPanelProps> = ({
   condition = 'community-acquired-pneumonia',
-  guidelines = [],
-  emergencyMode = false,
-  onGuidelineSelect = () => {},
-  onExpandDetails = () => {},
-  className = '',
-  showConflictsOnly = false,
-  comparisonMode = 'side-by-side' // 'side-by-side', 'tabbed', 'overlay'
+  recommendations = [],
+  educationLevel = 'resident',
+  showEvidence = true,
+  className = ''
 }) => {
   // Panel state
-  const [expandedSections, setExpandedSections] = useState(new Set());
-  const [selectedGuideline, setSelectedGuideline] = useState(null);
-  const [showDetailsPanel, setShowDetailsPanel] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [selectedGuideline, setSelectedGuideline] = useState<GuidelineData | null>(null);
+  const [showDetailsPanel, setShowDetailsPanel] = useState<boolean>(false);
+  const [showConflictsOnly, setShowConflictsOnly] = useState<boolean>(false);
 
   /**
-   * Process guidelines to identify conflicts and similarities
+   * Process recommendations to identify conflicts and similarities
    */
   const processedGuidelines = useMemo(() => {
-    if (!guidelines || guidelines.length === 0) return [];
+    if (!recommendations || recommendations.length === 0) return [];
 
-    return guidelines.map((guideline, index) => {
-      const conflicts = [];
-      const agreements = [];
-      
-      // Compare with other guidelines to identify conflicts
-      guidelines.forEach((otherGuideline, otherIndex) => {
+    return (recommendations as GuidelineData[]).map((guideline, index) => {
+      const conflicts: ProcessedGuideline['conflicts'] = [];
+
+      recommendations.forEach((otherGuideline, otherIndex) => {
         if (index !== otherIndex) {
+          const other = otherGuideline as GuidelineData;
           // Check for conflicting recommendations
-          if (guideline.firstLineRecommendation !== otherGuideline.firstLineRecommendation) {
+          if ((guideline as GuidelineData).antibioticName !== other.antibioticName) {
             conflicts.push({
               type: 'first-line-treatment',
-              conflictWith: otherGuideline.organization,
+              conflictWith: other.organization || 'Unknown',
               difference: {
-                this: guideline.firstLineRecommendation,
-                other: otherGuideline.firstLineRecommendation
-              }
-            });
-          }
-          
-          // Check for dosing conflicts
-          if (guideline.dosing && otherGuideline.dosing && 
-              guideline.dosing.amount !== otherGuideline.dosing.amount) {
-            conflicts.push({
-              type: 'dosing',
-              conflictWith: otherGuideline.organization,
-              difference: {
-                this: guideline.dosing,
-                other: otherGuideline.dosing
-              }
-            });
-          }
-
-          // Check for treatment duration conflicts
-          if (guideline.duration !== otherGuideline.duration) {
-            conflicts.push({
-              type: 'duration',
-              conflictWith: otherGuideline.organization,
-              difference: {
-                this: guideline.duration,
-                other: otherGuideline.duration
+                this: (guideline as GuidelineData).antibioticName,
+                other: other.antibioticName
               }
             });
           }
@@ -160,13 +168,13 @@ const GuidelineComparisonPanel = ({
       });
 
       return {
-        ...guideline,
+        ...(guideline as GuidelineData),
         conflicts,
-        agreements,
+        agreements: [],
         hasConflicts: conflicts.length > 0
-      };
+      } as ProcessedGuideline;
     });
-  }, [guidelines]);
+  }, [recommendations]);
 
   /**
    * Filter guidelines based on show conflicts setting
@@ -179,7 +187,7 @@ const GuidelineComparisonPanel = ({
   /**
    * Toggle expanded section for detailed view
    */
-  const toggleSection = useCallback((guidelineId, sectionName) => {
+  const toggleSection = useCallback((guidelineId: string, sectionName: string) => {
     const sectionKey = `${guidelineId}-${sectionName}`;
     setExpandedSections(prev => {
       const newExpanded = new Set(prev);
@@ -195,22 +203,21 @@ const GuidelineComparisonPanel = ({
   /**
    * Handle guideline selection for detailed view
    */
-  const handleGuidelineSelect = useCallback((guideline) => {
+  const handleGuidelineSelect = useCallback((guideline: GuidelineData) => {
     setSelectedGuideline(guideline);
     setShowDetailsPanel(true);
-    onGuidelineSelect(guideline);
-  }, [onGuidelineSelect]);
+  }, []);
 
   /**
    * Render evidence strength indicator
    */
-  const renderEvidenceStrength = (evidenceLevel) => {
+  const renderEvidenceStrength = (evidenceLevel: string) => {
     const evidence = EVIDENCE_LEVELS[evidenceLevel] || EVIDENCE_LEVELS.C;
-    
+
     return (
-      <div 
+      <div
         className="evidence-indicator"
-        style={{ 
+        style={{
           backgroundColor: evidence.color,
           color: 'white',
           padding: '2px 6px',
@@ -228,12 +235,12 @@ const GuidelineComparisonPanel = ({
   /**
    * Render conflict indicator
    */
-  const renderConflictIndicator = (conflicts) => {
+  const renderConflictIndicator = (conflicts: ProcessedGuideline['conflicts']) => {
     if (conflicts.length === 0) return null;
-    
+
     return (
       <div className="conflict-indicator">
-        <span 
+        <span
           className="conflict-badge"
           style={{
             backgroundColor: '#fef3c7',
@@ -241,7 +248,7 @@ const GuidelineComparisonPanel = ({
             padding: '2px 8px',
             borderRadius: '12px',
             fontSize: '12px',
-            fontWeight: 'medium'
+            fontWeight: 500
           }}
         >
           ⚠️ {conflicts.length} conflict{conflicts.length > 1 ? 's' : ''}
@@ -253,12 +260,12 @@ const GuidelineComparisonPanel = ({
   /**
    * Render individual guideline card
    */
-  const renderGuidelineCard = (guideline, index) => {
-    const organization = GUIDELINE_ORGANIZATIONS[guideline.organization] || {};
-    
+  const renderGuidelineCard = (guideline: ProcessedGuideline, index: number) => {
+    const organization = GUIDELINE_ORGANIZATIONS[(guideline as GuidelineData).organization] || {};
+
     return (
-      <div 
-        key={guideline.id || index}
+      <div
+        key={guideline.antibioticId || index}
         className={`guideline-card ${guideline.hasConflicts ? 'has-conflicts' : ''}`}
         style={{
           border: '1px solid #e5e7eb',
@@ -273,26 +280,26 @@ const GuidelineComparisonPanel = ({
       >
         {/* Guideline Header */}
         <div className="guideline-header" style={{ marginBottom: '12px' }}>
-          <div className="flex items-center justify-between">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <h3 style={{ 
-                margin: 0, 
+              <h3 style={{
+                margin: 0,
                 fontSize: '18px',
                 fontWeight: '600',
                 color: '#111827'
               }}>
-                {organization.abbreviation || guideline.organization}
+                {organization.abbreviation || (guideline as GuidelineData).organization}
               </h3>
               <p style={{
                 margin: '4px 0 0 0',
                 fontSize: '14px',
                 color: '#6b7280'
               }}>
-                {organization.name || guideline.organization}
+                {organization.name || (guideline as GuidelineData).organization}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              {renderEvidenceStrength(guideline.evidenceLevel)}
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              {showEvidence && renderEvidenceStrength((guideline as GuidelineData).evidenceLevel || 'B')}
               {renderConflictIndicator(guideline.conflicts)}
             </div>
           </div>
@@ -300,13 +307,13 @@ const GuidelineComparisonPanel = ({
 
         {/* Main Recommendation */}
         <div className="main-recommendation" style={{ marginBottom: '16px' }}>
-          <h4 style={{ 
+          <h4 style={{
             fontSize: '16px',
             fontWeight: '500',
             color: '#374151',
             marginBottom: '8px'
           }}>
-            First-line Treatment
+            Recommended Antibiotic
           </h4>
           <p style={{
             fontSize: '18px',
@@ -317,14 +324,14 @@ const GuidelineComparisonPanel = ({
             borderRadius: '6px',
             margin: 0
           }}>
-            {guideline.firstLineRecommendation || 'Not specified'}
+            {guideline.antibioticName || 'Not specified'}
           </p>
         </div>
 
         {/* Dosing Information */}
-        {guideline.dosing && (
+        {(guideline as GuidelineData).dosing && (
           <div className="dosing-info" style={{ marginBottom: '16px' }}>
-            <h5 style={{ 
+            <h5 style={{
               fontSize: '14px',
               fontWeight: '500',
               color: '#6b7280',
@@ -333,15 +340,15 @@ const GuidelineComparisonPanel = ({
               Dosing
             </h5>
             <p style={{ fontSize: '14px', margin: 0 }}>
-              {guideline.dosing.amount} {guideline.dosing.frequency}
+              {(guideline as GuidelineData).dosing?.amount} {(guideline as GuidelineData).dosing?.frequency}
             </p>
           </div>
         )}
 
         {/* Duration */}
-        {guideline.duration && (
+        {(guideline as GuidelineData).duration && (
           <div className="duration-info" style={{ marginBottom: '16px' }}>
-            <h5 style={{ 
+            <h5 style={{
               fontSize: '14px',
               fontWeight: '500',
               color: '#6b7280',
@@ -350,7 +357,7 @@ const GuidelineComparisonPanel = ({
               Duration
             </h5>
             <p style={{ fontSize: '14px', margin: 0 }}>
-              {guideline.duration}
+              {(guideline as GuidelineData).duration}
             </p>
           </div>
         )}
@@ -362,12 +369,12 @@ const GuidelineComparisonPanel = ({
           fontSize: '12px',
           color: '#9ca3af'
         }}>
-          Last updated: {guideline.lastUpdated || 'Unknown'}
+          Last updated: {(guideline as GuidelineData).lastUpdated || 'Unknown'}
         </div>
 
-        {/* Expand Details Button */}
+        {/* View Details Button */}
         <button
-          onClick={() => handleGuidelineSelect(guideline)}
+          onClick={() => handleGuidelineSelect(guideline as GuidelineData)}
           style={{
             marginTop: '12px',
             padding: '8px 16px',
@@ -386,31 +393,15 @@ const GuidelineComparisonPanel = ({
     );
   };
 
-  // Emergency mode - simplified display
-  if (emergencyMode) {
-    return (
-      <div className={`guideline-comparison-emergency ${className}`}>
-        <h2>Quick Guideline Reference</h2>
-        <div className="emergency-guidelines">
-          {displayedGuidelines.slice(0, 2).map((guideline, index) => (
-            <div key={index} className="emergency-guideline">
-              <strong>{guideline.organization}:</strong> {guideline.firstLineRecommendation}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={`guideline-comparison-panel ${className}`}>
       {/* Panel Header */}
-      <div className="panel-header" style={{ 
+      <div className="panel-header" style={{
         padding: '16px',
         borderBottom: '1px solid #e5e7eb',
         backgroundColor: '#f9fafb'
       }}>
-        <h2 style={{ 
+        <h2 style={{
           fontSize: '24px',
           fontWeight: '600',
           color: '#111827',
@@ -425,10 +416,10 @@ const GuidelineComparisonPanel = ({
         }}>
           {condition.replace(/-/g, ' ')} - Evidence-based recommendations
         </p>
-        
+
         {/* Filter Controls */}
         <div className="filter-controls" style={{ marginTop: '12px' }}>
-          <label style={{ 
+          <label style={{
             fontSize: '14px',
             color: '#374151',
             display: 'flex',
@@ -438,69 +429,27 @@ const GuidelineComparisonPanel = ({
             <input
               type="checkbox"
               checked={showConflictsOnly}
-              onChange={(e) => {
-                // This would be controlled by parent component
-                console.log('Show conflicts only:', e.target.checked);
-              }}
+              onChange={(e) => setShowConflictsOnly(e.target.checked)}
             />
             Show conflicting guidelines only
           </label>
         </div>
       </div>
 
-      {/* Guidelines Display */}
-      <div className="guidelines-container">
-        {displayedGuidelines.length === 0 ? (
-          <div className="no-guidelines" style={{
-            padding: '48px',
-            textAlign: 'center',
-            color: '#6b7280'
-          }}>
-            <p>No guidelines available for comparison</p>
-            <small>Check back later for updated guideline comparisons</small>
-          </div>
+      {/* Guidelines Grid */}
+      <div className="guidelines-grid" style={{ padding: '16px' }}>
+        {displayedGuidelines.length > 0 ? (
+          displayedGuidelines.map((guideline, index) =>
+            renderGuidelineCard(guideline, index)
+          )
         ) : (
-          <div 
-            className={`guidelines-grid ${comparisonMode}`}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: comparisonMode === 'side-by-side' 
-                ? `repeat(${Math.min(displayedGuidelines.length, 3)}, 1fr)`
-                : '1fr',
-              gap: '16px',
-              padding: '16px'
-            }}
-          >
-            {displayedGuidelines.map(renderGuidelineCard)}
+          <div style={{ padding: '32px', textAlign: 'center', color: '#6b7280' }}>
+            <p>No guidelines available for this condition</p>
           </div>
         )}
       </div>
     </div>
   );
-};
-
-GuidelineComparisonPanel.propTypes = {
-  condition: PropTypes.string,
-  guidelines: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string,
-    organization: PropTypes.string.isRequired,
-    firstLineRecommendation: PropTypes.string.isRequired,
-    evidenceLevel: PropTypes.oneOf(['A', 'B', 'C', 'D']),
-    dosing: PropTypes.shape({
-      amount: PropTypes.string,
-      frequency: PropTypes.string
-    }),
-    duration: PropTypes.string,
-    lastUpdated: PropTypes.string,
-    rationale: PropTypes.string,
-    references: PropTypes.arrayOf(PropTypes.string)
-  })),
-  emergencyMode: PropTypes.bool,
-  onGuidelineSelect: PropTypes.func,
-  onExpandDetails: PropTypes.func,
-  className: PropTypes.string,
-  showConflictsOnly: PropTypes.bool,
-  comparisonMode: PropTypes.oneOf(['side-by-side', 'tabbed', 'overlay'])
 };
 
 export default GuidelineComparisonPanel;

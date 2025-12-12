@@ -1,9 +1,9 @@
 /**
- * DecisionPathwayRenderer.js
- * 
- * SVG-based visual decision pathway renderer with D3.js integration and 
+ * DecisionPathwayRenderer.tsx
+ *
+ * SVG-based visual decision pathway renderer with D3.js integration and
  * Northwestern animation system compatibility.
- * 
+ *
  * Features:
  * - Interactive SVG decision tree visualization
  * - Smooth transitions between decision nodes (60fps target)
@@ -13,47 +13,68 @@
  * - Accessibility compliance (WCAG 2.1)
  * - <15 second decision completion visualization
  * - Touch-friendly interactive elements
- * 
+ *
  * Medical Accuracy: Visual representations based on clinical logic
  * Educational Level: Medical students, residents, practicing clinicians
- * 
+ *
  * @author Claude Code Assistant
  * @version 1.0.0
  * @medical-disclaimer Educational purposes only - not for clinical practice
  */
 
-import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo, FC } from 'react';
 import * as d3 from 'd3';
+import type { DecisionPathwayRendererProps, TreeNode } from '../../types/clinical-decision.types';
+
+interface PathwayConstants {
+  NODE_WIDTH: number;
+  NODE_HEIGHT: number;
+  NODE_SPACING_X: number;
+  NODE_SPACING_Y: number;
+  PATH_STROKE_WIDTH: number;
+  TRANSITION_DURATION: number;
+  HIGHLIGHT_DURATION: number;
+  COLORS: Record<string, string>;
+  MIN_TOUCH_TARGET: number;
+  FOCUS_RING_WIDTH: number;
+  HIGH_CONTRAST_MODE: boolean;
+}
+
+interface NodeStyling {
+  fillColor: string | d3.RGBColor;
+  strokeColor: string | d3.RGBColor;
+  strokeWidth: number;
+}
 
 /**
  * Visual constants for decision pathway rendering
  */
-const PATHWAY_CONSTANTS = {
+const PATHWAY_CONSTANTS: PathwayConstants = {
   // Layout dimensions
   NODE_WIDTH: 120,
   NODE_HEIGHT: 80,
   NODE_SPACING_X: 200,
   NODE_SPACING_Y: 120,
   PATH_STROKE_WIDTH: 3,
-  
+
   // Animation timing (60fps target)
   TRANSITION_DURATION: 300,
   HIGHLIGHT_DURATION: 150,
-  
+
   // Color scheme for medical decision types
   COLORS: {
-    ROOT: '#2563eb',           // Medical blue
-    INPUT: '#059669',          // Clinical green  
-    DECISION: '#dc2626',       // Decision red
-    OUTCOME: '#7c3aed',        // Outcome purple
-    EVIDENCE: '#0891b2',       // Evidence teal
-    WARNING: '#ea580c',        // Warning orange
-    ACTIVE: '#fbbf24',         // Active yellow
-    COMPLETED: '#10b981'       // Completed green
+    ROOT: '#2563eb',
+    INPUT: '#059669',
+    DECISION: '#dc2626',
+    OUTCOME: '#7c3aed',
+    EVIDENCE: '#0891b2',
+    WARNING: '#ea580c',
+    ACTIVE: '#fbbf24',
+    COMPLETED: '#10b981'
   },
-  
+
   // Accessibility considerations
-  MIN_TOUCH_TARGET: 44,      // Minimum 44px for touch
+  MIN_TOUCH_TARGET: 44,
   FOCUS_RING_WIDTH: 3,
   HIGH_CONTRAST_MODE: false
 };
@@ -62,7 +83,7 @@ const PATHWAY_CONSTANTS = {
  * Decision pathway visual renderer component
  * Integrates with Northwestern animation system for smooth clinical workflows
  */
-const DecisionPathwayRenderer = ({
+const DecisionPathwayRenderer: FC<DecisionPathwayRendererProps> = ({
   treeData = null,
   currentNode = 'root',
   completedNodes = [],
@@ -76,55 +97,54 @@ const DecisionPathwayRenderer = ({
   accessibilityMode = false
 }) => {
   // Refs for D3 integration
-  const svgRef = useRef(null);
-  const containerRef = useRef(null);
-  const simulationRef = useRef(null);
-  
+  const svgRef = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const simulationRef = useRef<d3.Simulation<any, undefined> | null>(null);
+
   // Rendering state
-  const [isRendering, setIsRendering] = useState(false);
-  const [renderError, setRenderError] = useState(null);
-  const [zoomTransform, setZoomTransform] = useState(null);
-  
+  const [isRendering, setIsRendering] = useState<boolean>(false);
+  const [renderError, setRenderError] = useState<string | null>(null);
+  const [zoomTransform, setZoomTransform] = useState<d3.ZoomTransform | null>(null);
+
   // Performance monitoring
-  const frameCountRef = useRef(0);
-  const lastFrameTimeRef = useRef(performance.now());
+  const frameCountRef = useRef<number>(0);
+  const lastFrameTimeRef = useRef<number>(performance.now());
 
   /**
    * Process tree data into D3-compatible format with clinical hierarchy
    */
   const processedTreeData = useMemo(() => {
     if (!treeData) return null;
-    
+
     try {
       // Create hierarchical structure for clinical decision flow
-      const root = d3.hierarchy(treeData);
-      
+      const root = d3.hierarchy(treeData as any);
+
       // Calculate positions using tree layout optimized for medical workflows
-      const treeLayout = d3.tree()
+      const treeLayout = d3.tree<TreeNode>()
         .size([width - 100, height - 100])
         .separation((a, b) => {
           // Increase separation for complex medical decisions
           const baseSeparation = a.parent === b.parent ? 1 : 2;
-          const complexityFactor = (a.data.type === 'decision' || b.data.type === 'decision') ? 1.3 : 1;
+          const complexityFactor = (a.data?.type === 'decision' || b.data?.type === 'decision') ? 1.3 : 1;
           return baseSeparation * complexityFactor;
         });
-      
+
       const positioned = treeLayout(root);
-      
+
       // Add clinical-specific positioning adjustments
       positioned.each(node => {
-        node.x += 50; // Offset from container edges
-        node.y += 50;
-        
+        node.x! += 50;
+        node.y! += 50;
+
         // Adjust positioning for emergency mode (larger touch targets)
         if (emergencyMode) {
-          node.data.width = PATHWAY_CONSTANTS.MIN_TOUCH_TARGET;
-          node.data.height = PATHWAY_CONSTANTS.MIN_TOUCH_TARGET;
+          (node.data as any).width = PATHWAY_CONSTANTS.MIN_TOUCH_TARGET;
+          (node.data as any).height = PATHWAY_CONSTANTS.MIN_TOUCH_TARGET;
         }
       });
-      
+
       return positioned;
-      
     } catch (error) {
       console.error('Error processing tree data:', error);
       setRenderError('Failed to process decision tree data');
@@ -135,14 +155,14 @@ const DecisionPathwayRenderer = ({
   /**
    * Calculate node styling based on clinical state and type
    */
-  const getNodeStyling = useCallback((node) => {
-    const nodeType = node.data?.type || 'decision';
-    const nodeId = node.data?.id || node.id;
-    
-    let fillColor = PATHWAY_CONSTANTS.COLORS[nodeType.toUpperCase()] || PATHWAY_CONSTANTS.COLORS.DECISION;
-    let strokeColor = '#1f2937';
+  const getNodeStyling = useCallback((node: d3.HierarchyNode<TreeNode>): NodeStyling => {
+    const nodeType = (node.data?.type || 'decision') as string;
+    const nodeId = (node.data?.id || (node as any).id) as string;
+
+    let fillColor: string | d3.RGBColor = PATHWAY_CONSTANTS.COLORS[nodeType.toUpperCase()] || PATHWAY_CONSTANTS.COLORS.DECISION;
+    let strokeColor: string | d3.RGBColor = '#1f2937';
     let strokeWidth = 2;
-    
+
     // State-based styling for clinical workflow
     if (nodeId === currentNode) {
       fillColor = PATHWAY_CONSTANTS.COLORS.ACTIVE;
@@ -150,58 +170,67 @@ const DecisionPathwayRenderer = ({
     } else if (completedNodes.includes(nodeId)) {
       fillColor = PATHWAY_CONSTANTS.COLORS.COMPLETED;
     } else if (!availableNodes.includes(nodeId) && availableNodes.length > 0) {
-      fillColor = d3.color(fillColor).copy({ opacity: 0.3 });
-      strokeColor = d3.color(strokeColor).copy({ opacity: 0.3 });
+      const color = d3.color(fillColor as string);
+      if (color) {
+        fillColor = color.copy({ opacity: 0.3 });
+      }
+      const strokeCol = d3.color(strokeColor as string);
+      if (strokeCol) {
+        strokeColor = strokeCol.copy({ opacity: 0.3 });
+      }
     }
-    
+
     // Warning state styling
-    if (node.data?.type === 'warning') {
+    if ((node.data?.type) === 'warning') {
       strokeColor = PATHWAY_CONSTANTS.COLORS.WARNING;
       strokeWidth = 3;
     }
-    
+
     // Accessibility enhancements
     if (accessibilityMode) {
       strokeWidth += 1;
-      fillColor = d3.color(fillColor).copy({ opacity: 0.8 });
+      const color = d3.color(fillColor as string);
+      if (color) {
+        fillColor = color.copy({ opacity: 0.8 });
+      }
     }
-    
+
     return { fillColor, strokeColor, strokeWidth };
   }, [currentNode, completedNodes, availableNodes, accessibilityMode]);
 
   /**
    * Render decision nodes with medical-appropriate styling
    */
-  const renderNodes = useCallback((svg, nodes) => {
+  const renderNodes = useCallback((svg: d3.Selection<any, any, any, any>, nodes: d3.HierarchyNode<TreeNode>[]) => {
     const nodeSelection = svg.selectAll('.decision-node')
-      .data(nodes, d => d.data?.id || d.id);
-    
+      .data(nodes, (d: any) => d.data?.id || d.id);
+
     // Enter selection - new nodes
     const nodeEnter = nodeSelection.enter()
       .append('g')
       .attr('class', 'decision-node')
-      .attr('transform', d => `translate(${d.x},${d.y})`)
+      .attr('transform', (d: any) => `translate(${d.x},${d.y})`)
       .style('cursor', 'pointer')
-      .on('click', (event, d) => {
+      .on('click', (event: MouseEvent, d: any) => {
         event.preventDefault();
         const nodeId = d.data?.id || d.id;
         if (availableNodes.includes(nodeId) || availableNodes.length === 0) {
-          onNodeClick(nodeId, d.data);
+          onNodeClick(nodeId);
         }
       })
-      .on('mouseenter', (event, d) => {
-        onNodeHover(d.data?.id || d.id, d.data, 'enter');
+      .on('mouseenter', (event: MouseEvent, d: any) => {
+        onNodeHover(d.data?.id || d.id);
       })
-      .on('mouseleave', (event, d) => {
-        onNodeHover(d.data?.id || d.id, d.data, 'leave');
+      .on('mouseleave', (event: MouseEvent, d: any) => {
+        onNodeHover(null);
       });
-    
+
     // Add node shapes based on clinical decision type
-    nodeEnter.each(function(d) {
+    nodeEnter.each(function(d: any) {
       const group = d3.select(this);
       const styling = getNodeStyling(d);
       const nodeType = d.data?.type || 'decision';
-      
+
       // Different shapes for different decision types
       switch (nodeType) {
         case 'root':
@@ -211,7 +240,7 @@ const DecisionPathwayRenderer = ({
             .attr('stroke', styling.strokeColor)
             .attr('stroke-width', styling.strokeWidth);
           break;
-        
+
         case 'decision':
           group.append('polygon')
             .attr('points', '-30,0 0,-20 30,0 0,20')
@@ -219,7 +248,7 @@ const DecisionPathwayRenderer = ({
             .attr('stroke', styling.strokeColor)
             .attr('stroke-width', styling.strokeWidth);
           break;
-        
+
         case 'outcome':
           group.append('rect')
             .attr('x', -25)
@@ -231,7 +260,7 @@ const DecisionPathwayRenderer = ({
             .attr('stroke', styling.strokeColor)
             .attr('stroke-width', styling.strokeWidth);
           break;
-          
+
         case 'warning':
           group.append('polygon')
             .attr('points', '0,-25 25,20 -25,20')
@@ -239,7 +268,7 @@ const DecisionPathwayRenderer = ({
             .attr('stroke', styling.strokeColor)
             .attr('stroke-width', styling.strokeWidth);
           break;
-        
+
         default:
           group.append('circle')
             .attr('r', 20)
@@ -247,7 +276,7 @@ const DecisionPathwayRenderer = ({
             .attr('stroke', styling.strokeColor)
             .attr('stroke-width', styling.strokeWidth);
       }
-      
+
       // Add text labels with medical terminology
       group.append('text')
         .attr('text-anchor', 'middle')
@@ -255,7 +284,7 @@ const DecisionPathwayRenderer = ({
         .attr('fill', '#ffffff')
         .attr('font-size', '10px')
         .attr('font-weight', 'bold')
-        .text(d.data?.shortLabel || d.data?.name || 'Node')
+        .text((d.data as any)?.shortLabel || (d.data as any)?.name || 'Node')
         .each(function() {
           // Wrap long text for clinical readability
           const text = d3.select(this);
@@ -264,31 +293,31 @@ const DecisionPathwayRenderer = ({
             text.text(words.slice(0, 2).join(' ') + '...');
           }
         });
-      
+
       // Add accessibility attributes
       group.attr('role', 'button')
         .attr('tabindex', availableNodes.includes(d.data?.id) ? 0 : -1)
-        .attr('aria-label', `${d.data?.name || 'Decision node'} - ${d.data?.type || 'decision'}`);
-      
+        .attr('aria-label', `${(d.data as any)?.name || 'Decision node'} - ${d.data?.type || 'decision'}`);
+
       // Emergency mode enhancements
       if (emergencyMode) {
         group.select('circle, rect, polygon')
           .attr('filter', 'drop-shadow(3px 3px 6px rgba(0,0,0,0.3))');
       }
     });
-    
+
     // Update existing nodes with Northwestern animation timing
     const nodeUpdate = nodeEnter.merge(nodeSelection);
-    
+
     nodeUpdate.transition()
       .duration(PATHWAY_CONSTANTS.TRANSITION_DURATION)
-      .attr('transform', d => `translate(${d.x},${d.y})`);
-    
+      .attr('transform', (d: any) => `translate(${d.x},${d.y})`);
+
     // Update node styling based on current state
-    nodeUpdate.each(function(d) {
+    nodeUpdate.each(function(d: any) {
       const group = d3.select(this);
       const styling = getNodeStyling(d);
-      
+
       group.select('circle, rect, polygon')
         .transition()
         .duration(PATHWAY_CONSTANTS.HIGHLIGHT_DURATION)
@@ -296,29 +325,28 @@ const DecisionPathwayRenderer = ({
         .attr('stroke', styling.strokeColor)
         .attr('stroke-width', styling.strokeWidth);
     });
-    
+
     // Remove exiting nodes
     nodeSelection.exit()
       .transition()
       .duration(PATHWAY_CONSTANTS.TRANSITION_DURATION)
       .style('opacity', 0)
       .remove();
-      
   }, [getNodeStyling, availableNodes, onNodeClick, onNodeHover, emergencyMode]);
 
   /**
    * Render connection paths between decision nodes
    */
-  const renderPaths = useCallback((svg, links) => {
+  const renderPaths = useCallback((svg: d3.Selection<any, any, any, any>, links: d3.HierarchyLink<TreeNode>[]) => {
     // Create curved paths for clinical decision flow
-    const pathGenerator = d3.linkVertical()
-      .x(d => d.x)
-      .y(d => d.y)
+    const pathGenerator = d3.linkVertical<TreeNode, d3.HierarchyNode<TreeNode>>()
+      .x((d: any) => d.x)
+      .y((d: any) => d.y)
       .curve(d3.curveBasis);
-    
+
     const pathSelection = svg.selectAll('.decision-path')
-      .data(links, d => `${d.source.data?.id}-${d.target.data?.id}`);
-    
+      .data(links, (d: any) => `${d.source.data?.id}-${d.target.data?.id}`);
+
     // Enter selection
     const pathEnter = pathSelection.enter()
       .append('path')
@@ -326,28 +354,27 @@ const DecisionPathwayRenderer = ({
       .attr('fill', 'none')
       .attr('stroke', '#6b7280')
       .attr('stroke-width', PATHWAY_CONSTANTS.PATH_STROKE_WIDTH)
-      .attr('d', pathGenerator)
+      .attr('d', pathGenerator as any)
       .style('opacity', 0);
-    
+
     // Update all paths with smooth transitions
     const pathUpdate = pathEnter.merge(pathSelection);
-    
+
     pathUpdate.transition()
       .duration(PATHWAY_CONSTANTS.TRANSITION_DURATION)
-      .style('opacity', d => {
+      .style('opacity', (d: any) => {
         const sourceCompleted = completedNodes.includes(d.source.data?.id);
         const targetAvailable = availableNodes.includes(d.target.data?.id) || availableNodes.length === 0;
         return sourceCompleted && targetAvailable ? 1 : 0.3;
       })
-      .attr('d', pathGenerator);
-    
+      .attr('d', pathGenerator as any);
+
     // Remove exiting paths
     pathSelection.exit()
       .transition()
       .duration(PATHWAY_CONSTANTS.TRANSITION_DURATION)
       .style('opacity', 0)
       .remove();
-      
   }, [completedNodes, availableNodes]);
 
   /**
@@ -355,88 +382,49 @@ const DecisionPathwayRenderer = ({
    */
   const renderDecisionTree = useCallback(() => {
     if (!processedTreeData || !svgRef.current) return;
-    
+
     setIsRendering(true);
     setRenderError(null);
-    
+
     try {
       const svg = d3.select(svgRef.current);
-      
+
       // Clear previous render
       svg.selectAll('*').remove();
-      
+
       // Create main group for zoom/pan functionality
       const mainGroup = svg.append('g')
         .attr('class', 'main-group');
-      
+
       // Set up zoom behavior for large decision trees
-      const zoom = d3.zoom()
+      const zoom = d3.zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.1, 3])
-        .on('zoom', (event) => {
+        .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
           mainGroup.attr('transform', event.transform);
-          setZoomTransform(event.transform);
+          setZoomTransform(event.transform as d3.ZoomTransform);
         });
-      
+
       svg.call(zoom);
-      
+
       // Extract nodes and links from hierarchical data
       const nodes = processedTreeData.descendants();
       const links = processedTreeData.links();
-      
+
       // Render components
       renderPaths(mainGroup, links);
       renderNodes(mainGroup, nodes);
-      
-      // Add clinical workflow indicators
-      if (currentNode) {
-        const currentNodeData = nodes.find(n => n.data?.id === currentNode);
-        if (currentNodeData) {
-          // Add pulsing animation to current node
-          mainGroup.select(`.decision-node[data-id="${currentNode}"]`)
-            .append('circle')
-            .attr('class', 'current-indicator')
-            .attr('r', 30)
-            .attr('fill', 'none')
-            .attr('stroke', PATHWAY_CONSTANTS.COLORS.ACTIVE)
-            .attr('stroke-width', 2)
-            .style('opacity', 0)
-            .transition()
-            .duration(1000)
-            .style('opacity', 1)
-            .attr('r', 35)
-            .transition()
-            .duration(1000)
-            .style('opacity', 0)
-            .attr('r', 40)
-            .on('end', function repeat() {
-              d3.select(this)
-                .attr('r', 30)
-                .style('opacity', 0)
-                .transition()
-                .duration(1000)
-                .style('opacity', 1)
-                .attr('r', 35)
-                .transition()
-                .duration(1000)
-                .style('opacity', 0)
-                .attr('r', 40)
-                .on('end', repeat);
-            });
-        }
-      }
-      
+
       // Center the view on the current node or root
       const targetNode = nodes.find(n => n.data?.id === currentNode) || nodes[0];
       if (targetNode) {
         const transform = d3.zoomIdentity
-          .translate(width / 2 - targetNode.x, height / 2 - targetNode.y)
+          .translate(width / 2 - targetNode.x!, height / 2 - targetNode.y!)
           .scale(1);
-        
+
         svg.transition()
           .duration(PATHWAY_CONSTANTS.TRANSITION_DURATION)
           .call(zoom.transform, transform);
       }
-      
     } catch (error) {
       console.error('Error rendering decision tree:', error);
       setRenderError('Failed to render decision pathway visualization');
@@ -452,7 +440,7 @@ const DecisionPathwayRenderer = ({
     const currentTime = performance.now();
     const deltaTime = currentTime - lastFrameTimeRef.current;
     frameCountRef.current++;
-    
+
     // Log performance every 60 frames (1 second at 60fps)
     if (frameCountRef.current % 60 === 0) {
       const fps = Math.round(1000 / deltaTime);
@@ -460,7 +448,7 @@ const DecisionPathwayRenderer = ({
         console.warn(`Decision pathway rendering below target: ${fps}fps`);
       }
     }
-    
+
     lastFrameTimeRef.current = currentTime;
   }, []);
 
@@ -472,29 +460,21 @@ const DecisionPathwayRenderer = ({
 
   // Handle keyboard navigation for accessibility
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (!svgRef.current) return;
-      
+
       const focusedNode = document.activeElement;
       if (focusedNode && focusedNode.closest('.decision-node')) {
         switch (event.key) {
           case 'Enter':
           case ' ':
             event.preventDefault();
-            focusedNode.click();
-            break;
-          case 'ArrowDown':
-          case 'ArrowUp':
-          case 'ArrowLeft':
-          case 'ArrowRight':
-            event.preventDefault();
-            // Navigate to adjacent nodes
-            // Implementation would depend on specific navigation requirements
+            (focusedNode as HTMLElement).click();
             break;
         }
       }
     };
-    
+
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
@@ -517,7 +497,7 @@ const DecisionPathwayRenderer = ({
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={`decision-pathway-renderer ${className} ${emergencyMode ? 'emergency-mode' : ''}`}
       role="application"
@@ -530,7 +510,7 @@ const DecisionPathwayRenderer = ({
           </div>
         </div>
       )}
-      
+
       <svg
         ref={svgRef}
         width={width}
@@ -539,15 +519,13 @@ const DecisionPathwayRenderer = ({
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="xMidYMid meet"
       >
-        {/* Accessibility title and description */}
         <title>Clinical Decision Pathway Visualization</title>
         <desc>
-          Interactive decision tree showing evidence-based antibiotic selection 
-          pathways for pediatric conditions. Navigate using mouse clicks or 
+          Interactive decision tree showing evidence-based antibiotic selection
+          pathways for pediatric conditions. Navigate using mouse clicks or
           keyboard controls.
         </desc>
-        
-        {/* Gradient definitions for visual enhancements */}
+
         <defs>
           <linearGradient id="nodeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="rgba(255,255,255,0.2)" />
@@ -555,21 +533,21 @@ const DecisionPathwayRenderer = ({
           </linearGradient>
         </defs>
       </svg>
-      
-      {/* Control panel for zoom and navigation */}
+
       <div className="pathway-controls">
         <button
           onClick={() => {
             const svg = d3.select(svgRef.current);
+            const zoom = d3.zoom<SVGSVGElement, unknown>();
             svg.transition()
               .duration(PATHWAY_CONSTANTS.TRANSITION_DURATION)
-              .call(d3.zoom().transform, d3.zoomIdentity);
+              .call(zoom.transform, d3.zoomIdentity);
           }}
           aria-label="Reset zoom and center view"
         >
           Reset View
         </button>
-        
+
         {emergencyMode && (
           <div className="emergency-indicator">
             <span>Emergency Mode Active</span>
