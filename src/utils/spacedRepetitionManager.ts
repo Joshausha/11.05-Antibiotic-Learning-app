@@ -271,6 +271,13 @@ class SpacedRepetitionManager {
   }
 
   /**
+   * Get card data (read-only access for analytics)
+   */
+  getCardData(): CardData {
+    return this.cardData;
+  }
+
+  /**
    * Load card data from localStorage
    */
   private loadCardData(): CardData {

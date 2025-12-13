@@ -7,6 +7,8 @@
  * components are migrated to TypeScript.
  */
 
+import type { MedicalCondition } from './medical.types';
+
 export type TabType = 'learn' | 'quiz' | 'analytics' | 'reference' | 'pathogen-explorer' | 'antibiotic-explorer' | 'visualizations';
 
 export interface SearchData {
@@ -24,9 +26,7 @@ export type QuizProgressType = any;
 
 export type BookmarksType = any;
 
-export interface MedicalCondition {
-  [key: string]: any;
-}
+export { MedicalCondition };
 
 /**
  * AppContextValue - The shape of the application context

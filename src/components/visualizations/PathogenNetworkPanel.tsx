@@ -11,6 +11,7 @@ import PathogenNetworkVisualization from '../PathogenNetworkVisualization';
 import PathogenNetworkVisualizationCytoscape from '../PathogenNetworkVisualizationCytoscape';
 import NetworkVisualizationD3 from '../NetworkVisualizationD3';
 import NorthwesternSpatialLayout from '../NorthwesternSpatialLayout';
+import PathogenNetworkVisualizationEnhanced from '../PathogenNetworkVisualizationEnhanced';
 import { networkLayoutOptions, spatialViewOptions } from '../../config/visualizationConfig';
 import { Antibiotic, Pathogen } from '../../types/medical.types';
 
@@ -167,6 +168,8 @@ const PathogenNetworkPanel: FC<PathogenNetworkPanelProps> = memo(({
           />
         ) : networkLayoutMode === 'cytoscape' ? (
           <PathogenNetworkVisualizationCytoscape />
+        ) : networkLayoutMode === 'enhanced' ? (
+          <PathogenNetworkVisualizationEnhanced />
         ) : (
           <NorthwesternSpatialLayout
             antibiotics={antibioticData?.antibiotics || []}

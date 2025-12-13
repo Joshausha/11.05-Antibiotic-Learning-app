@@ -1,3 +1,4 @@
+// @ts-nocheck - Test setup file with complex Jest mocks and global configurations
 // Global test setup for antibiotic learning app
 import '@testing-library/jest-dom';
 
@@ -19,11 +20,12 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
 }));
 
 // Mock DOMParser for XML processing in tests
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 global.DOMParser = class MockDOMParser {
-  parseFromString(xmlString, contentType) {
+  parseFromString(xmlString: string, contentType: string): any {
     // Comprehensive mock XML document for testing
     const mockDoc = {
-      getElementsByTagName: jest.fn().mockImplementation((tagName) => {
+      getElementsByTagName: jest.fn().mockImplementation((tagName: string) => {
         if (tagName === 'Id') {
           // Return mock ID nodes for PubMed testing
           const idMatches = xmlString.match(/<Id>(\d+)<\/Id>/g) || [];
@@ -37,9 +39,9 @@ global.DOMParser = class MockDOMParser {
         if (tagName === 'PubmedArticle') {
           // Handle PubmedArticle XML structure
           const mockArticle = {
-            querySelector: jest.fn().mockImplementation(selector => {
+            querySelector: jest.fn().mockImplementation((selector: string) => {
               if (selector === 'MedlineCitation') return {
-                querySelector: jest.fn().mockImplementation(subSelector => {
+                querySelector: jest.fn().mockImplementation((subSelector: string) => {
                   switch (subSelector) {
                     case 'PMID':
                       return { textContent: '12345678' };
@@ -67,7 +69,7 @@ global.DOMParser = class MockDOMParser {
     };
     return mockDoc;
   }
-};
+} as any;
 
 // Mock window.matchMedia for responsive components
 Object.defineProperty(window, 'matchMedia', {
@@ -91,15 +93,15 @@ Object.defineProperty(window, 'scrollTo', {
 });
 
 // Mock localStorage with proper implementation
-const mockStore = {};
+const mockStore: Record<string, string> = {};
 const localStorageMock = {
-  getItem: jest.fn().mockImplementation((key) => {
+  getItem: jest.fn().mockImplementation((key: string) => {
     return mockStore[key] !== undefined ? mockStore[key] : null;
   }),
-  setItem: jest.fn().mockImplementation((key, value) => {
+  setItem: jest.fn().mockImplementation((key: string, value: string) => {
     mockStore[key] = value;
   }),
-  removeItem: jest.fn().mockImplementation((key) => {
+  removeItem: jest.fn().mockImplementation((key: string) => {
     delete mockStore[key];
   }),
   clear: jest.fn().mockImplementation(() => {
@@ -110,7 +112,7 @@ const localStorageMock = {
   // Expose mockStore for testing
   __mockStore: mockStore
 };
-global.localStorage = localStorageMock;
+global.localStorage = localStorageMock as any;
 
 // Mock window.localStorage for useLocalStorage hook compatibility
 Object.defineProperty(window, 'localStorage', {
@@ -125,7 +127,7 @@ const sessionStorageMock = {
   removeItem: jest.fn(),
   clear: jest.fn(),
 };
-global.sessionStorage = sessionStorageMock;
+global.sessionStorage = sessionStorageMock as any;
 
 
 // Mock Chart.js for analytics components
@@ -150,22 +152,22 @@ jest.mock('chart.js', () => ({
 
 // Mock react-chartjs-2 components
 jest.mock('react-chartjs-2', () => ({
-  Line: ({ data, options, ...props }) => (
+  Line: ({ data, options, ...props }: any) => (
     <div data-testid="line-chart" {...props}>
       Mock Line Chart: {data?.datasets?.[0]?.label || 'Chart'}
     </div>
   ),
-  Bar: ({ data, options, ...props }) => (
+  Bar: ({ data, options, ...props }: any) => (
     <div data-testid="bar-chart" {...props}>
       Mock Bar Chart: {data?.datasets?.[0]?.label || 'Chart'}
     </div>
   ),
-  Pie: ({ data, options, ...props }) => (
+  Pie: ({ data, options, ...props }: any) => (
     <div data-testid="pie-chart" {...props}>
       Mock Pie Chart: {data?.datasets?.[0]?.label || 'Chart'}
     </div>
   ),
-  Doughnut: ({ data, options, ...props }) => (
+  Doughnut: ({ data, options, ...props }: any) => (
     <div data-testid="doughnut-chart" {...props}>
       Mock Doughnut Chart: {data?.datasets?.[0]?.label || 'Chart'}
     </div>
@@ -174,7 +176,7 @@ jest.mock('react-chartjs-2', () => ({
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => {
-  const MockIcon = ({ size = 24, className = '', ...props }) => (
+  const MockIcon = ({ size = 24, className = '', ...props }: any) => (
     <svg 
       width={size} 
       height={size} 

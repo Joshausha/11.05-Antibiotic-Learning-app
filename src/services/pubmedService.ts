@@ -8,13 +8,60 @@ const PUBMED_BASE_URL = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
 const API_KEY = process.env.REACT_APP_PUBMED_API_KEY; // Optional but recommended
 const DEFAULT_RETMAX = 20; // Default number of results to return
 
+// =============================================================================
+// TYPE DEFINITIONS
+// =============================================================================
+
+interface SearchOptions {
+  maxResults?: number;
+  dateRange?: string;
+  sortBy?: string;
+  filters?: string[];
+}
+
+interface ArticleMetadata {
+  pmid: string;
+  title: string;
+  abstract: string;
+  authors: string[];
+  journal: string;
+  publicationDate: string;
+  doi: string;
+  pubmedUrl: string;
+  relevanceScore: number;
+}
+
+interface SearchResults {
+  query: string;
+  totalResults: number;
+  articles: ArticleMetadata[];
+  searchTime: string;
+}
+
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+}
+
+interface CacheStats {
+  totalEntries: number;
+  activeEntries: number;
+  expiredEntries: number;
+  oldestEntry: number | null;
+  cacheSize: number;
+}
+
+// =============================================================================
+// MAIN API FUNCTIONS
+// =============================================================================
+
 /**
  * Search PubMed for articles related to specific topics
- * @param {string} query - Search query (e.g., "antibiotic resistance pediatric")
- * @param {Object} options - Search options
- * @returns {Promise<Object>} Search results with article metadata
+ * @param query - Search query (e.g., "antibiotic resistance pediatric")
+ * @param options - Search options
+ * @returns Search results with article metadata
  */
-export const searchPubMed = async (query, options = {}) => {
+export const searchPubMed = async (query: string, options: SearchOptions = {}): Promise<SearchResults> => {
   const {
     maxResults = DEFAULT_RETMAX,
     dateRange = '5', // Years back to search
@@ -44,25 +91,25 @@ export const searchPubMed = async (query, options = {}) => {
       'English[lang]', // English language only
       ...filters
     ];
-    
+
     if (medicalFilters.length > 0) {
       searchParams.set('term', `${query} AND (${medicalFilters.join(' AND ')})`);
     }
 
     const searchUrl = `${PUBMED_BASE_URL}/esearch.fcgi?${searchParams}`;
-    
+
     const searchResponse = await fetch(searchUrl);
     if (!searchResponse.ok) {
       throw new Error(`PubMed search failed: ${searchResponse.status}`);
     }
 
     // Safely handle response text method for testing
-    let searchData;
-    if (typeof searchResponse.text === 'function') {
+    let searchData: string;
+    if (typeof (searchResponse as any).text === 'function') {
       searchData = await searchResponse.text();
     } else {
       // Fallback for mock responses in tests
-      searchData = searchResponse.data || searchResponse.body || '';
+      searchData = ((searchResponse as any).data || (searchResponse as any).body || '') as string;
     }
     const articleIds = extractArticleIds(searchData);
 
@@ -87,19 +134,19 @@ export const searchPubMed = async (query, options = {}) => {
 
   } catch (error) {
     console.error('PubMed API error:', error);
-    throw new Error(`Failed to search PubMed: ${error.message}`);
+    throw new Error(`Failed to search PubMed: ${(error as Error).message}`);
   }
 };
 
 /**
  * Get articles related to specific antibiotic topics
- * @param {string} antibiotic - Antibiotic name
- * @param {string} indication - Medical indication (optional)
- * @returns {Promise<Object>} Relevant articles
+ * @param antibiotic - Antibiotic name
+ * @param indication - Medical indication (optional)
+ * @returns Relevant articles
  */
-export const getAntibioticGuidelines = async (antibiotic, indication = '') => {
+export const getAntibioticGuidelines = async (antibiotic: string, indication: string = ''): Promise<SearchResults> => {
   const baseQuery = `"${antibiotic}" AND (guidelines OR therapy OR treatment)`;
-  const fullQuery = indication 
+  const fullQuery = indication
     ? `${baseQuery} AND "${indication}"`
     : baseQuery;
 
@@ -113,13 +160,13 @@ export const getAntibioticGuidelines = async (antibiotic, indication = '') => {
 
 /**
  * Get resistance pattern research for specific pathogens
- * @param {string} pathogen - Pathogen name
- * @param {string} region - Geographic region (optional)
- * @returns {Promise<Object>} Resistance pattern articles
+ * @param pathogen - Pathogen name
+ * @param region - Geographic region (optional)
+ * @returns Resistance pattern articles
  */
-export const getResistancePatterns = async (pathogen, region = '') => {
+export const getResistancePatterns = async (pathogen: string, region: string = ''): Promise<SearchResults> => {
   const baseQuery = `"${pathogen}" AND (resistance OR susceptibility OR antimicrobial)`;
-  const fullQuery = region 
+  const fullQuery = region
     ? `${baseQuery} AND "${region}"`
     : baseQuery;
 
@@ -133,13 +180,13 @@ export const getResistancePatterns = async (pathogen, region = '') => {
 
 /**
  * Get pediatric-specific antibiotic information
- * @param {string} condition - Medical condition
- * @param {string} antibiotic - Antibiotic name (optional)
- * @returns {Promise<Object>} Pediatric treatment articles
+ * @param condition - Medical condition
+ * @param antibiotic - Antibiotic name (optional)
+ * @returns Pediatric treatment articles
  */
-export const getPediatricGuidelines = async (condition, antibiotic = '') => {
+export const getPediatricGuidelines = async (condition: string, antibiotic: string = ''): Promise<SearchResults> => {
   const baseQuery = `"${condition}" AND (pediatric OR children OR infant)`;
-  const fullQuery = antibiotic 
+  const fullQuery = antibiotic
     ? `${baseQuery} AND "${antibiotic}"`
     : baseQuery;
 
@@ -151,12 +198,16 @@ export const getPediatricGuidelines = async (condition, antibiotic = '') => {
   });
 };
 
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
 /**
  * Extract article IDs from PubMed search XML response
- * @param {string} xmlData - XML response from esearch
- * @returns {Array<string>} Array of PubMed IDs
+ * @param xmlData - XML response from esearch
+ * @returns Array of PubMed IDs
  */
-const extractArticleIds = (xmlData) => {
+const extractArticleIds = (xmlData: string): string[] => {
   try {
     // Handle missing DOMParser in test environments
     if (typeof DOMParser === 'undefined') {
@@ -167,7 +218,7 @@ const extractArticleIds = (xmlData) => {
     }
 
     const parser = new DOMParser();
-    
+
     // Handle malformed XML responses
     if (!xmlData || typeof xmlData !== 'string' || xmlData.trim() === '') {
       console.warn('Empty or invalid XML data provided');
@@ -175,7 +226,7 @@ const extractArticleIds = (xmlData) => {
     }
 
     const xmlDoc = parser.parseFromString(xmlData, 'text/xml');
-    
+
     // Check for XML parsing errors
     const parseErrors = xmlDoc.getElementsByTagName('parsererror');
     if (parseErrors.length > 0) {
@@ -184,7 +235,7 @@ const extractArticleIds = (xmlData) => {
       const idMatches = xmlData.match(/<Id>(\d+)<\/Id>/g) || [];
       return idMatches.map(match => match.replace(/<\/?Id>/g, ''));
     }
-    
+
     const idNodes = xmlDoc.getElementsByTagName('Id');
     return Array.from(idNodes).map(node => node.textContent || '').filter(id => id);
   } catch (error) {
@@ -196,10 +247,10 @@ const extractArticleIds = (xmlData) => {
 
 /**
  * Fetch detailed article information using efetch
- * @param {Array<string>} articleIds - Array of PubMed IDs
- * @returns {Promise<Array>} Array of article objects
+ * @param articleIds - Array of PubMed IDs
+ * @returns Array of article objects
  */
-const fetchArticleDetails = async (articleIds) => {
+const fetchArticleDetails = async (articleIds: string[]): Promise<ArticleMetadata[]> => {
   if (articleIds.length === 0) return [];
 
   try {
@@ -215,7 +266,7 @@ const fetchArticleDetails = async (articleIds) => {
     }
 
     const fetchUrl = `${PUBMED_BASE_URL}/efetch.fcgi?${fetchParams}`;
-    
+
     const response = await fetch(fetchUrl);
     if (!response.ok) {
       throw new Error(`Failed to fetch article details: ${response.status}`);
@@ -232,10 +283,10 @@ const fetchArticleDetails = async (articleIds) => {
 
 /**
  * Parse article details from PubMed XML response
- * @param {string} xmlData - XML response from efetch
- * @returns {Array} Array of parsed article objects
+ * @param xmlData - XML response from efetch
+ * @returns Array of parsed article objects
  */
-const parseArticleDetails = (xmlData) => {
+const parseArticleDetails = (xmlData: string): ArticleMetadata[] => {
   try {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlData, 'text/xml');
@@ -249,7 +300,7 @@ const parseArticleDetails = (xmlData) => {
       const pmid = medlineCitation?.querySelector('PMID')?.textContent || '';
       const title = medlineCitation?.querySelector('ArticleTitle')?.textContent || '';
       const abstract = medlineCitation?.querySelector('Abstract AbstractText')?.textContent || '';
-      
+
       // Extract authors
       const authorNodes = medlineCitation?.querySelectorAll('Author') || [];
       const authors = Array.from(authorNodes).map(author => {
@@ -287,10 +338,10 @@ const parseArticleDetails = (xmlData) => {
 
 /**
  * Extract publication date from article XML
- * @param {Element} medlineCitation - MedlineCitation XML element
- * @returns {string} Formatted publication date
+ * @param medlineCitation - MedlineCitation XML element
+ * @returns Formatted publication date
  */
-const extractPublicationDate = (medlineCitation) => {
+const extractPublicationDate = (medlineCitation: Element | null): string => {
   try {
     const pubDate = medlineCitation?.querySelector('PubDate');
     if (!pubDate) return '';
@@ -315,11 +366,11 @@ const extractPublicationDate = (medlineCitation) => {
 
 /**
  * Calculate relevance score for medical education content
- * @param {string} title - Article title
- * @param {string} abstract - Article abstract
- * @returns {number} Relevance score (0-100)
+ * @param title - Article title
+ * @param abstract - Article abstract
+ * @returns Relevance score (0-100)
  */
-const calculateRelevanceScore = (title, abstract) => {
+const calculateRelevanceScore = (title: string, abstract: string): number => {
   const text = `${title} ${abstract}`.toLowerCase();
   let score = 50; // Base score
 
@@ -358,21 +409,22 @@ const calculateRelevanceScore = (title, abstract) => {
   return Math.min(100, Math.max(0, score));
 };
 
-/**
- * Cache management for PubMed results
- */
+// =============================================================================
+// CACHE MANAGEMENT
+// =============================================================================
+
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-const cache = new Map();
+const cache = new Map<string, CacheEntry>();
 
 /**
  * Get cached results or fetch new ones
- * @param {string} cacheKey - Unique cache identifier
- * @param {Function} fetchFunction - Function to fetch new data
- * @returns {Promise} Cached or fresh data
+ * @param cacheKey - Unique cache identifier
+ * @param fetchFunction - Function to fetch new data
+ * @returns Cached or fresh data
  */
-export const getCachedResults = async (cacheKey, fetchFunction) => {
+export const getCachedResults = async (cacheKey: string, fetchFunction: () => Promise<any>): Promise<any> => {
   const cached = cache.get(cacheKey);
-  
+
   if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
     return cached.data;
   }
@@ -397,29 +449,29 @@ export const getCachedResults = async (cacheKey, fetchFunction) => {
 /**
  * Clear the PubMed cache
  */
-export const clearCache = () => {
+export const clearCache = (): void => {
   cache.clear();
 };
 
 /**
  * Get cache statistics
- * @returns {Object} Cache usage statistics
+ * @returns Cache usage statistics
  */
-export const getCacheStats = () => {
+export const getCacheStats = (): CacheStats => {
   const now = Date.now();
   const entries = Array.from(cache.entries());
-  const activeEntries = entries.filter(([, value]) => 
+  const activeEntries = entries.filter(([, value]) =>
     (now - value.timestamp) < CACHE_DURATION
   );
-  
+
   return {
     totalEntries: entries.length,
     activeEntries: activeEntries.length,
     expiredEntries: entries.length - activeEntries.length,
-    oldestEntry: entries.length > 0 
+    oldestEntry: entries.length > 0
       ? Math.min(...entries.map(([, value]) => value.timestamp))
       : null,
-    cacheSize: entries.reduce((size, [key, value]) => 
+    cacheSize: entries.reduce((size, [key, value]) =>
       size + JSON.stringify({ key, value }).length, 0
     )
   };
@@ -427,10 +479,10 @@ export const getCacheStats = () => {
 
 /**
  * Simple cache setter for testing
- * @param {string} key - Cache key
- * @param {any} data - Data to cache
+ * @param key - Cache key
+ * @param data - Data to cache
  */
-export const setCachedResults = (key, data) => {
+export const setCachedResults = (key: string, data: any): void => {
   cache.set(key, {
     data,
     timestamp: Date.now()
@@ -439,19 +491,19 @@ export const setCachedResults = (key, data) => {
 
 /**
  * Simple cache getter for testing
- * @param {string} key - Cache key
- * @returns {any} Cached data or null
+ * @param key - Cache key
+ * @returns Cached data or null
  */
-export const getCachedData = (key) => {
+export const getCachedData = (key: string): any => {
   const cached = cache.get(key);
   if (!cached) return null;
-  
+
   // Check if expired
   if ((Date.now() - cached.timestamp) >= CACHE_DURATION) {
     cache.delete(key);
     return null;
   }
-  
+
   return cached.data;
 };
 

@@ -45,7 +45,10 @@
       "Bash(else echo \"TSX missing\")",
       "Bash(fi)",
       "Bash(if [ -f \"$file.js\" ])",
-      "Bash(timeout 30 npm run build:*)"
+      "Bash(timeout 30 npm run build:*)",
+      "Bash(python3:*)",
+      "mcp__git__git_diff",
+      "mcp__git__git_add"
     ]
   }
 }

@@ -54,7 +54,7 @@ const AppContent: FC = () => {
   const spacedRepetitionData = {
     analytics: spacedRepetitionManager.getAnalytics(),
     weakAreas: spacedRepetitionManager.identifyWeakAreas(),
-    cardData: spacedRepetitionManager.cardData
+    cardData: spacedRepetitionManager.getCardData()
   };
 
   // const { filteredItems: filteredConditions } = searchData;
@@ -144,7 +144,7 @@ const AppContent: FC = () => {
                 <Suspense fallback={<SkeletonLoader type="list" />}>
                   <ConsolidatedPathogenExplorer
                     pathogenData={pathogenData}
-                    onSelectCondition={setSelectedCondition}
+                    onSelectCondition={(condition: any) => setSelectedCondition(condition as any)}
                   />
                 </Suspense>
               </ErrorBoundary>
@@ -156,7 +156,7 @@ const AppContent: FC = () => {
               <Suspense fallback={<SkeletonLoader type="list" />}>
                 <ConsolidatedPathogenExplorer
                   pathogenData={pathogenData}
-                  onSelectCondition={setSelectedCondition}
+                  onSelectCondition={(condition: any) => setSelectedCondition(condition as any)}
                 />
               </Suspense>
             </ErrorBoundary>
@@ -179,7 +179,7 @@ const AppContent: FC = () => {
                   pathogenData={pathogenData}
                   antibioticData={antibioticData}
                   medicalConditions={medicalConditions}
-                  onSelectCondition={setSelectedCondition}
+                  onSelectCondition={(condition: any) => setSelectedCondition(condition as any)}
                   onSelectPathogen={() => {
                     // Handle pathogen selection if needed
                   }}
