@@ -14,7 +14,7 @@ interface PathogenData {
   pathogens?: Array<{
     id: string;
     name: string;
-    gramStatus: 'Positive' | 'Negative' | 'Variable';
+    gramStatus: 'positive' | 'negative' | 'other';
     [key: string]: any;
   }>;
   [key: string]: any;
@@ -194,8 +194,8 @@ const useVisualizationState = ({
     totalConditions: medicalConditions?.length || 0,
     totalPathogens: pathogenData?.pathogens?.length || 0,
     totalAntibiotics: antibioticData?.antibiotics?.length || 0,
-    gramPositive: pathogenData?.pathogens?.filter(p => p.gramStatus === 'Positive').length || 0,
-    gramNegative: pathogenData?.pathogens?.filter(p => p.gramStatus === 'Negative').length || 0
+    gramPositive: pathogenData?.pathogens?.filter(p => p.gramStatus === 'positive').length || 0,
+    gramNegative: pathogenData?.pathogens?.filter(p => p.gramStatus === 'negative').length || 0
   }), [medicalConditions, pathogenData, antibioticData]);
 
   // Generate category distribution (memoized)

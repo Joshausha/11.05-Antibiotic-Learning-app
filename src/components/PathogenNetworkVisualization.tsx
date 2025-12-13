@@ -105,6 +105,7 @@ const PathogenNetworkVisualization: FC<PathogenNetworkVisualizationProps> = ({
   const [isLayoutStable, setIsLayoutStable] = useState<boolean>(false);
   const animationRef = useRef<number>();
   const layoutIterations = useRef<number>(0);
+  const nodePositionsRef = useRef<Record<string, NodePosition>>({});
 
   // Filter states
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
@@ -195,7 +196,7 @@ const PathogenNetworkVisualization: FC<PathogenNetworkVisualizationProps> = ({
     });
 
     return positions;
-  }, [dimensions, networkData.nodes]);
+  }, [dimensions.width, dimensions.height, networkData.nodes]);
 
   // Force-directed layout simulation
   const simulateForces = useCallback(
@@ -299,11 +300,17 @@ const PathogenNetworkVisualization: FC<PathogenNetworkVisualizationProps> = ({
     [dimensions, networkData.nodes, networkData.edges]
   );
 
+  // Sync ref with state for animation loop
+  useEffect(() => {
+    nodePositionsRef.current = nodePositions;
+  }, [nodePositions]);
+
   // Animation loop for force-directed layout
   useEffect(() => {
-    if (!isLayoutStable && Object.keys(nodePositions).length > 0) {
+    if (!isLayoutStable && Object.keys(nodePositionsRef.current).length > 0) {
       const animate = (): void => {
-        const { newPositions, totalMovement } = simulateForces(nodePositions);
+        const { newPositions, totalMovement } = simulateForces(nodePositionsRef.current);
+        nodePositionsRef.current = newPositions;
         setNodePositions(newPositions);
 
         layoutIterations.current++;
@@ -323,7 +330,7 @@ const PathogenNetworkVisualization: FC<PathogenNetworkVisualizationProps> = ({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [nodePositions, isLayoutStable, simulateForces]);
+  }, [isLayoutStable, simulateForces]);
 
   // Initialize positions when dimensions or network data changes
   useEffect(() => {
@@ -332,7 +339,8 @@ const PathogenNetworkVisualization: FC<PathogenNetworkVisualizationProps> = ({
       setIsLayoutStable(false);
       layoutIterations.current = 0;
     }
-  }, [dimensions.width, dimensions.height, networkData.nodes.length, initializeNodePositions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dimensions.width, dimensions.height, networkData.nodes.length]);
 
   // Get node position
   const getNodePosition = (nodeId: string): NodePosition | { x: number; y: number } => {
