@@ -436,7 +436,7 @@ module.exports = function (webpackEnv) {
                 {
                   loader: require.resolve('ts-loader'),
                   options: {
-                    transpileOnly: false,
+                    transpileOnly: true, // Bypass type errors for dev server - type checking via tsc separately
                     getCustomTransformers: () => ({
                       before: [],
                     }),

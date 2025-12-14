@@ -7,6 +7,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
+        'display': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
         'sans': ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif'],
         'medical': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
       },
@@ -175,8 +176,25 @@ module.exports = {
         'clinical-text': '#000000',
         'clinical-emergency': '#ff0000',
         'clinical-border': '#000000',
+
+        // Surface colors for layered UI
+        surface: {
+          elevated: '#ffffff',
+          default: '#fafafa',
+          sunken: '#f1f5f9',
+          overlay: 'rgba(0, 0, 0, 0.4)',
+        },
       },
-      
+
+      // Clinical gradient backgrounds
+      backgroundImage: {
+        'gradient-clinical': 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
+        'gradient-clinical-subtle': 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+        'gradient-success': 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+        'gradient-warning': 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)',
+        'gradient-card': 'linear-gradient(180deg, #ffffff 0%, #fafafa 100%)',
+      },
+
       // Medical typography scale
       fontSize: {
         'medical-xs': ['0.7rem', { lineHeight: '1rem', letterSpacing: '0.025em' }],
@@ -185,6 +203,10 @@ module.exports = {
         'medical-lg': ['1rem', { lineHeight: '1.375rem', letterSpacing: '0.01em' }],
         'medical-xl': ['1.125rem', { lineHeight: '1.5rem', letterSpacing: '0.01em' }],
         'medical-emergency': ['1.25rem', { lineHeight: '1.625rem', letterSpacing: '0.02em', fontWeight: '700' }],
+        // Display typography for headers
+        'display-xl': ['2.5rem', { lineHeight: '1.1', fontWeight: '700' }],
+        'display-lg': ['2rem', { lineHeight: '1.15', fontWeight: '600' }],
+        'display-md': ['1.5rem', { lineHeight: '1.2', fontWeight: '600' }],
       },
 
       // Medical spacing scale (optimized for clinical workflows)
@@ -214,6 +236,14 @@ module.exports = {
         'clinical-focus': '0 0 0 4px rgba(37, 99, 235, 0.25)',
         'segment-hover': '0 4px 12px rgba(0, 0, 0, 0.15)',
         'segment-selected': '0 6px 20px rgba(0, 0, 0, 0.25)',
+        // Clinical professional shadow system
+        'clinical-sm': '0 1px 2px 0 rgba(30, 64, 175, 0.05)',
+        'clinical': '0 1px 3px 0 rgba(30, 64, 175, 0.08), 0 1px 2px -1px rgba(30, 64, 175, 0.08)',
+        'clinical-md': '0 4px 6px -1px rgba(30, 64, 175, 0.08), 0 2px 4px -2px rgba(30, 64, 175, 0.06)',
+        'clinical-lg': '0 10px 15px -3px rgba(30, 64, 175, 0.08), 0 4px 6px -4px rgba(30, 64, 175, 0.06)',
+        'clinical-xl': '0 20px 25px -5px rgba(30, 64, 175, 0.1), 0 8px 10px -6px rgba(30, 64, 175, 0.08)',
+        'glow-blue': '0 0 20px rgba(59, 130, 246, 0.3)',
+        'glow-success': '0 0 20px rgba(16, 185, 129, 0.3)',
       },
 
       // Enhanced animations for medical interface

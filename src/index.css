@@ -138,6 +138,10 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+    .skeleton {
+      animation: none;
+      background: #e5e7eb;
+    }
   }
   
   /* Print styles for clinical reference */
@@ -160,6 +164,69 @@
 
 /* Custom component styles */
 @layer components {
+  /* Navigation item styles */
+  .nav-item {
+    @apply relative px-4 py-2 rounded-lg transition-all duration-200;
+  }
+  .nav-item:hover {
+    @apply bg-blue-700/30;
+  }
+  .nav-item::after {
+    content: '';
+    @apply absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-0 bg-white rounded-full transition-all duration-200;
+  }
+  .nav-item:hover::after,
+  .nav-item.active::after {
+    @apply w-4/5;
+  }
+  .nav-item.active {
+    @apply bg-blue-700/40;
+  }
+
+  /* Mobile menu slide-in animation */
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  .mobile-menu-enter {
+    animation: slideInRight 0.25s ease-out forwards;
+  }
+
+  /* Fade in up animation for hero section */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  /* Section divider */
+  .section-divider {
+    @apply h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent my-8;
+  }
+
   /* Enhanced medical button styles */
   .btn-primary {
     @apply bg-blue-600 text-white px-medical-lg py-medical-sm rounded-medical font-medium hover:bg-blue-700 transition-colors duration-medical-standard focus-medical touch-target;
@@ -181,13 +248,42 @@
     @apply bg-clinical-emergency text-clinical-bg px-medical-xl py-medical-md rounded-medical font-bold text-medical-emergency hover:shadow-medical-emergency transition-all duration-medical-fast focus-emergency touch-target;
   }
   
-  /* Medical card system */
+  /* Medical card system - Enhanced */
   .card {
-    @apply medical-card;
+    @apply bg-gradient-to-b from-white to-gray-50/80 border border-gray-100 shadow-clinical rounded-xl transition-all duration-200;
   }
-  
+  .card:hover {
+    @apply shadow-clinical-lg -translate-y-0.5;
+  }
+  .card-selected {
+    @apply ring-2 ring-blue-500 shadow-glow-blue -translate-y-1;
+  }
+
   .card-medical {
-    @apply medical-card medical-card-hover;
+    @apply bg-gradient-to-b from-white to-slate-50/80 border border-slate-100;
+  }
+  .card-medical:hover {
+    @apply border-blue-200;
+  }
+
+  /* Drug class border colors */
+  .drug-class-penicillin {
+    @apply border-l-4 border-l-blue-500;
+  }
+  .drug-class-cephalosporin {
+    @apply border-l-4 border-l-green-500;
+  }
+  .drug-class-glycopeptide {
+    @apply border-l-4 border-l-purple-500;
+  }
+  .drug-class-fluoroquinolone {
+    @apply border-l-4 border-l-orange-500;
+  }
+  .drug-class-macrolide {
+    @apply border-l-4 border-l-pink-500;
+  }
+  .drug-class-aminoglycoside {
+    @apply border-l-4 border-l-indigo-500;
   }
   
   .card-emergency {
@@ -418,52 +514,94 @@
     @apply text-medical-xs font-medium;
   }
   
-  /* Enhanced skeleton loaders for medical context */
-  .skeleton {
-    @apply bg-gray-200 animate-medical-loading rounded-medical;
+  /* Enhanced skeleton loaders with shimmer effect */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
   }
-  
+
+  .skeleton {
+    @apply relative overflow-hidden rounded-medical;
+    background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
   .skeleton-text {
     @apply skeleton h-4 mb-medical-sm;
   }
-  
+
   .skeleton-title {
     @apply skeleton h-6 mb-medical-md;
   }
-  
+
   .skeleton-button {
     @apply skeleton h-10 w-24;
   }
-  
+
   .skeleton-pie-chart {
     @apply skeleton rounded-full;
     aspect-ratio: 1;
   }
-  
+
+  /* Interactive utility classes */
+  .interactive {
+    @apply transition-all duration-150;
+  }
+  .interactive:hover {
+    @apply scale-[1.02];
+  }
+  .interactive:active {
+    @apply scale-[0.98];
+  }
+
+  /* Focus ring utility */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-opacity-50;
+  }
+
   /* Progress indicators */
   .progress-bar {
     @apply w-full bg-gray-200 rounded-full h-2;
   }
-  
+
   .progress-fill {
     @apply h-2 rounded-full transition-all duration-medical-slow;
   }
+
+  /* Animated progress bar fill */
+  @keyframes progressFill {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  .progress-bar-animated {
+    transform-origin: left;
+    animation: progressFill 0.5s ease-out forwards;
+  }
   
-  /* Enhanced message styles for medical context */
+  /* Enhanced message styles for medical context with left accent borders */
   .error-message {
-    @apply bg-error-50 border border-error-300 text-error-800 px-medical-md py-medical-sm rounded-medical text-medical-sm;
+    @apply bg-error-50 border border-error-300 border-l-4 border-l-error-500 text-error-800 px-medical-md py-medical-sm rounded-medical rounded-l-none text-medical-sm shadow-clinical-sm;
   }
-  
+
   .success-message {
-    @apply bg-success-50 border border-success-300 text-success-800 px-medical-md py-medical-sm rounded-medical text-medical-sm;
+    @apply bg-success-50 border border-success-300 border-l-4 border-l-success-500 text-success-800 px-medical-md py-medical-sm rounded-medical rounded-l-none text-medical-sm shadow-clinical-sm;
   }
-  
+
   .warning-message {
-    @apply bg-warning-50 border border-warning-300 text-warning-800 px-medical-md py-medical-sm rounded-medical text-medical-sm;
+    @apply bg-warning-50 border border-warning-300 border-l-4 border-l-warning-500 text-warning-800 px-medical-md py-medical-sm rounded-medical rounded-l-none text-medical-sm shadow-clinical-sm;
   }
-  
+
   .info-message {
-    @apply bg-blue-50 border border-blue-300 text-blue-800 px-medical-md py-medical-sm rounded-medical text-medical-sm;
+    @apply bg-blue-50 border border-blue-300 border-l-4 border-l-blue-500 text-blue-800 px-medical-md py-medical-sm rounded-medical rounded-l-none text-medical-sm shadow-clinical-sm;
   }
   
   .emergency-message {

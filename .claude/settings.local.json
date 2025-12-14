@@ -48,7 +48,14 @@
       "Bash(timeout 30 npm run build:*)",
       "Bash(python3:*)",
       "mcp__git__git_diff",
-      "mcp__git__git_add"
+      "mcp__git__git_add",
+      "Skill(document-skills:webapp-testing)",
+      "Bash(pkill:*)",
+      "mcp__git__git_diff_unstaged",
+      "Bash(git push)",
+      "Bash(rm:*)",
+      "Skill(document-skills:frontend-design)",
+      "Bash(timeout 30 npm start)"
     ]
   }
 }

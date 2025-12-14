@@ -101,17 +101,21 @@ const HomeTab: React.FC<HomeTabProps> = ({ setActiveTab = () => {} }) => {
   return (
     <main role="main">
       {/* Hero Section */}
-      <section className="text-center mb-12" aria-labelledby="hero-heading">
-        <h1 id="hero-heading" className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Medical Learning App
+      <section className="text-center mb-12 py-8 px-4 bg-gradient-to-br from-blue-50 via-white to-slate-50 rounded-2xl" aria-labelledby="hero-heading">
+        <h1 id="hero-heading" className="font-display text-display-xl md:text-5xl mb-4 animate-fade-in-up">
+          <span className="sr-only">Medical Learning App</span>
+          <span aria-hidden="true">
+            <span className="text-transparent bg-clip-text bg-gradient-clinical">Medical</span>{' '}
+            <span className="text-gray-900">Learning App</span>
+          </span>
         </h1>
-        <p className="text-xl text-gray-600 mb-8">
+        <p className="text-xl text-gray-600 mb-8 animate-fade-in-up animation-delay-100">
           Master infectious diseases and antimicrobial therapy with evidence-based clinical guidelines
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animation-delay-200">
           <button
             type="button"
-            className="btn-primary px-8 py-3 text-lg"
+            className="bg-gradient-clinical text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-clinical-md hover:shadow-clinical-lg active:scale-[0.98] transition-all duration-200"
             onClick={() => handleNavigation('quiz')}
             onKeyDown={(e) => handleKeyDown(e, 'quiz')}
             aria-label="Take a quiz to test your medical knowledge"
@@ -120,7 +124,7 @@ const HomeTab: React.FC<HomeTabProps> = ({ setActiveTab = () => {} }) => {
           </button>
           <button
             type="button"
-            className="btn-secondary px-8 py-3 text-lg"
+            className="bg-white text-gray-700 border-2 border-gray-200 px-8 py-3 text-lg font-semibold rounded-xl shadow-clinical hover:border-blue-300 hover:shadow-clinical-md active:scale-[0.98] transition-all duration-200"
             onClick={() => handleNavigation('reference')}
             onKeyDown={(e) => handleKeyDown(e, 'reference')}
             aria-label="Browse medical reference materials"
@@ -216,13 +220,16 @@ const HomeTab: React.FC<HomeTabProps> = ({ setActiveTab = () => {} }) => {
           </button>
         </div>
 
+        {/* Section Divider */}
+        <div className="section-divider"></div>
+
         {/* Collapsible: More Learning Tools (Phase 1.2: Progressive Disclosure) */}
-        <div className="border-t pt-6">
+        <div className="pt-2">
           <button
             onClick={() => toggleSection('moreTools')}
-            className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors"
+            className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-lg transition-all duration-200"
           >
-            <span className={`transition-transform ${expandedSections.moreTools ? 'rotate-180' : ''}`}>
+            <span className={`transition-transform duration-200 ${expandedSections.moreTools ? 'rotate-180' : ''}`}>
               <ChevronDown size={16} />
             </span>
             {expandedSections.moreTools ? 'Show fewer tools' : 'Explore more learning tools'}
@@ -294,15 +301,18 @@ const HomeTab: React.FC<HomeTabProps> = ({ setActiveTab = () => {} }) => {
         </div>
       </section>
 
+      {/* Section Divider */}
+      <div className="section-divider"></div>
+
       {/* Collapsible: Detailed Learning Progress (Phase 1.2: Progressive Disclosure) */}
-      <section className="mt-8" aria-labelledby="detailed-progress-heading">
+      <section className="mt-4" aria-labelledby="detailed-progress-heading">
         <h2 id="detailed-progress-heading" className="sr-only">Detailed Learning Progress</h2>
 
         <button
           onClick={() => toggleSection('detailedProgress')}
-          className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors mb-4"
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-lg transition-all duration-200 mb-4"
         >
-          <span className={`transition-transform ${expandedSections.detailedProgress ? 'rotate-180' : ''}`}>
+          <span className={`transition-transform duration-200 ${expandedSections.detailedProgress ? 'rotate-180' : ''}`}>
             <ChevronDown size={16} />
           </span>
           {expandedSections.detailedProgress ? 'Hide detailed progress' : 'Show detailed progress analytics'}

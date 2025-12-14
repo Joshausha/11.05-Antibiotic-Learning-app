@@ -176,7 +176,7 @@ const PathogenCard: React.FC<PathogenCardProps> = ({ pathogen = null, onClose = 
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border" data-testid="pathogen-card">
+    <div className="card-medical bg-gradient-card rounded-xl shadow-clinical hover:shadow-clinical-lg hover:-translate-y-0.5 transition-all duration-200 border border-gray-100" data-testid="pathogen-card">
       {/* Header */}
       <div className="p-4 border-b bg-gray-50">
         <div className="flex items-start justify-between">

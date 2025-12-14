@@ -86,6 +86,21 @@ const AntibioticCard: React.FC<AntibioticCardProps> = ({
     return colors[drugClass] || 'text-gray-600 bg-gray-100 border-gray-200';
   };
 
+  // Get drug class border color for card left border
+  const getDrugClassBorder = (drugClass: string): string => {
+    const borders: Record<string, string> = {
+      'Penicillins': 'border-l-blue-500',
+      'Cephalosporins': 'border-l-green-500',
+      'Glycopeptides': 'border-l-purple-500',
+      'Fluoroquinolones': 'border-l-orange-500',
+      'Macrolides': 'border-l-pink-500',
+      'Aminoglycosides': 'border-l-indigo-500',
+      'Lincosamides': 'border-l-teal-500',
+      'Oxazolidinones': 'border-l-red-500'
+    };
+    return borders[drugClass] || 'border-l-gray-500';
+  };
+
   // Get route information with icons
   const getRouteIcon = (route: string | string[]): {
     icon: React.FC<any>;
@@ -107,7 +122,7 @@ const AntibioticCard: React.FC<AntibioticCardProps> = ({
   const RouteIcon = routeInfo.icon;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+    <div className={`card-medical bg-gradient-card rounded-xl shadow-clinical hover:shadow-clinical-lg hover:-translate-y-0.5 transition-all duration-200 border border-gray-100 border-l-4 ${getDrugClassBorder(antibiotic.class)} overflow-hidden`}>
       {/* Header */}
       <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
         <div className="flex items-center justify-between">

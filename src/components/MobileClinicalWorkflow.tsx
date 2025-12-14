@@ -550,7 +550,7 @@ const MobileClinicalWorkflow: FC<MobileClinicalWorkflowProps> = ({
             }}
             onClick={() =>
               handleTap(
-                { target: { closest: () => ({ dataset: { antibioticId: antibiotic.id.toString() } } }) } as any,
+                { target: { closest: () => ({ dataset: { antibioticId: antibiotic.id.toString() } }) } } as any,
                 {} as any
               )
             }

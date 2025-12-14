@@ -336,7 +336,7 @@ const NorthwesternAnimationDemo: FC<NorthwesternAnimationDemoProps> = ({
 
   // Initialize performance monitor
   useEffect(() => {
-    performanceMonitorRef.current = new AnimationPerformanceMonitor?.() || {};
+    performanceMonitorRef.current = AnimationPerformanceMonitor ? new AnimationPerformanceMonitor() : {};
     performanceMonitorRef.current.startMonitoring?.();
 
     return () => {

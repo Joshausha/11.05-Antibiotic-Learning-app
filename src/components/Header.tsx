@@ -80,7 +80,7 @@ const Header: React.FC<HeaderProps> = memo(({
   }, [showMobileMenu, setShowMobileMenu]);
 
   return (
-    <header className="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-50" role="banner">
+    <header className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white p-4 shadow-clinical-lg sticky top-0 z-50 border-b border-blue-700/50" role="banner">
       <div className="flex justify-between items-center max-w-6xl mx-auto">
         {/* Logo */}
         <div className="flex items-center gap-2 text-xl font-bold">
@@ -98,8 +98,8 @@ const Header: React.FC<HeaderProps> = memo(({
                 tabIndex={0}
                 aria-current={activeTab === id ? 'page' : undefined}
                 aria-label={`Navigate to ${label}`}
-                className={`flex items-center gap-2 cursor-pointer p-2 rounded-md transition-colors ${
-                  activeTab === id ? 'bg-white bg-opacity-20 tab-active' : 'hover:bg-white hover:bg-opacity-10'
+                className={`nav-item flex items-center gap-2 cursor-pointer ${
+                  activeTab === id ? 'active bg-blue-700/40 scale-[1.02]' : ''
                 }`}
                 onClick={() => setActiveTab(id)}
                 onKeyDown={(e) => {
@@ -133,7 +133,7 @@ const Header: React.FC<HeaderProps> = memo(({
 
       {/* Mobile Navigation Menu */}
       {isMobile && showMobileMenu && (
-        <div className="mt-4 py-4 border-t border-white border-opacity-20 animate-slide-in">
+        <div className="mobile-menu-enter mt-4 py-4 border-t border-white/20 backdrop-blur-sm bg-blue-900/95 rounded-b-lg">
           <nav
             id="mobile-navigation"
             className="flex flex-col gap-2"
@@ -147,8 +147,10 @@ const Header: React.FC<HeaderProps> = memo(({
                 tabIndex={0}
                 aria-current={activeTab === id ? 'page' : undefined}
                 aria-label={`Navigate to ${label}`}
-                className={`flex items-center gap-3 cursor-pointer p-4 rounded-md transition-colors duration-200 touch-manipulation ${
-                  activeTab === id ? 'bg-white bg-opacity-20 tab-active' : 'hover:bg-white hover:bg-opacity-10'
+                className={`flex items-center gap-3 cursor-pointer p-4 rounded-lg transition-all duration-200 touch-manipulation ${
+                  activeTab === id
+                    ? 'bg-blue-700/50 scale-[1.02] shadow-clinical-sm'
+                    : 'hover:bg-blue-700/30'
                 }`}
                 onClick={() => {
                   setActiveTab(id);

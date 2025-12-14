@@ -69,7 +69,7 @@ describe('Header Component', () => {
     render(<Header {...defaultProps} activeTab="reference" />);
     
     const referenceTab = screen.getByText('Reference').parentElement;
-    expect(referenceTab).toHaveClass('bg-white', 'bg-opacity-20');
+    expect(referenceTab).toHaveClass('active', 'bg-blue-700/40');
   });
 
   test('mobile menu button toggles menu visibility', () => {
@@ -200,12 +200,12 @@ describe('Header Component', () => {
   test('handles prop changes correctly', () => {
     const { rerender } = render(<Header {...defaultProps} activeTab="learn" />);
     
-    expect(screen.getByText('Learn').parentElement).toHaveClass('bg-white', 'bg-opacity-20');
-    
+    expect(screen.getByText('Learn').parentElement).toHaveClass('active', 'bg-blue-700/40');
+
     rerender(<Header {...defaultProps} activeTab="reference" />);
-    
-    expect(screen.getByText('Reference').parentElement).toHaveClass('bg-white', 'bg-opacity-20');
-    expect(screen.getByText('Learn').parentElement).not.toHaveClass('bg-white', 'bg-opacity-20');
+
+    expect(screen.getByText('Reference').parentElement).toHaveClass('active', 'bg-blue-700/40');
+    expect(screen.getByText('Learn').parentElement).not.toHaveClass('active', 'bg-blue-700/40');
   });
 
   test('performance: renders without unnecessary re-renders', () => {
@@ -408,10 +408,10 @@ describe('Header Component', () => {
         const { rerender } = render(<Header {...defaultProps} activeTab={tabId} />);
         
         // Find the active tab element
-        const activeElement = screen.getAllByRole('button').find(btn => 
-          btn.classList.contains('bg-white') && btn.classList.contains('bg-opacity-20')
+        const activeElement = screen.getAllByRole('button').find(btn =>
+          btn.classList.contains('active') && btn.classList.contains('bg-blue-700/40')
         );
-        
+
         expect(activeElement).toBeInTheDocument();
         
         rerender(<Header {...defaultProps} activeTab="learn" />);
@@ -425,13 +425,14 @@ describe('Header Component', () => {
         btn.textContent.match(/^(Learn|Reference|Quiz)$/i)
       );
       
-      // Test that nav items have hover styles (excluding the active one)
-      const nonActiveItems = navItems.filter(item => 
-        !item.classList.contains('bg-white') || !item.classList.contains('bg-opacity-20')
+      // Test that nav items have nav-item class which provides hover styles via CSS
+      const nonActiveItems = navItems.filter(item =>
+        !item.classList.contains('active')
       );
-      
+
       nonActiveItems.forEach(item => {
-        expect(item).toHaveClass('hover:bg-white', 'hover:bg-opacity-10');
+        // nav-item class provides hover:bg-blue-700/30 via CSS
+        expect(item).toHaveClass('nav-item');
       });
     });
 
@@ -443,7 +444,8 @@ describe('Header Component', () => {
       );
       
       navItems.forEach(item => {
-        expect(item).toHaveClass('transition-colors');
+        // nav-item class provides transition-all duration-200 via CSS
+        expect(item).toHaveClass('nav-item');
       });
     });
   });
@@ -479,7 +481,7 @@ describe('Header Component', () => {
       
       // Find the active reference tab in mobile menu
       const referenceButton = screen.getByText('Reference');
-      expect(referenceButton.parentElement).toHaveClass('bg-white', 'bg-opacity-20');
+      expect(referenceButton.parentElement).toHaveClass('bg-blue-700/50');
     });
   });
 
