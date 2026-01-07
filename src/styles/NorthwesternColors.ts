@@ -65,7 +65,7 @@ interface CoverageLevel {
 }
 
 interface InteractiveState {
-  [key: string]: string | number | boolean;
+  [key: string]: string | number | boolean | undefined;
   brightnessMultiplier?: number;
   boxShadow?: string;
   transition?: string;
@@ -499,6 +499,7 @@ export const COLORBLIND_SAFE_PATTERNS: { [key: string]: AccessibilityPattern } =
   // Cell wall active pattern (universally recognizable)
   cellWallActive: {
     pattern: 'dashed-border',       // Dashed border pattern
+    density: 'medium',              // Medium density for visibility
     dashArray: '6,3',               // 6px dash, 3px gap
     strokeWidth: 3
   }

@@ -4,6 +4,17 @@
  * Extracted during Phase 4 refactoring
  */
 
+// Type definitions
+type ClinicalContextType = 'emergency' | 'clinical' | 'education';
+type ErrorSeverity = 'critical' | 'warning' | 'info';
+
+interface ErrorRecoveryStrategy {
+  strategy: string;
+  fallback: string;
+  timeout: number;
+  retryAttempts: number;
+}
+
 /**
  * Component loading priorities for clinical workflows
  */
@@ -102,7 +113,7 @@ export const PERFORMANCE_TARGETS = {
  * @param {Error} error - The error object
  * @returns {string} Severity level
  */
-export const determineErrorSeverity = (error) => {
+export const determineErrorSeverity = (error: Error): ErrorSeverity => {
   if (error.message.includes('memory') || error.message.includes('Memory')) {
     return 'critical';
   }
@@ -121,7 +132,7 @@ export const determineErrorSeverity = (error) => {
  * @param {string} componentName - Name of the component that errored
  * @returns {Object} Recovery strategy
  */
-export const determineErrorRecoveryStrategy = (error, componentName) => {
+export const determineErrorRecoveryStrategy = (error: Error, componentName: string): ErrorRecoveryStrategy => {
   const errorMessage = error.message.toLowerCase();
 
   if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
@@ -149,7 +160,12 @@ export const determineErrorRecoveryStrategy = (error, componentName) => {
  * @param {boolean} enableMobileOptimization - Mobile optimization enabled
  * @returns {Array} Prioritized component list
  */
-export const getLoadingPriority = (clinicalContext, emergencyMode, isTouchDevice, enableMobileOptimization) => {
+export const getLoadingPriority = (
+  clinicalContext: ClinicalContextType,
+  emergencyMode: boolean,
+  isTouchDevice: boolean,
+  enableMobileOptimization: boolean
+): string[] => {
   const basePriority = LOADING_PRIORITIES[clinicalContext] || LOADING_PRIORITIES.clinical;
 
   // Adjust for emergency mode

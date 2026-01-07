@@ -1,24 +1,93 @@
 /**
  * Northwestern Visual States System
- * 
+ *
  * Comprehensive visual state management for interactive Northwestern pie chart segments.
  * Provides professional medical-grade visual feedback for hover, selection, focus,
  * loading, error, and emergency states.
- * 
+ *
  * Created by: Agent 2.3 - Color & Visual Designer
  * Integration: Builds on Agent 2.2's interaction system with enhanced visuals
  * Performance: Optimized for <100ms interaction response in clinical environments
- * 
+ *
  * Features:
  * - Smooth medical-grade interaction transitions
  * - Emergency clinical access visual patterns
  * - Color-blind safe state indicators
  * - High contrast clinical environment support
  * - Touch-optimized mobile clinical workflows
- * 
+ *
  * @version 1.0.0
  * @date 2025-08-18
  */
+
+// Type definitions for visual states
+type StateName = 'hover' | 'selected' | 'focus' | 'loading' | 'error' | 'disabled' | 'emergency' | 'contraindicated' | 'normal';
+
+interface CombineStatesContext {
+  emergencyMode?: boolean;
+  [key: string]: unknown;
+}
+
+interface VisualConfig {
+  brightness?: number;
+  saturation?: number;
+  scale?: number;
+  translateZ?: string;
+  opacity?: number;
+  cursor?: string;
+  filter?: string;
+  borderColor?: string;
+  borderWidth?: string | number;
+  borderStyle?: string;
+  backgroundColor?: string;
+  boxShadow?: string | { primary?: string; medical?: string; emergency?: string; focus?: string };
+  outline?: {
+    width?: string;
+    color?: string;
+    style?: string;
+    offset?: string;
+  };
+  animation?: {
+    name?: string;
+    duration?: string;
+    timing?: string;
+    iteration?: string;
+    direction?: string;
+    fillMode?: string;
+  };
+  pattern?: {
+    type?: string;
+    color?: string;
+    opacity?: number;
+    angle?: number;
+  };
+  pointerEvents?: string;
+  [key: string]: unknown;
+}
+
+interface StateConfig {
+  visual?: VisualConfig;
+  transition?: {
+    duration?: string;
+    easing?: string;
+    properties?: string[];
+  };
+  performance?: Record<string, string | number>;
+  accessibility?: Record<string, unknown>;
+  priority?: {
+    zIndex?: number;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+interface CSSProperties {
+  transform?: string;
+  outline?: string;
+  outlineOffset?: string;
+  transition?: string;
+  [key: string]: string | number | undefined;
+}
 
 // =============================================================================
 // INTERACTION STATE DEFINITIONS
@@ -399,33 +468,33 @@ export const STATE_PRIORITY = {
  * @param {object} context - Additional context for state resolution
  * @returns {object} Combined state configuration
  */
-export const combineStates = (activeStates, context = {}) => {
+export const combineStates = (activeStates: StateName[], context: CombineStatesContext = {}): StateConfig => {
   // Sort states by priority
   const sortedStates = activeStates
-    .filter(state => STATE_PRIORITY[state] !== undefined)
-    .sort((a, b) => STATE_PRIORITY[b] - STATE_PRIORITY[a]);
-  
+    .filter((state: StateName) => STATE_PRIORITY[state] !== undefined)
+    .sort((a: StateName, b: StateName) => STATE_PRIORITY[b] - STATE_PRIORITY[a]);
+
   if (sortedStates.length === 0) {
     return getStateConfig('normal');
   }
-  
+
   const primaryState = sortedStates[0];
   const secondaryStates = sortedStates.slice(1);
-  
+
   // Get primary state configuration
   let combinedConfig = getStateConfig(primaryState);
-  
+
   // Layer secondary state properties that don't conflict
-  secondaryStates.forEach(state => {
+  secondaryStates.forEach((state: StateName) => {
     const stateConfig = getStateConfig(state);
     combinedConfig = mergeStateConfigs(combinedConfig, stateConfig);
   });
-  
+
   // Apply context-specific modifications
   if (context.emergencyMode && primaryState !== 'emergency') {
     combinedConfig = enhanceForEmergency(combinedConfig);
   }
-  
+
   return combinedConfig;
 };
 
@@ -434,19 +503,19 @@ export const combineStates = (activeStates, context = {}) => {
  * @param {string} stateName - Name of the state
  * @returns {object} State configuration
  */
-export const getStateConfig = (stateName) => {
-  const stateConfigs = {
-    hover: HOVER_STATE,
-    selected: SELECTION_STATE,
-    focus: FOCUS_STATE,
-    loading: LOADING_STATE,
-    error: ERROR_STATE,
-    disabled: DISABLED_STATE,
-    emergency: EMERGENCY_STATE,
-    contraindicated: CONTRAINDICATED_STATE,
-    normal: BASE_INTERACTIVE_STATE
+export const getStateConfig = (stateName: StateName): StateConfig => {
+  const stateConfigs: Record<StateName, StateConfig> = {
+    hover: HOVER_STATE as unknown as StateConfig,
+    selected: SELECTION_STATE as unknown as StateConfig,
+    focus: FOCUS_STATE as unknown as StateConfig,
+    loading: LOADING_STATE as unknown as StateConfig,
+    error: ERROR_STATE as unknown as StateConfig,
+    disabled: DISABLED_STATE as unknown as StateConfig,
+    emergency: EMERGENCY_STATE as unknown as StateConfig,
+    contraindicated: CONTRAINDICATED_STATE as unknown as StateConfig,
+    normal: BASE_INTERACTIVE_STATE as unknown as StateConfig
   };
-  
+
   return stateConfigs[stateName] || BASE_INTERACTIVE_STATE;
 };
 
@@ -456,27 +525,31 @@ export const getStateConfig = (stateName) => {
  * @param {object} secondary - Secondary state configuration
  * @returns {object} Merged configuration
  */
-export const mergeStateConfigs = (primary, secondary) => {
-  const merged = { ...primary };
-  
+export const mergeStateConfigs = (primary: StateConfig, secondary: StateConfig): StateConfig => {
+  const merged: StateConfig = { ...primary };
+
   // Merge visual properties carefully
   if (secondary.visual) {
     merged.visual = {
       ...merged.visual,
       // Only merge non-conflicting visual properties
       ...Object.fromEntries(
-        Object.entries(secondary.visual).filter(([key]) => 
+        Object.entries(secondary.visual).filter(([key]) =>
           !['borderColor', 'backgroundColor', 'outline'].includes(key)
         )
       )
     };
   }
-  
+
   // Combine box shadows
   if (secondary.visual?.boxShadow && primary.visual?.boxShadow) {
-    merged.visual.boxShadow = `${primary.visual.boxShadow}, ${secondary.visual.boxShadow}`;
+    const primaryShadow = typeof primary.visual.boxShadow === 'string' ? primary.visual.boxShadow : '';
+    const secondaryShadow = typeof secondary.visual.boxShadow === 'string' ? secondary.visual.boxShadow : '';
+    if (merged.visual) {
+      merged.visual.boxShadow = `${primaryShadow}, ${secondaryShadow}`;
+    }
   }
-  
+
   // Merge accessibility properties
   if (secondary.accessibility) {
     merged.accessibility = {
@@ -484,7 +557,7 @@ export const mergeStateConfigs = (primary, secondary) => {
       ...secondary.accessibility
     };
   }
-  
+
   return merged;
 };
 
@@ -493,15 +566,18 @@ export const mergeStateConfigs = (primary, secondary) => {
  * @param {object} baseConfig - Base state configuration
  * @returns {object} Emergency-enhanced configuration
  */
-export const enhanceForEmergency = (baseConfig) => {
+export const enhanceForEmergency = (baseConfig: StateConfig): StateConfig => {
+  const borderWidthValue = baseConfig.visual?.borderWidth;
+  const parsedBorderWidth = typeof borderWidthValue === 'string' ? parseInt(borderWidthValue) : (borderWidthValue || 2);
+
   return {
     ...baseConfig,
     visual: {
       ...baseConfig.visual,
-      filter: `${baseConfig.visual.filter || ''} contrast(1.5) brightness(1.1)`.trim(),
-      borderWidth: Math.max(parseInt(baseConfig.visual.borderWidth) || 2, 3) + 'px',
+      filter: `${baseConfig.visual?.filter || ''} contrast(1.5) brightness(1.1)`.trim(),
+      borderWidth: Math.max(parsedBorderWidth, 3) + 'px',
       animation: {
-        ...baseConfig.visual.animation,
+        ...baseConfig.visual?.animation,
         duration: '1s' // Faster animations in emergency mode
       }
     },
@@ -522,15 +598,15 @@ export const enhanceForEmergency = (baseConfig) => {
  * @param {object} stateConfig - State configuration object
  * @returns {object} CSS properties object
  */
-export const generateStateCSS = (stateConfig) => {
-  const css = {};
-  
+export const generateStateCSS = (stateConfig: StateConfig): CSSProperties => {
+  const css: CSSProperties = {};
+
   // Convert visual properties to CSS
   if (stateConfig.visual) {
     const visual = stateConfig.visual;
-    
+
     // Direct CSS property mapping
-    const directMappings = {
+    const directMappings: Record<string, string> = {
       opacity: 'opacity',
       cursor: 'cursor',
       borderColor: 'borderColor',
@@ -540,21 +616,22 @@ export const generateStateCSS = (stateConfig) => {
       boxShadow: 'boxShadow',
       filter: 'filter'
     };
-    
+
     Object.entries(directMappings).forEach(([visualProp, cssProp]) => {
-      if (visual[visualProp] !== undefined) {
-        css[cssProp] = visual[visualProp];
+      const value = visual[visualProp as keyof VisualConfig];
+      if (value !== undefined && typeof value !== 'object') {
+        css[cssProp] = value as string | number;
       }
     });
-    
+
     // Transform properties
     if (visual.scale || visual.translateZ) {
-      const transforms = [];
+      const transforms: string[] = [];
       if (visual.scale) transforms.push(`scale(${visual.scale})`);
       if (visual.translateZ) transforms.push(`translateZ(${visual.translateZ})`);
       css.transform = transforms.join(' ');
     }
-    
+
     // Outline properties
     if (visual.outline) {
       css.outline = `${visual.outline.width} ${visual.outline.style} ${visual.outline.color}`;
@@ -563,19 +640,19 @@ export const generateStateCSS = (stateConfig) => {
       }
     }
   }
-  
+
   // Transition properties
-  if (stateConfig.transition) {
+  if (stateConfig.transition && stateConfig.transition.properties) {
     css.transition = `${stateConfig.transition.properties.join(', ')} ${stateConfig.transition.duration} ${stateConfig.transition.easing}`;
   }
-  
+
   // Performance properties
   if (stateConfig.performance) {
     Object.entries(stateConfig.performance).forEach(([prop, value]) => {
       css[prop.replace(/([A-Z])/g, '-$1').toLowerCase()] = value;
     });
   }
-  
+
   return css;
 };
 
