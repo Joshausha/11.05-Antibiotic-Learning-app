@@ -54,13 +54,19 @@ export const CompactAntibioticCard: React.FC<CompactAntibioticCardProps> = ({
 }) => {
   const isMobile = useResponsive();
 
+  // Defensive: early return if antibiotic is undefined/null
+  if (!antibiotic) {
+    return null;
+  }
+
   // Format labels based on screen size
   const labels = isMobile
     ? { mechanism: "Mech:", class: "Class:", forms: "Forms:", route: "Route:" }
     : { mechanism: "Mechanism:", class: "Class:", forms: "Formulations:", route: "Route:" };
 
-  // Get primary route (first formulation)
-  const primaryRoute = antibiotic.formulations[0] || "N/A";
+  // Get primary route (first formulation) with defensive access
+  const formulations = antibiotic.formulations || [];
+  const primaryRoute = formulations[0] || "N/A";
 
   return (
     <div
@@ -104,23 +110,23 @@ export const CompactAntibioticCard: React.FC<CompactAntibioticCardProps> = ({
         {/* Mechanism */}
         <div className="flex">
           <span className="text-gray-500 w-16 lg:w-24 flex-shrink-0">{labels.mechanism}</span>
-          <span className="text-gray-700 truncate" title={antibiotic.mechanism}>
-            {antibiotic.mechanism.length > 40
-              ? antibiotic.mechanism.substring(0, 40) + "..."
-              : antibiotic.mechanism}
+          <span className="text-gray-700 truncate" title={antibiotic.mechanism || ""}>
+            {(antibiotic.mechanism || "").length > 40
+              ? (antibiotic.mechanism || "").substring(0, 40) + "..."
+              : antibiotic.mechanism || "N/A"}
           </span>
         </div>
 
         {/* Class */}
         <div className="flex">
           <span className="text-gray-500 w-16 lg:w-24 flex-shrink-0">{labels.class}</span>
-          <span className="text-gray-700">{antibiotic.class}</span>
+          <span className="text-gray-700">{antibiotic.class || "N/A"}</span>
         </div>
 
         {/* Formulations */}
         <div className="flex">
           <span className="text-gray-500 w-16 lg:w-24 flex-shrink-0">{labels.forms}</span>
-          <span className="text-gray-700">{antibiotic.formulations.join(", ")}</span>
+          <span className="text-gray-700">{formulations.join(", ") || "N/A"}</span>
         </div>
 
         {/* Route (just first formulation for compact view) */}
@@ -131,7 +137,7 @@ export const CompactAntibioticCard: React.FC<CompactAntibioticCardProps> = ({
       </div>
 
       {/* Northwestern Coverage Visualization - hidden on mobile */}
-      {!isMobile && (
+      {!isMobile && antibiotic.northwesternSpectrum && (
         <div className="mt-3 pt-2 border-t border-gray-100">
           <div className="text-xs text-gray-500 mb-1">Coverage</div>
           <div className="flex gap-1" title="Northwestern 8-segment coverage">
