@@ -24,6 +24,7 @@ const ConsolidatedPathogenExplorer = lazy(() => import('./components/Consolidate
 const AntibioticExplorer = lazy(() => import('./components/AntibioticExplorer'));
 const LearningAnalyticsDashboard = lazy(() => import('./components/analytics/LearningAnalyticsDashboard'));
 const VisualizationsTab = lazy(() => import('./components/VisualizationsTab'));
+const ComparisonModeContainer = lazy(() => import('./components/comparison/ComparisonModeContainer'));
 
 /**
  * AppContent Component
@@ -184,6 +185,22 @@ const AppContent: FC = () => {
                     // Handle pathogen selection if needed
                   }}
                 />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+
+          {activeTab === 'comparison' && (
+            <ErrorBoundary>
+              <Suspense fallback={<SkeletonLoader type="content" lines={6} />}>
+                <div className="bg-white rounded-xl shadow-sm border p-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Antibiotic Comparison</h2>
+                  <ComparisonModeContainer
+                    onSelectFromNetwork={() => {
+                      // Navigate to visualizations tab (Phase 6 integration point)
+                      setActiveTab('visualizations');
+                    }}
+                  />
+                </div>
               </Suspense>
             </ErrorBoundary>
           )}
