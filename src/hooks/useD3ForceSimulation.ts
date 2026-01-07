@@ -13,7 +13,7 @@
  * Based on research findings from Phase 2 RESEARCH.md
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 
 // Network node interface
@@ -49,24 +49,6 @@ interface UseD3ForceSimulationReturn {
 }
 
 /**
- * Throttle function to limit how often a function is called
- * Used to prevent 60fps state updates that cause React re-render storm
- */
-function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  limit: number
-): (...args: Parameters<T>) => void {
-  let inThrottle: boolean;
-  return function(this: any, ...args: Parameters<T>) {
-    if (!inThrottle) {
-      func.apply(this, args);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
-}
-
-/**
  * D3 Force Simulation Hook
  *
  * @param initialNodes - Array of nodes (pathogens and antibiotics)
@@ -90,26 +72,29 @@ export function useD3ForceSimulation(
   dimensions: Dimensions
 ): UseD3ForceSimulationReturn {
   // State for node and edge positions (updated by simulation)
-  const [nodes, setNodes] = useState<NetworkNode[]>(initialNodes);
-  const [edges, setEdges] = useState<NetworkEdge[]>(initialEdges);
+  const [nodes, setNodes] = useState<NetworkNode[]>([]);
+  const [edges, setEdges] = useState<NetworkEdge[]>([]);
 
   // Ref to persist simulation across renders
   const simulationRef = useRef<d3.Simulation<NetworkNode, NetworkEdge> | null>(null);
 
-  // Throttled state update function
-  // CRITICAL: Updates every 50ms instead of 60fps to prevent performance death
-  const throttledUpdate = useCallback(
-    throttle(() => {
-      setNodes([...nodes]);
-      setEdges([...edges]);
-    }, 50),
-    [nodes, edges]
-  );
+  // Refs to hold current simulation data (avoids stale closure in tick handler)
+  const nodesRef = useRef<NetworkNode[]>([]);
+  const edgesRef = useRef<NetworkEdge[]>([]);
 
   useEffect(() => {
+    // Skip if no input data
+    if (initialNodes.length === 0) {
+      return;
+    }
+
     // Initialize nodes and edges with copies
     const nodesCopy = initialNodes.map(node => ({ ...node }));
     const edgesCopy = initialEdges.map(edge => ({ ...edge }));
+
+    // Store in refs for tick handler access
+    nodesRef.current = nodesCopy;
+    edgesRef.current = edgesCopy;
 
     // Create D3 force simulation
     const simulation = d3.forceSimulation<NetworkNode>(nodesCopy)
@@ -138,19 +123,28 @@ export function useD3ForceSimulation(
           .radius(30) // Node radius + padding
       );
 
-    // Set up throttled tick handler
+    // Throttle counter for tick updates
+    let tickCount = 0;
+    const THROTTLE_INTERVAL = 3; // Update React state every 3 ticks (~50ms at 60fps)
+
+    // Set up tick handler
     // Simulation fires 'tick' event many times per second
     // We throttle updates to prevent React re-render performance issues
     simulation.on('tick', () => {
-      throttledUpdate();
+      tickCount++;
+      if (tickCount % THROTTLE_INTERVAL === 0) {
+        // Create new arrays to trigger React re-render
+        setNodes([...nodesRef.current]);
+        setEdges([...edgesRef.current]);
+      }
     });
 
     // Store simulation in ref
     simulationRef.current = simulation;
 
-    // Update state with initialized data
-    setNodes(nodesCopy);
-    setEdges(edgesCopy);
+    // Initial state update
+    setNodes([...nodesCopy]);
+    setEdges([...edgesCopy]);
 
     // Cleanup: stop simulation when component unmounts
     return () => {
