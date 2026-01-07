@@ -205,23 +205,23 @@ const NorthwesternSpatialLayout: FC<NorthwesternSpatialLayoutProps> = ({
     let grouped: Record<string, Antibiotic[]>;
     switch (groupingMode) {
       case 'route':
-        grouped = groupByRoute(antibiotics);
+        grouped = groupByRoute(antibiotics as any) as Record<string, Antibiotic[]>;
         break;
       case 'alphabetical':
-        grouped = groupByAlphabetical(antibiotics);
+        grouped = groupByAlphabetical(antibiotics as any) as Record<string, Antibiotic[]>;
         break;
       case 'coverage':
-        grouped = groupByCoverageBreadth(antibiotics);
+        grouped = groupByCoverageBreadth(antibiotics as any) as Record<string, Antibiotic[]>;
         break;
       case 'drugClass':
       default:
-        grouped = groupByDrugClass(antibiotics);
+        grouped = groupByDrugClass(antibiotics as any) as Record<string, Antibiotic[]>;
         break;
     }
 
     let spatialGroups: Record<string, SpatialGroup>;
     if (groupingMode === 'drugClass') {
-      spatialGroups = applySpatialGrouping(grouped);
+      spatialGroups = applySpatialGrouping(grouped as any) as Record<string, SpatialGroup>;
     } else {
       spatialGroups = {};
       Object.keys(grouped).forEach((groupKey, index) => {
@@ -238,17 +238,17 @@ const NorthwesternSpatialLayout: FC<NorthwesternSpatialLayoutProps> = ({
       ...gridConfig,
       columns: viewConfig.maxColumns[screenSize] || gridConfig.columns,
     };
-    const positioned = calculateGridCoordinates(spatialGroups, effectiveGridConfig);
+    const positioned = calculateGridCoordinates(spatialGroups as any, effectiveGridConfig) as PositionedAntibiotic[];
 
-    const layout = calculateResponsiveLayout(
+    const layout: Layout = calculateResponsiveLayout(
       containerDimensions.width,
       containerDimensions.height,
       antibiotics.length
-    );
+    ) as Layout;
 
     layout.chartSize = viewConfig.chartSize;
 
-    const validation = validationUtils.validateNorthwesternCompliance(positioned);
+    const validation = validationUtils.validateNorthwesternCompliance(positioned as any);
 
     const calculationTime = performance.now() - startTime;
 
@@ -281,8 +281,8 @@ const NorthwesternSpatialLayout: FC<NorthwesternSpatialLayoutProps> = ({
         ...viewportInfo,
         cellHeight: gridConfig.cellHeight,
       },
-      spatialLayout.positioned
-    );
+      spatialLayout.positioned as any
+    ) as PositionedAntibiotic[];
   }, [spatialLayout.positioned, viewportInfo, gridConfig, enableVirtualization]);
 
   const prioritizedPositions = useMemo((): PositionedAntibiotic[] => {
@@ -291,7 +291,7 @@ const NorthwesternSpatialLayout: FC<NorthwesternSpatialLayoutProps> = ({
       hoveredPosition: hoveredAntibiotic?.gridPosition,
     };
 
-    return performanceUtils.calculateRenderPriority(visiblePositions, userFocus);
+    return performanceUtils.calculateRenderPriority(visiblePositions as any, userFocus as any) as PositionedAntibiotic[];
   }, [visiblePositions, selectedGroup, hoveredAntibiotic]);
 
   const handleAntibioticHover = useCallback((antibiotic: PositionedAntibiotic, isHovering: boolean): void => {
@@ -520,7 +520,7 @@ const NorthwesternSpatialLayout: FC<NorthwesternSpatialLayoutProps> = ({
               onClick={() => handleAntibioticClick(positionedAntibiotic)}
             >
               <EnhancedNorthwesternPieChart
-                antibiotic={antibiotic}
+                antibiotic={antibiotic as any}
                 size={viewConfig.chartSize}
                 interactive={!emergencyMode}
                 clinicalContext={clinicalContext}

@@ -364,11 +364,9 @@ const NetworkVisualizationD3: FC<NetworkVisualizationD3Props> = ({
       })
       .on('mouseleave', (event: any, d: Edge) => {
         hideTooltip();
+        const similarity = ((d as Edge).similarity || (d as Edge).strength || 0.5) as number;
         d3.select(event.currentTarget)
-          .attr('stroke-width', (d: Edge) => {
-            const similarity = (d.similarity || d.strength || 0.5) as number;
-            return 1 + similarity * 3;
-          })
+          .attr('stroke-width', 1 + similarity * 3)
           .attr('opacity', 0.6);
       })
       .on('click', (event: any, d: Edge) => {
