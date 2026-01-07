@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-06)
 
 **Core value:** Accurate medical data with flexible, experimental interaction modes that transform antibiotic coverage knowledge into durable clinical recall.
-**Current focus:** Phase 4 complete — Ready for Phase 5
+**Current focus:** Phase 5 complete — Ready for Phase 6
 
 ## Current Position
 
 Phase: 5 of 8 (Enhanced Network Interactivity)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-07 — Completed 05-01-PLAN.md (Selection State & Fade System)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-07 — Completed 05-02-PLAN.md (Bidirectional Drill-Down & Animation)
 
-Progress: ██████████████████░░░░░░░░ 69%
+Progress: ████████████████████░░░░░░ 77%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
-- Average duration: 4.2 min
-- Total execution time: 1.3 hours
+- Total plans completed: 19
+- Average duration: 4.3 min
+- Total execution time: 1.4 hours
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: ██████████████████░░░░░�
 | 2 | 4 | 17 min | 4.25 min |
 | 3 | 7 | 24 min | 3.4 min |
 | 4 | 3 | 16 min | 5.3 min |
-| 5 | 1 | 5 min | 5 min |
+| 5 | 2 | 13 min | 6.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 6 min, 6 min, 4 min, 6 min, 5 min
-- Trend: Phase 5 started with selection state implementation
+- Last 5 plans: 6 min, 4 min, 6 min, 5 min, 8 min
+- Trend: Phase 5 complete with click-to-explore interaction
 
 ## Accumulated Context
 
@@ -104,6 +104,9 @@ Recent decisions affecting current work:
 | 05-01 | Use single NetworkSelectionState object per Phase 02-02 pattern | Prevents state combination bugs, single source of truth |
 | 05-01 | Opacity values: nodes fade to 30%, edges to 15% | Edges more faded for visual hierarchy and clarity |
 | 05-01 | Edge connections determined bidirectionally | Works for both pathogen and antibiotic selection |
+| 05-02 | Use refs instead of state closure in D3 tick handler | Avoids stale closure bug - tick handler needs current simulation data |
+| 05-02 | CSS transitions (300ms) over D3.transition() | CSS works better with React declarative rendering |
+| 05-02 | Northwestern 8-segment model hardcoded in D3NetworkGraph | Reliable coverage mapping with props as fallback |
 
 ### Deferred Issues
 
@@ -120,11 +123,11 @@ Recent decisions affecting current work:
 
 ### Blockers/Concerns
 
-None - Phase 5 in progress, plan 1 of 2 complete.
+None - Phase 5 complete, ready for Phase 6.
 
 ## Session Continuity
 
 Last session: 2026-01-07
-Stopped at: 05-02-PLAN.md in progress (Tasks 1-2 complete, Task 3 blocked on data flow)
-Next plan: Continue 05-02-PLAN.md
-Resume file: .planning/.continue-here
+Stopped at: Completed 05-02-PLAN.md (Phase 5 complete)
+Next plan: 06-01-PLAN.md (Multi-Modal Learning Flow)
+Resume file: None
