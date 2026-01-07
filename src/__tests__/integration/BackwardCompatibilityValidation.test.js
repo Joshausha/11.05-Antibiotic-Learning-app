@@ -31,7 +31,7 @@ describe('Backward Compatibility Validation - Minimal', () => {
       };
 
       // Test the most basic data import first
-      const simpleData = await testImport('../../data/SimpleAntibioticData.js');
+      const simpleData = await testImport('../../data/SimpleAntibioticData');
       
       // Don't fail the test if imports have issues - just log them
       if (simpleData.success) {
