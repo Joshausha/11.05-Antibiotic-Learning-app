@@ -16,11 +16,19 @@
 import React, { useMemo, useState } from 'react';
 import { useD3ForceSimulation, NetworkNode, NetworkEdge } from '../../hooks/useD3ForceSimulation';
 import { useNetworkFiltering } from '../../hooks/useNetworkFiltering';
+import { useNetworkSelection } from '../../hooks/useNetworkSelection';
 import { Pathogen, Antibiotic, NorthwesternSpectrum, Coverage } from '../../types/medical.types';
 import NetworkFilterControls from '../network/NetworkFilterControls';
 import NetworkLegend from '../network/NetworkLegend';
 import NetworkTooltip from '../network/NetworkTooltip';
 import { getGramStainColor, getNetworkNodeRadius } from '../../utils/networkNodeStyles';
+
+// Opacity constants for selection-based fade effect
+const OPACITY = {
+  FULL: 1.0,          // Selected and connected elements
+  NODE_FADED: 0.3,    // Unconnected nodes (visible but dimmed)
+  EDGE_FADED: 0.15    // Unconnected edges (more faded than nodes)
+} as const;
 
 interface D3NetworkGraphProps {
   pathogens: Pathogen[];
@@ -155,6 +163,44 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
     { width, height }
   );
 
+  // Selection state for click-to-explore interactions (Phase 5)
+  const {
+    selectionState,
+    isNodeConnected,
+    isEdgeConnected,
+    isNodeSelected
+  } = useNetworkSelection();
+
+  /**
+   * Calculate node opacity based on selection state.
+   * - No selection: all nodes at full opacity
+   * - With selection: selected + connected at full, others faded
+   */
+  const getNodeOpacity = (nodeId: string): number => {
+    if (selectionState.selectedNodeId === null) {
+      return OPACITY.FULL;
+    }
+    if (isNodeSelected(nodeId) || isNodeConnected(nodeId)) {
+      return OPACITY.FULL;
+    }
+    return OPACITY.NODE_FADED;
+  };
+
+  /**
+   * Calculate edge opacity based on selection state.
+   * - No selection: all edges at default opacity (0.6 from original)
+   * - With selection: connected edges at full, others more faded
+   */
+  const getEdgeOpacity = (edgeId: string): number => {
+    if (selectionState.selectedNodeId === null) {
+      return 0.6; // Original default opacity
+    }
+    if (isEdgeConnected(edgeId)) {
+      return OPACITY.FULL;
+    }
+    return OPACITY.EDGE_FADED;
+  };
+
   // Layer 2: Tooltip state for hover interactions
   const [hoveredNode, setHoveredNode] = useState<NetworkNode | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -235,7 +281,7 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
               y2={target.y}
               stroke="#999"
               strokeWidth={1}
-              strokeOpacity={0.6}
+              strokeOpacity={getEdgeOpacity(edge.id)}
             />
           );
         })}
@@ -258,13 +304,17 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
 
           const radius = getNetworkNodeRadius(node.type);
 
+          const nodeOpacity = getNodeOpacity(node.id);
+
           return (
             <g key={node.id} transform={`translate(${node.x}, ${node.y})`}>
               <circle
                 r={radius}
                 fill={fillColor}
+                fillOpacity={nodeOpacity}
                 stroke="#fff"
                 strokeWidth={2}
+                strokeOpacity={nodeOpacity}
                 style={{ cursor: 'pointer' }}
                 onMouseEnter={() => {
                   setHoveredNode(node);
@@ -277,6 +327,7 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
                 dy="0.3em"
                 fontSize="10"
                 fill="#fff"
+                fillOpacity={nodeOpacity}
                 pointerEvents="none"
                 style={{ userSelect: 'none' }}
               >
