@@ -22,13 +22,25 @@ export interface FilterOptions {
   connection: FilterOption[];
 }
 
+// Centralized filter state for network visualization
+// Single source of truth for all filter criteria
 export interface NetworkFilters {
-  gramFilter: string;
-  severityFilter: string;
-  shapeFilter: string;
-  resistanceFilter: string;
-  connectionFilter: string;
+  gramStain: 'all' | 'positive' | 'negative';
+  antibioticClasses: string[];  // Multiple selection
+  formulation: 'all' | 'oral' | 'IV' | 'topical';
+  mechanismOfAction: string[];  // Multiple selection
+  coverageThreshold: 'all' | 'high' | 'medium' | 'low';
+  showResistance: boolean;
 }
+
+export const initialFilters: NetworkFilters = {
+  gramStain: 'all',
+  antibioticClasses: [],
+  formulation: 'all',
+  mechanismOfAction: [],
+  coverageThreshold: 'all',
+  showResistance: true
+};
 
 // ==========================================
 // ANTIBIOTIC TYPES
