@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-01-06)
 
 **Core value:** Accurate medical data with flexible, experimental interaction modes that transform antibiotic coverage knowledge into durable clinical recall.
-**Current focus:** Phase 1 — Foundation & Data Architecture
+**Current focus:** Phase 2 — Visual Network Exploration
 
 ## Current Position
 
-Phase: 1 of 8 (Foundation & Data Architecture)
-Plan: 3 of 3 in current phase
+Phase: 2 of 8 (Visual Network Exploration)
+Plan: 1 of 4 in current phase
 Status: Complete ✅
-Last activity: 2026-01-07 — Completed 01-03-PLAN.md (Data Validation & Testing)
+Last activity: 2026-01-07 — Completed 02-01-PLAN.md (D3 Force-Directed Network Foundation)
 
-Progress: ███░░░░░░░ 12%
+Progress: ████░░░░░░ 15%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 6 min
-- Total execution time: 0.30 hours
+- Total plans completed: 4
+- Average duration: 5 min
+- Total execution time: 0.35 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 | 3 | 18 min | 6 min |
+| 2 | 1 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 5 min, 4 min, 9 min
-- Trend: Consistent 4-9 min execution (validation work took longer as expected)
+- Last 5 plans: 4 min, 9 min, 3 min
+- Trend: Fast execution for 02-01 (files already existed from previous session)
 
 ## Accumulated Context
 
@@ -51,6 +52,10 @@ Recent decisions affecting current work:
 | 01-03 | Require medicalAccuracyVerified: true for ALL quiz questions (CRITICAL gate-keeper) | Prevents deployment of unverified medical content - quiz validation test fails when questions unverified |
 | 01-03 | Northwestern coverage validation enforces MRSA/MSSA medical logic relationship | Medical logic: if antibiotic covers MRSA, it must cover MSSA (resistant vs sensitive strains) |
 | 01-03 | Added npm scripts for targeted validation (test:validation, test:medical-accuracy) | Enables quick medical accuracy verification without running full test suite |
+| 02-01 | Use D3 v7 force simulation instead of hand-rolled physics | D3's force simulation handles collision, gravity, convergence better than custom code |
+| 02-01 | Throttle state updates to 50ms instead of 60fps tick rate | Prevents React re-render performance death from simulation updates |
+| 02-01 | Only create edges for coverage level >= 1 (moderate/good coverage) | Prevents network hairball from showing every possible relationship |
+| 02-01 | Visual encoding: blue for pathogens, green for antibiotics | Simple, accessible color scheme for quick node type recognition |
 
 ### Deferred Issues
 
@@ -71,7 +76,7 @@ None - Phase 1 complete, ready to proceed to Phase 2.
 
 ## Session Continuity
 
-Last session: 2026-01-07T04:07:31Z
-Stopped at: Completed Phase 1 (Foundation & Data Architecture) - All 3 plans complete
-Next phase: Phase 2 - Visual Network Exploration
+Last session: 2026-01-07
+Stopped at: Completed Phase 2 Plan 1 (D3 Force-Directed Network Foundation)
+Next plan: Phase 2 Plan 2 - Interactive Filtering System
 Resume file: None
