@@ -1,5 +1,6 @@
 import React from "react";
 import { Antibiotic } from "../../types/medical.types";
+import { SimilaritiesSection } from "./SimilaritiesSection";
 
 interface ReferenceComparisonProps {
   /** Reference antibiotic for comparison (left panel) */
@@ -162,9 +163,12 @@ export const ReferenceComparison: React.FC<ReferenceComparisonProps> = ({
                   )}
                 </div>
 
-                {/* Placeholder for comparison content */}
-                <div className="border-t pt-3 text-sm text-gray-500">
-                  Comparison content will be added here
+                {/* Similarities Section */}
+                <div className="border-t pt-3">
+                  <SimilaritiesSection
+                    referenceAntibiotic={referenceAntibiotic}
+                    comparisonAntibiotic={antibiotic}
+                  />
                 </div>
               </div>
             ))}
