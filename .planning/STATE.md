@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-06)
 
 **Core value:** Accurate medical data with flexible, experimental interaction modes that transform antibiotic coverage knowledge into durable clinical recall.
-**Current focus:** Phase 2 — Visual Network Exploration
+**Current focus:** Phase 3 — Comparison Interface
 
 ## Current Position
 
-Phase: 2 of 8 (Visual Network Exploration)
-Plan: 4 of 4 in current phase
-Status: Phase complete
-Last activity: 2026-01-07 — Completed 02-04-PLAN.md (Northwestern Integration & Multi-Mode UI)
+Phase: 3 of 8 (Comparison Interface)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-07 — Completed 03-01-PLAN.md (Comparison Selection & State)
 
-Progress: ███████░░░ 27%
+Progress: ████████░░ 35%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 4.7 min
-- Total execution time: 0.55 hours
+- Total plans completed: 8
+- Average duration: 4.6 min
+- Total execution time: 0.62 hours
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: ███████░░░ 27%
 |-------|-------|-------|----------|
 | 1 | 3 | 18 min | 6 min |
 | 2 | 4 | 17 min | 4.25 min |
+| 3 | 1 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 4 min, 5 min, 5 min
-- Trend: Phase 2 complete - consistent 3-5 minute execution maintained
+- Last 5 plans: 4 min, 5 min, 5 min, 4 min, 4 min
+- Trend: Consistent 4-5 minute execution - efficient velocity maintained
 
 ## Accumulated Context
 
@@ -67,6 +68,10 @@ Recent decisions affecting current work:
 | 02-04 | Use NorthwesternSpatialLayout instead of single pie chart | Richer visualization showing all antibiotics simultaneously with drug class grouping |
 | 02-04 | Preserve component state with display:none pattern | Prevents state loss when switching modes, improves performance over unmount/remount |
 | 02-04 | Provide mode descriptions for each visualization | Users need context to understand what each mode offers for self-directed learning |
+| 03-01 | ComparisonMode type with 'pair' \| 'reference' \| 'grid' for all three modes | Supports side-by-side, reference-based, and grid comparison workflows |
+| 03-01 | Single ComparisonState object following Phase 02-02 NetworkFilters pattern | Prevents state combination bugs by keeping related state together |
+| 03-01 | maxSelections default of 5 to prevent cognitive overload | Limits comparison complexity while allowing meaningful multi-antibiotic analysis |
+| 03-01 | Group antibiotics by class with expand/collapse for navigation | Enables efficient browsing through 40+ antibiotics with clear class organization |
 
 ### Deferred Issues
 
@@ -88,6 +93,6 @@ None - Phase 1 complete, ready to proceed to Phase 2.
 ## Session Continuity
 
 Last session: 2026-01-07
-Stopped at: Completed Phase 2 Plan 4 (Northwestern Integration & Multi-Mode UI) - Phase 2 complete
-Next plan: Phase 3 Plan 1 - Begin Comparison Interface
+Stopped at: Completed Phase 3 Plan 1 (Comparison Selection & State)
+Next plan: Phase 3 Plan 2 - Side-by-Side Pair Comparison
 Resume file: None
