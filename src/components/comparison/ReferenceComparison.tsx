@@ -1,6 +1,8 @@
 import React from "react";
 import { Antibiotic } from "../../types/medical.types";
 import { SimilaritiesSection } from "./SimilaritiesSection";
+import { DifferencesSection } from "./DifferencesSection";
+import { MechanismComparisonWidget } from "./MechanismComparisonWidget";
 
 interface ReferenceComparisonProps {
   /** Reference antibiotic for comparison (left panel) */
@@ -163,9 +165,25 @@ export const ReferenceComparison: React.FC<ReferenceComparisonProps> = ({
                   )}
                 </div>
 
+                {/* Mechanism Comparison Widget - TOP of card for prominence */}
+                <MechanismComparisonWidget
+                  referenceMechanism={referenceAntibiotic.mechanism}
+                  comparisonMechanism={antibiotic.mechanism}
+                  referenceName={referenceAntibiotic.name}
+                  comparisonName={antibiotic.name}
+                />
+
                 {/* Similarities Section */}
                 <div className="border-t pt-3">
                   <SimilaritiesSection
+                    referenceAntibiotic={referenceAntibiotic}
+                    comparisonAntibiotic={antibiotic}
+                  />
+                </div>
+
+                {/* Differences Section */}
+                <div className="border-t pt-3 mt-3">
+                  <DifferencesSection
                     referenceAntibiotic={referenceAntibiotic}
                     comparisonAntibiotic={antibiotic}
                   />
