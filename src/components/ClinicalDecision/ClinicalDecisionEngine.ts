@@ -293,7 +293,7 @@ class ClinicalDecisionEngine {
       baseScore += safetyScore.score;
       rationale.push(...safetyScore.rationale);
 
-      const resistanceScore = this.scoreByResistance(antibiotic, clinicalInputs.localResistance as Record<string, unknown>);
+      const resistanceScore = this.scoreByResistance(antibiotic, ((clinicalInputs.localResistance as unknown) as Record<string, unknown>) || {});
       baseScore += resistanceScore.score;
       rationale.push(...resistanceScore.rationale);
 
@@ -575,7 +575,7 @@ class ClinicalDecisionEngine {
       dose: (severityDosing as any).adolescentDose || severityDosing.maxDose,
       frequency: severityDosing.frequency,
       route: severityDosing.route || (antibiotic as any).route?.[0] || 'PO',
-      note: weight ? null : 'Weight-based dosing preferred when available'
+      note: weight ? undefined : 'Weight-based dosing preferred when available'
     };
   }
 

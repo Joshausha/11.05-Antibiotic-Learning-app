@@ -41,8 +41,8 @@ interface PathwayConstants {
 }
 
 interface NodeStyling {
-  fillColor: string | d3.RGBColor;
-  strokeColor: string | d3.RGBColor;
+  fillColor: string;
+  strokeColor: string;
   strokeWidth: number;
 }
 
@@ -172,11 +172,11 @@ const DecisionPathwayRenderer: FC<DecisionPathwayRendererProps> = ({
     } else if (!availableNodes.includes(nodeId) && availableNodes.length > 0) {
       const color = d3.color(fillColor as string);
       if (color) {
-        fillColor = color.copy({ opacity: 0.3 });
+        fillColor = color.copy({ opacity: 0.3 }).toString();
       }
       const strokeCol = d3.color(strokeColor as string);
       if (strokeCol) {
-        strokeColor = strokeCol.copy({ opacity: 0.3 });
+        strokeColor = strokeCol.copy({ opacity: 0.3 }).toString();
       }
     }
 
@@ -191,7 +191,7 @@ const DecisionPathwayRenderer: FC<DecisionPathwayRendererProps> = ({
       strokeWidth += 1;
       const color = d3.color(fillColor as string);
       if (color) {
-        fillColor = color.copy({ opacity: 0.8 });
+        fillColor = color.copy({ opacity: 0.8 }).toString();
       }
     }
 
@@ -307,7 +307,7 @@ const DecisionPathwayRenderer: FC<DecisionPathwayRendererProps> = ({
     });
 
     // Update existing nodes with Northwestern animation timing
-    const nodeUpdate = nodeEnter.merge(nodeSelection);
+    const nodeUpdate = nodeEnter.merge(nodeSelection as any);
 
     nodeUpdate.transition()
       .duration(PATHWAY_CONSTANTS.TRANSITION_DURATION)
@@ -339,10 +339,9 @@ const DecisionPathwayRenderer: FC<DecisionPathwayRendererProps> = ({
    */
   const renderPaths = useCallback((svg: d3.Selection<any, any, any, any>, links: d3.HierarchyLink<TreeNode>[]) => {
     // Create curved paths for clinical decision flow
-    const pathGenerator = d3.linkVertical<TreeNode, d3.HierarchyNode<TreeNode>>()
+    const pathGenerator = d3.linkVertical<d3.HierarchyLink<TreeNode>, d3.HierarchyNode<TreeNode>>()
       .x((d: any) => d.x)
-      .y((d: any) => d.y)
-      .curve(d3.curveBasis);
+      .y((d: any) => d.y);
 
     const pathSelection = svg.selectAll('.decision-path')
       .data(links, (d: any) => `${d.source.data?.id}-${d.target.data?.id}`);
@@ -358,7 +357,7 @@ const DecisionPathwayRenderer: FC<DecisionPathwayRendererProps> = ({
       .style('opacity', 0);
 
     // Update all paths with smooth transitions
-    const pathUpdate = pathEnter.merge(pathSelection);
+    const pathUpdate = pathEnter.merge(pathSelection as any);
 
     pathUpdate.transition()
       .duration(PATHWAY_CONSTANTS.TRANSITION_DURATION)
@@ -400,8 +399,8 @@ const DecisionPathwayRenderer: FC<DecisionPathwayRendererProps> = ({
       const zoom = d3.zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.1, 3])
         .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
-          mainGroup.attr('transform', event.transform);
-          setZoomTransform(event.transform as d3.ZoomTransform);
+          mainGroup.attr('transform', event.transform.toString());
+          setZoomTransform(event.transform);
         });
 
       svg.call(zoom);
@@ -539,8 +538,8 @@ const DecisionPathwayRenderer: FC<DecisionPathwayRendererProps> = ({
           onClick={() => {
             const svg = d3.select(svgRef.current);
             const zoom = d3.zoom<SVGSVGElement, unknown>();
-            svg.transition()
-              .duration(PATHWAY_CONSTANTS.TRANSITION_DURATION)
+            (svg.transition()
+              .duration(PATHWAY_CONSTANTS.TRANSITION_DURATION) as any)
               .call(zoom.transform, d3.zoomIdentity);
           }}
           aria-label="Reset zoom and center view"

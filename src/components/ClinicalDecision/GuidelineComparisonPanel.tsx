@@ -39,13 +39,20 @@ interface GuidelineOrganization {
   specialty: string;
 }
 
-interface GuidelineData extends AntibioticRecommendation {
+interface GuidelineData {
+  antibioticName: string;
+  pathogenId?: number;
+  pathogenName?: string;
+  antibioticId?: number;
+  strength?: string;
+  notes?: string;
   organization: string;
   evidenceLevel: string;
   firstLineRecommendation?: string;
-  dosing?: { amount: string; frequency: string };
+  dosing?: { amount: string; frequency: string } | string;
   duration?: string;
   lastUpdated?: string;
+  [key: string]: any;
 }
 
 interface ProcessedGuideline extends GuidelineData {

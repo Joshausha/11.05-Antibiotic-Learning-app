@@ -38,6 +38,7 @@ interface ProcessedNode {
   id: string;
   type: string;
   name: string;
+  label: string;  // Required by TreeNode
   shortLabel: string;
   data: Record<string, unknown>;
   children: ProcessedNode[];
@@ -64,7 +65,7 @@ const ClinicalDecisionTree: FC<ClinicalDecisionTreeProps> = ({
   const [completedNodes, setCompletedNodes] = useState<string[]>([]);
   const [availableNodes, setAvailableNodes] = useState<string[]>(['root']);
   const [clinicalInputs, setClinicalInputs] = useState<ClinicalInputData>({
-    age: patientAge,
+    age: patientAge ?? undefined,
     weight: undefined,
     gender: undefined,
     allergies: [],
@@ -129,11 +130,13 @@ const ClinicalDecisionTree: FC<ClinicalDecisionTreeProps> = ({
           });
         }
 
+        const title = (node.title || nodeId) as string;
         return {
           id: nodeId,
           type: (node.type || 'decision') as string,
-          name: (node.title || nodeId) as string,
-          shortLabel: (node.title as string)?.substring(0, 10) || nodeId,
+          name: title,
+          label: title,  // Required by TreeNode
+          shortLabel: title.substring(0, 10),
           data: node,
           children: children.filter((c): c is ProcessedNode => c !== null)
         };
@@ -295,7 +298,7 @@ const ClinicalDecisionTree: FC<ClinicalDecisionTreeProps> = ({
         {processedTreeForVisualization && (
           <div className="pathway-section">
             <DecisionPathwayRenderer
-              treeData={processedTreeForVisualization}
+              treeData={processedTreeForVisualization as unknown as TreeNode}
               currentNode={currentNode}
               completedNodes={completedNodes}
               availableNodes={availableNodes}

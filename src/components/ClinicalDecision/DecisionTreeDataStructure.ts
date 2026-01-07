@@ -20,7 +20,7 @@
  */
 
 import { NODE_TYPES } from './NodeTypes';
-import type { DecisionNode, TreeBranch, SeverityType } from '../types/clinical-decision.types';
+import type { DecisionNode, TreeBranch, SeverityType } from '../../types/clinical-decision.types';
 
 /**
  * Clinical severity classifications for pediatric infections

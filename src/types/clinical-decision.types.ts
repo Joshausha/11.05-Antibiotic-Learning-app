@@ -5,6 +5,9 @@
 
 import type { Pathogen, Antibiotic, AntibioticRecommendation } from './medical.types';
 
+// Re-export for convenience
+export type { AntibioticRecommendation };
+
 // ==========================================
 // NODE TYPES & TREE STRUCTURES
 // ==========================================

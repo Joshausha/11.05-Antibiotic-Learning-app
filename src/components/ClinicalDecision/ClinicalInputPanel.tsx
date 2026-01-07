@@ -124,10 +124,10 @@ const ClinicalInputPanel: FC<ClinicalInputPanelProps> = ({
 }) => {
   // Input state management
   const [inputs, setInputs] = useState<ClinicalInputData>({
-    age: initialData.age || '',
-    weight: initialData.weight || '',
+    age: initialData.age,
+    weight: initialData.weight,
     allergies: initialData.allergies || [],
-    severity: initialData.severity || '',
+    severity: initialData.severity,
     comorbidities: initialData.comorbidities || [],
     recentAntibiotics: initialData.recentAntibiotics || [],
     localResistance: initialData.localResistance || '',
@@ -324,13 +324,13 @@ const ClinicalInputPanel: FC<ClinicalInputPanelProps> = ({
     const hasErrors = Object.keys(errors).length > 0;
     const hasRequiredFields = inputs.age && inputs.severity;
 
-    const complete = hasRequiredFields && !hasErrors;
+    const complete = !!(hasRequiredFields && !hasErrors);
     setIsComplete(complete);
 
     if (complete) {
       const completionTime = Date.now() - startTime;
       const metadata: CompletionMetadata = { completionTime, crossReactivityWarnings };
-      onInputComplete(inputs, metadata);
+      onInputComplete?.(inputs);
     }
 
     return complete;
