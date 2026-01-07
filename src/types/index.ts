@@ -23,3 +23,6 @@ export * from './clinical-ui.types';
 
 // Network visualization types
 export * from './network-ui.types';
+
+// Comparison interface types
+export * from './comparison.types';
