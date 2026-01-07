@@ -1,16 +1,65 @@
-import { QuizQuestion } from '../types/medical.types';
+import { QuizQuestion, DifficultyLevel } from '../types/medical.types';
 
 /**
  * Validated and Enhanced Quiz Questions
  * Medical data validated for completeness and accuracy
  * Terminology standardized and missing fields added
- * 
+ *
  * Validated automatically by data_validator.py
  * Total questions: 79
  * Validation completed: 2025-07-16T22:52:12.159153
+ * Updated: 2026-01-07 - Added type transformations for QuizQuestion interface compliance
  */
 
-const quizQuestionsWithDifficulty: QuizQuestion[] = [
+/**
+ * Legacy question format with difficulty - used for backwards compatibility
+ * Questions are transformed to QuizQuestion interface at export
+ */
+interface LegacyQuestionWithDifficulty {
+  question: string;
+  options: string[];
+  correct: number;
+  explanation: string;
+  category: string;
+  conditionId: string;
+  difficulty: DifficultyLevel;
+}
+
+/**
+ * Transform legacy question format to QuizQuestion interface
+ * Adds required fields with sensible defaults for medical content validation
+ */
+function transformLegacyQuestion(
+  legacy: LegacyQuestionWithDifficulty,
+  index: number
+): QuizQuestion {
+  // Generate tags from category and conditionId
+  const tags: string[] = [
+    legacy.category.toLowerCase().replace(/\s+/g, '-'),
+    legacy.conditionId,
+    legacy.difficulty, // Include difficulty as a tag for filtering
+  ];
+
+  return {
+    id: `validated-${String(index + 1).padStart(3, '0')}`,
+    question: legacy.question,
+    type: 'multiple-choice',
+    difficulty: legacy.difficulty,
+    options: legacy.options,
+    correctAnswer: legacy.options[legacy.correct],
+    explanation: legacy.explanation,
+    tags,
+    medicalAccuracyVerified: false, // CRITICAL: Needs medical review before deployment
+    lastUpdated: '2026-01-07',
+    // Legacy fields preserved for backward compatibility
+    correct: legacy.correct,
+    category: legacy.category,
+    conditionId: legacy.conditionId,
+  };
+}
+
+// Legacy question data from validated quiz generation
+const legacyQuestionsWithDifficulty: LegacyQuestionWithDifficulty[] = [
   {
     "question": "Which of the following is a common pathogen causing urinary tract infection - pyelonephritis?",
     "options": [
@@ -1118,5 +1167,8 @@ const quizQuestionsWithDifficulty: QuizQuestion[] = [
     "difficulty": "beginner"
   }
 ];
+
+// Transform legacy questions to QuizQuestion interface
+const quizQuestionsWithDifficulty: QuizQuestion[] = legacyQuestionsWithDifficulty.map(transformLegacyQuestion);
 
 export default quizQuestionsWithDifficulty;
