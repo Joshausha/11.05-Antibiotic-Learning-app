@@ -69,3 +69,15 @@ export interface AppContextValue {
 export interface AppProviderProps {
   children: React.ReactNode;
 }
+
+/**
+ * SharedSelection - Cross-mode selection state
+ * Allows selections to persist when switching between modes (visualizations, comparison, etc.)
+ * Created: Phase 6 Plan 2 - Context Preservation
+ */
+export interface SharedSelection {
+  selectedAntibiotics: string[];  // antibiotic names
+  selectedPathogens: string[];    // pathogen names
+  lastSelectedAntibiotic: string | null;  // most recent selection for single-select modes
+  lastSelectedPathogen: string | null;
+}
