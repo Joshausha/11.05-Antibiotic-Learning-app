@@ -166,10 +166,38 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
   // Selection state for click-to-explore interactions (Phase 5)
   const {
     selectionState,
+    selectNode,
+    clearSelection,
     isNodeConnected,
     isEdgeConnected,
     isNodeSelected
   } = useNetworkSelection();
+
+  /**
+   * Handle node click for bidirectional drill-down.
+   * - Click unselected node: select it
+   * - Click selected node: clear selection (toggle)
+   */
+  const handleNodeClick = (nodeId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent SVG background click
+
+    if (isNodeSelected(nodeId)) {
+      // Toggle off - clicking same node clears selection
+      clearSelection();
+    } else {
+      // Select new node (works for both pathogens and antibiotics)
+      selectNode(nodeId, edges);
+    }
+  };
+
+  /**
+   * Handle SVG background click to clear selection.
+   */
+  const handleBackgroundClick = () => {
+    if (selectionState.selectedNodeId !== null) {
+      clearSelection();
+    }
+  };
 
   /**
    * Calculate node opacity based on selection state.
@@ -245,7 +273,12 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
       </div>
 
       {/* Network Visualization */}
-      <svg width={width} height={height} style={{ border: '1px solid #e0e0e0' }}>
+      <svg
+        width={width}
+        height={height}
+        style={{ border: '1px solid #e0e0e0' }}
+        onClick={handleBackgroundClick}
+      >
       {/* Define marker for arrow heads (optional for future) */}
       <defs>
         <marker
@@ -275,6 +308,7 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
           return (
             <line
               key={edge.id}
+              className="network-edge"
               x1={source.x}
               y1={source.y}
               x2={target.x}
@@ -306,9 +340,22 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
 
           const nodeOpacity = getNodeOpacity(node.id);
 
+          const isSelected = isNodeSelected(node.id);
+
           return (
             <g key={node.id} transform={`translate(${node.x}, ${node.y})`}>
+              {/* Highlight ring for selected node */}
+              {isSelected && (
+                <circle
+                  className="network-highlight-ring"
+                  r={radius + 4}
+                  fill="none"
+                  stroke="#FCD34D"
+                  strokeWidth={3}
+                />
+              )}
               <circle
+                className="network-node"
                 r={radius}
                 fill={fillColor}
                 fillOpacity={nodeOpacity}
@@ -316,6 +363,7 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
                 strokeWidth={2}
                 strokeOpacity={nodeOpacity}
                 style={{ cursor: 'pointer' }}
+                onClick={(e) => handleNodeClick(node.id, e)}
                 onMouseEnter={() => {
                   setHoveredNode(node);
                   setTooltipPosition({ x: node.x || 0, y: node.y || 0 });
