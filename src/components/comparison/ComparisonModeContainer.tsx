@@ -12,7 +12,7 @@
  * Pattern: Follows NetworkVisualizationContainer from Phase 2
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ComparisonMode } from '../../types/comparison.types';
 import { Antibiotic } from '../../types/medical.types';
 import enhancedAntibiotics, { getAntibioticByName } from '../../data/EnhancedAntibioticData';
@@ -20,6 +20,7 @@ import { AntibioticSelector } from './AntibioticSelector';
 import { PairComparison } from './PairComparison';
 import { ReferenceComparison } from './ReferenceComparison';
 import { GridComparison } from './GridComparison';
+import { useSharedSelection } from '../../contexts/SharedSelectionContext';
 
 interface ComparisonModeContainerProps {
   /** Optional initial mode (defaults to 'reference' as PRIMARY mode) */
@@ -107,6 +108,9 @@ export const ComparisonModeContainer: React.FC<ComparisonModeContainerProps> = (
   initialMode = 'reference',
   onSelectFromNetwork
 }) => {
+  // Shared selection context for cross-mode persistence (Phase 6-02)
+  const { selection, setAntibiotics: setSharedAntibiotics } = useSharedSelection();
+
   // State: comparison mode (default to 'reference' as PRIMARY per Phase 03-CONTEXT)
   const [comparisonMode, setComparisonMode] = useState<ComparisonMode>(initialMode);
 
@@ -118,6 +122,32 @@ export const ComparisonModeContainer: React.FC<ComparisonModeContainerProps> = (
 
   // State: validation error message
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Track if we've initialized from shared context
+  const [initializedFromShared, setInitializedFromShared] = useState(false);
+
+  // Initialize from shared selection on mount (Phase 6-02: inherit selections from other modes)
+  useEffect(() => {
+    if (!initializedFromShared && selection.selectedAntibiotics.length > 0) {
+      setSelectedAntibiotics(selection.selectedAntibiotics);
+      setInitializedFromShared(true);
+    }
+  }, [selection.selectedAntibiotics, initializedFromShared]);
+
+  // Sync local selections to shared context when they change (Phase 6-02: propagate to other modes)
+  useEffect(() => {
+    // Only sync if we have selections and they differ from shared
+    if (initializedFromShared || selectedAntibiotics.length > 0) {
+      const sharedSet = new Set(selection.selectedAntibiotics);
+      const localSet = new Set(selectedAntibiotics);
+      const areDifferent = selectedAntibiotics.length !== selection.selectedAntibiotics.length ||
+        selectedAntibiotics.some(ab => !sharedSet.has(ab));
+
+      if (areDifferent) {
+        setSharedAntibiotics(selectedAntibiotics);
+      }
+    }
+  }, [selectedAntibiotics, selection.selectedAntibiotics, setSharedAntibiotics, initializedFromShared]);
 
   // Convert selected names to Antibiotic objects
   const selectedAntibioticObjects = useMemo(() => {

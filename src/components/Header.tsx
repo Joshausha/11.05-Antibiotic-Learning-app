@@ -43,13 +43,13 @@ const Header: React.FC<HeaderProps> = memo(({
   showMobileMenu = false,
   setShowMobileMenu = () => {}
 }) => {
-  // Define navigation items (8 core tabs)
+  // Define navigation items (Hub first for "always get back to central dashboard")
   const navItems = [
-    { id: 'learn', label: 'Learn', icon: Home },
+    { id: 'hub', label: 'Hub', icon: Home },
+    { id: 'visualizations', label: 'Explore', icon: Network },
+    { id: 'comparison', label: 'Compare', icon: GitCompare },
     { id: 'quiz', label: 'Quiz', icon: Brain },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'visualizations', label: 'Visualizations', icon: PieChart },
-    { id: 'comparison', label: 'Compare', icon: GitCompare },
     { id: 'reference', label: 'Reference', icon: Book },
     { id: 'pathogen-explorer', label: 'Pathogens', icon: Microscope },
     { id: 'antibiotic-explorer', label: 'Antibiotics', icon: Pill }

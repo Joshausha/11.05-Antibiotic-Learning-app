@@ -3,6 +3,7 @@ import React, { lazy, Suspense, FC, ReactNode } from 'react';
 // Import Error Boundary and Context
 import ErrorBoundary from './components/ErrorBoundary';
 import { AppProvider, useAppContext } from './contexts/AppContext';
+import { SharedSelectionProvider } from './contexts/SharedSelectionContext';
 
 // Import our core components (always loaded)
 import Header from './components/Header';
@@ -233,12 +234,16 @@ const AppContent: FC = () => {
 
 /**
  * Main App Component
- * Wraps the application with the context provider
+ * Wraps the application with context providers
+ * - AppProvider: Navigation and UI state
+ * - SharedSelectionProvider: Cross-mode learning state (Phase 6-02)
  */
 const App: FC = () => {
   return (
     <AppProvider>
-      <AppContent />
+      <SharedSelectionProvider>
+        <AppContent />
+      </SharedSelectionProvider>
     </AppProvider>
   );
 };
