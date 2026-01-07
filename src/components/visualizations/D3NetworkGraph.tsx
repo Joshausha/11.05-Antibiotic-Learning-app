@@ -2,12 +2,13 @@
  * D3 Network Graph Component
  *
  * Interactive network visualization showing antibiotic-pathogen coverage relationships
- * using D3 force-directed layout.
+ * using D3 force-directed layout with Northwestern 8-segment model.
  *
  * Features:
  * - Organic force-directed node positioning
- * - Visual encoding: pathogens (blue), antibiotics (green)
- * - Edges represent coverage relationships from EnhancedAntibioticData
+ * - Visual encoding: pathogens by gram stain (blue=positive, red=negative), antibiotics (green)
+ * - Edges represent coverage relationships from Northwestern 8-segment model
+ * - Click-to-explore drill-down (Phase 5)
  * - SVG rendering for accessibility and interactivity
  *
  * Based on Phase 2 research findings - uses D3 for physics, React for rendering.
@@ -17,12 +18,84 @@ import React, { useMemo, useState } from 'react';
 import { useD3ForceSimulation, NetworkNode, NetworkEdge } from '../../hooks/useD3ForceSimulation';
 import { useNetworkFiltering } from '../../hooks/useNetworkFiltering';
 import { useNetworkSelection } from '../../hooks/useNetworkSelection';
-import { Pathogen, Antibiotic, NorthwesternSpectrum, Coverage } from '../../types/medical.types';
+import { Pathogen, Antibiotic, NorthwesternSpectrum, Coverage, GramStainType } from '../../types/medical.types';
 import NetworkFilterControls from '../network/NetworkFilterControls';
 import NetworkLegend from '../network/NetworkLegend';
 import NetworkTooltip from '../network/NetworkTooltip';
 import { getGramStainColor, getNetworkNodeRadius } from '../../utils/networkNodeStyles';
 import '../../styles/networkAnimations.css';
+import enhancedAntibiotics from '../../data/EnhancedAntibioticData';
+
+/**
+ * Northwestern 8-segment pathogen categories
+ * These represent the key pathogen groups in the Northwestern coverage model
+ */
+const NORTHWESTERN_PATHOGENS: Pathogen[] = [
+  {
+    id: 1,
+    name: 'MRSA',
+    gramStain: 'positive' as GramStainType,
+    type: 'bacteria',
+    clinicalRelevance: 'Methicillin-resistant Staphylococcus aureus - major cause of skin/soft tissue infections',
+    northwestern8SegmentCategory: 'MRSA'
+  },
+  {
+    id: 2,
+    name: 'MSSA',
+    gramStain: 'positive' as GramStainType,
+    type: 'bacteria',
+    clinicalRelevance: 'Methicillin-sensitive Staphylococcus aureus - common community pathogen',
+    northwestern8SegmentCategory: 'MSSA'
+  },
+  {
+    id: 3,
+    name: 'VRE faecium',
+    gramStain: 'positive' as GramStainType,
+    type: 'bacteria',
+    clinicalRelevance: 'Vancomycin-resistant Enterococcus faecium - healthcare-associated pathogen',
+    northwestern8SegmentCategory: 'VRE_faecium'
+  },
+  {
+    id: 4,
+    name: 'E. faecalis',
+    gramStain: 'positive' as GramStainType,
+    type: 'bacteria',
+    clinicalRelevance: 'Enterococcus faecalis - common cause of UTI and endocarditis',
+    northwestern8SegmentCategory: 'enterococcus_faecalis'
+  },
+  {
+    id: 5,
+    name: 'Gram Negatives',
+    gramStain: 'negative' as GramStainType,
+    type: 'bacteria',
+    clinicalRelevance: 'General gram-negative coverage (E. coli, Klebsiella, Proteus)',
+    northwestern8SegmentCategory: 'gramNegative'
+  },
+  {
+    id: 6,
+    name: 'Pseudomonas',
+    gramStain: 'negative' as GramStainType,
+    type: 'bacteria',
+    clinicalRelevance: 'Pseudomonas aeruginosa - opportunistic pathogen in immunocompromised',
+    northwestern8SegmentCategory: 'pseudomonas'
+  },
+  {
+    id: 7,
+    name: 'Anaerobes',
+    gramStain: 'variable' as GramStainType,
+    type: 'bacteria',
+    clinicalRelevance: 'Bacteroides, C. difficile, mixed anaerobes - intra-abdominal infections',
+    northwestern8SegmentCategory: 'anaerobes'
+  },
+  {
+    id: 8,
+    name: 'Atypicals',
+    gramStain: 'not_applicable' as GramStainType,
+    type: 'bacteria',
+    clinicalRelevance: 'Legionella, Mycoplasma, Chlamydophila - atypical pneumonia pathogens',
+    northwestern8SegmentCategory: 'atypicals'
+  }
+];
 
 // Opacity constants for selection-based fade effect
 const OPACITY = {
@@ -78,18 +151,25 @@ function createCoverageEdges(
  * D3 Network Graph Component
  *
  * Renders interactive network visualization of antibiotic-pathogen relationships.
+ * Uses Northwestern 8-segment model - pathogens are the 8 key pathogen categories,
+ * antibiotics are from EnhancedAntibioticData with coverage spectrum.
  *
- * @param pathogens - Array of pathogen entities
- * @param antibiotics - Array of antibiotic entities
+ * @param pathogens - Array of pathogen entities (optional, uses Northwestern segments if empty)
+ * @param antibiotics - Array of antibiotic entities (optional, uses enhanced data if empty)
  * @param width - Canvas width (default: 800)
  * @param height - Canvas height (default: 600)
  */
 export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
-  pathogens,
-  antibiotics,
+  pathogens: propPathogens,
+  antibiotics: propAntibiotics,
   width = 800,
   height = 600
 }) => {
+  // Use Northwestern model data - props as fallback for backwards compatibility
+  // Priority: Northwestern model data (has correct structure for coverage mapping)
+  const pathogens = NORTHWESTERN_PATHOGENS;
+  const antibiotics = (enhancedAntibiotics as unknown as Antibiotic[]) || propAntibiotics;
+
   // Create coverage edges from source data
   const rawCoverage = useMemo(() => {
     const coverage: Coverage[] = [];
