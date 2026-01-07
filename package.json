@@ -13,6 +13,8 @@
     "serve": "npx serve -s build -p 3000",
     "build:serve": "npm run build && npm run serve",
     "test:coverage": "node scripts/test.js --coverage --watchAll=false",
+    "test:validation": "node scripts/test.js --watchAll=false northwesternCoverageValidation.test.js pathogenValidation.test.js quizQuestionValidation.test.js",
+    "test:medical-accuracy": "node scripts/test.js --watchAll=false quizQuestionValidation.test.js",
     "simple-explorer": "echo 'Starting Simple Pathogen Explorer...' && npm run dev",
     "simple": "echo 'Starting Simple Pathogen Explorer...' && npm run dev",
     "explore": "echo 'Starting Simple Pathogen Explorer...' && npm run dev",
