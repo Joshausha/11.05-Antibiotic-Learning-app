@@ -43,6 +43,31 @@ export const initialFilters: NetworkFilters = {
 };
 
 // ==========================================
+// SELECTION STATE TYPES
+// ==========================================
+
+/**
+ * Centralized selection state for network click-to-explore interactions.
+ * Single object state pattern per Phase 02-02 (prevents state combination bugs).
+ *
+ * When a node is selected:
+ * - selectedNodeId: the ID of the selected node
+ * - connectedNodeIds: nodes connected to the selected node via edges
+ * - connectedEdgeIds: edges connecting to the selected node
+ */
+export interface NetworkSelectionState {
+  selectedNodeId: string | null;
+  connectedNodeIds: Set<string>;
+  connectedEdgeIds: Set<string>;
+}
+
+export const initialSelectionState: NetworkSelectionState = {
+  selectedNodeId: null,
+  connectedNodeIds: new Set<string>(),
+  connectedEdgeIds: new Set<string>()
+};
+
+// ==========================================
 // VISUALIZATION MODE TYPES
 // ==========================================
 
