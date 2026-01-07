@@ -72,6 +72,18 @@ export const PairComparison: React.FC<PairComparisonProps> = ({
   rightAntibiotic,
   onClose
 }) => {
+  // Memoize comparison results - only recalculate when antibiotics change
+  // Note: useMemo must be called before any conditional returns per React rules of hooks
+  const propertyDiffs = useMemo(
+    () => {
+      if (!leftAntibiotic || !rightAntibiotic) {
+        return [];
+      }
+      return compareProperties(leftAntibiotic, rightAntibiotic);
+    },
+    [leftAntibiotic, rightAntibiotic]
+  );
+
   // Show selection prompt if either antibiotic is missing
   if (!leftAntibiotic || !rightAntibiotic) {
     return (
@@ -80,12 +92,6 @@ export const PairComparison: React.FC<PairComparisonProps> = ({
       </div>
     );
   }
-
-  // Memoize comparison results - only recalculate when antibiotics change
-  const propertyDiffs = useMemo(
-    () => compareProperties(leftAntibiotic, rightAntibiotic),
-    [leftAntibiotic, rightAntibiotic]
-  );
 
   return (
     <div className="relative border rounded-lg p-6 bg-white">
