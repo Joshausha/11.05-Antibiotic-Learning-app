@@ -155,7 +155,9 @@ const PathogenExplorer: FC<PathogenExplorerProps> = ({
   const [explorationHistory, setExplorationHistory] = useState<ExplorationHistoryEntry[]>([]);
 
   // Agent 25's Defensive Programming: Enhanced pathogen recommendations with null safety
-  const recommendations = usePathogenRecommendations(indexes, selectedPathogen, userBehavior || {});
+  const recommendationsData = usePathogenRecommendations(indexes, selectedPathogen, userBehavior || {});
+  // Extract recommendations array from hook return object
+  const recommendations = recommendationsData?.recommendations || [];
 
   // Build network data for visualization
   const networkData = useMemo(() => {
@@ -198,11 +200,11 @@ const PathogenExplorer: FC<PathogenExplorerProps> = ({
         },
       ]);
 
-      if (recommendations && typeof recommendations.recordInteraction === 'function') {
-        recommendations.recordInteraction(pathogen, 'select');
+      if (recommendationsData && typeof recommendationsData.recordInteraction === 'function') {
+        recommendationsData.recordInteraction({ pathogen: pathogen.name, action: 'select' });
       }
     },
-    [selectPathogen, viewMode, recommendations]
+    [selectPathogen, viewMode, recommendationsData]
   );
 
   // Handle view mode changes
@@ -456,11 +458,11 @@ const PathogenExplorer: FC<PathogenExplorerProps> = ({
             <div className="bg-white rounded-xl shadow-sm border p-6">
               <Suspense fallback={<div className="h-64 bg-gray-100 rounded-lg animate-pulse" />}>
                 <PathogenDetailPanel
-                  pathogen={selectedPathogen}
-                  similarPathogens={findSimilarPathogens ? findSimilarPathogens(selectedPathogen) : []}
-                  treatmentOptions={selectedPathogenAntibiotics || []}
-                  clinicalConditions={selectedPathogenConditions || []}
-                  onSelectCondition={onSelectCondition}
+                  pathogen={selectedPathogen as any}
+                  similarPathogens={findSimilarPathogens ? (findSimilarPathogens(selectedPathogen) as any[]) : []}
+                  treatmentOptions={(selectedPathogenAntibiotics || []) as any[]}
+                  associatedConditions={(selectedPathogenConditions || []) as any[]}
+                  onSelectCondition={onSelectCondition as any}
                 />
               </Suspense>
             </div>
@@ -481,9 +483,9 @@ const PathogenExplorer: FC<PathogenExplorerProps> = ({
                 }
               >
                 <PathogenNetworkVisualization
-                  network={indexes ? buildPathogenNetwork(indexes) : null}
-                  selectedPathogen={selectedPathogen}
-                  onSelectPathogen={handlePathogenSelect}
+                  network={(indexes ? buildPathogenNetwork(indexes) : null) as any}
+                  selectedPathogen={selectedPathogen as any}
+                  onSelectPathogen={handlePathogenSelect as any}
                   onShowPathDetails={() => {}}
                   className="h-96"
                 />
@@ -494,12 +496,12 @@ const PathogenExplorer: FC<PathogenExplorerProps> = ({
           <div>
             <Suspense fallback={<div className="h-64 bg-gray-100 rounded-lg animate-pulse" />}>
               <PathogenDetailPanel
-                pathogen={enhancedPathogenData?.pathogen}
-                similarPathogens={enhancedPathogenData?.similarPathogens || []}
-                treatmentOptions={enhancedPathogenData?.treatmentOptions || []}
-                associatedConditions={enhancedPathogenData?.associatedConditions || []}
-                onSelectPathogen={handlePathogenSelect}
-                onSelectCondition={onSelectCondition}
+                pathogen={enhancedPathogenData?.pathogen as any}
+                similarPathogens={(enhancedPathogenData?.similarPathogens || []) as any[]}
+                treatmentOptions={(enhancedPathogenData?.treatmentOptions || []) as any[]}
+                associatedConditions={(enhancedPathogenData?.associatedConditions || []) as any[]}
+                onSelectPathogen={handlePathogenSelect as any}
+                onSelectCondition={onSelectCondition as any}
                 className="h-96 overflow-y-auto"
               />
             </Suspense>
@@ -513,12 +515,12 @@ const PathogenExplorer: FC<PathogenExplorerProps> = ({
           <Suspense fallback={<div className="h-64 bg-gray-100 rounded-lg animate-pulse" />}>
             <PathogenConnectionExplorer
               indexes={indexes}
-              selectedPathogen={selectedPathogen}
-              targetPathogen={selectedTarget}
-              onSelectPathogen={handlePathogenSelect}
+              selectedPathogen={selectedPathogen as any}
+              targetPathogen={selectedTarget as any}
+              onSelectPathogen={handlePathogenSelect as any}
               onShowPathDetails={() => {}}
               recentlyViewed={explorationHistory.map((h) => h.pathogen.name)}
-              userPreferences={recommendations?.userPreferences || {}}
+              userPreferences={recommendationsData?.userPreferences || {}}
               className="h-96"
             />
           </Suspense>
@@ -526,12 +528,12 @@ const PathogenExplorer: FC<PathogenExplorerProps> = ({
           <div>
             <Suspense fallback={<div className="h-64 bg-gray-100 rounded-lg animate-pulse" />}>
               <PathogenDetailPanel
-                pathogen={enhancedPathogenData?.pathogen}
-                similarPathogens={enhancedPathogenData?.similarPathogens || []}
-                treatmentOptions={enhancedPathogenData?.treatmentOptions || []}
-                associatedConditions={enhancedPathogenData?.associatedConditions || []}
-                onSelectPathogen={handlePathogenSelect}
-                onSelectCondition={onSelectCondition}
+                pathogen={enhancedPathogenData?.pathogen as any}
+                similarPathogens={(enhancedPathogenData?.similarPathogens || []) as any[]}
+                treatmentOptions={(enhancedPathogenData?.treatmentOptions || []) as any[]}
+                associatedConditions={(enhancedPathogenData?.associatedConditions || []) as any[]}
+                onSelectPathogen={handlePathogenSelect as any}
+                onSelectCondition={onSelectCondition as any}
                 className="h-96 overflow-y-auto"
               />
             </Suspense>

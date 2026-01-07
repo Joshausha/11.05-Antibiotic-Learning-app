@@ -16,31 +16,35 @@ import simplePathogens, { searchPathogens, getPathogensByGramStatus, getPathogen
 import simpleAntibiotics, { getAntibioticById } from '../data/SimpleAntibioticData';
 import pathogenAntibioticMap, { getAntibioticsForPathogen } from '../data/pathogenAntibioticMap';
 
-// Types
-interface Pathogen {
-  id: string;
+// Types - using local interfaces compatible with SimplePathogenData
+interface LocalPathogen {
+  id: string | number;
   name: string;
   gramStatus?: string;
+  gramStain?: string;
   severity?: string;
-  conditions: any[];
+  conditions?: any[];
+  [key: string]: any;
 }
 
-interface Antibiotic {
-  antibioticId: string;
+interface LocalAntibiotic {
+  antibioticId?: string | number;
+  id?: string | number;
   name: string;
-  class: string;
-  mechanism: string;
-  route: string;
+  class?: string;
+  mechanism?: string;
+  route?: string;
   description?: string;
+  [key: string]: any;
 }
 
-interface AntibioticWithDetails extends Antibiotic {
+interface AntibioticWithDetails extends LocalAntibiotic {
   [key: string]: any;
 }
 
 const SimplePathogenExplorer: FC = () => {
   // State for pathogen selection and filtering
-  const [selectedPathogen, setSelectedPathogen] = useState<Pathogen | null>(null);
+  const [selectedPathogen, setSelectedPathogen] = useState<LocalPathogen | null>(null);
   const [selectedAntibiotic, setSelectedAntibiotic] = useState<AntibioticWithDetails | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [gramFilter, setGramFilter] = useState('all');
@@ -56,7 +60,7 @@ const SimplePathogenExplorer: FC = () => {
     }
 
     if (gramFilter !== 'all') {
-      pathogens = pathogens.filter((pathogen) => pathogen.gramStatus === gramFilter);
+      pathogens = pathogens.filter((pathogen) => pathogen.gramStain === gramFilter);
     }
 
     if (severityFilter !== 'all') {
@@ -70,10 +74,18 @@ const SimplePathogenExplorer: FC = () => {
   const selectedPathogenAntibiotics = useMemo(() => {
     if (!selectedPathogen) return [];
 
-    const antibiotics = getAntibioticsForPathogen(selectedPathogen.id);
+    // Convert id to number if string
+    const pathogenId = typeof selectedPathogen.id === 'string'
+      ? parseInt(selectedPathogen.id, 10)
+      : selectedPathogen.id;
+    const antibiotics = getAntibioticsForPathogen(pathogenId as number);
 
     return antibiotics.map((antibiotic) => {
-      const fullAntibiotic = getAntibioticById(antibiotic.antibioticId);
+      // Convert antibioticId to number for lookup
+      const antibioticId = typeof antibiotic.antibioticId === 'string'
+        ? parseInt(antibiotic.antibioticId as string, 10)
+        : antibiotic.antibioticId;
+      const fullAntibiotic = getAntibioticById(antibioticId as number);
       return {
         ...antibiotic,
         ...fullAntibiotic,
@@ -81,15 +93,15 @@ const SimplePathogenExplorer: FC = () => {
     });
   }, [selectedPathogen]);
 
-  // Handle pathogen selection
-  const handlePathogenSelect = (pathogen: Pathogen): void => {
-    setSelectedPathogen(pathogen);
+  // Handle pathogen selection - accepts any pathogen type
+  const handlePathogenSelect = (pathogen: any): void => {
+    setSelectedPathogen(pathogen as LocalPathogen);
     setSelectedAntibiotic(null);
   };
 
-  // Handle antibiotic selection
-  const handleAntibioticSelect = (antibiotic: AntibioticWithDetails): void => {
-    setSelectedAntibiotic(antibiotic);
+  // Handle antibiotic selection - accepts any antibiotic type
+  const handleAntibioticSelect = (antibiotic: any): void => {
+    setSelectedAntibiotic(antibiotic as AntibioticWithDetails);
   };
 
   // Clear all selections
@@ -195,9 +207,9 @@ const SimplePathogenExplorer: FC = () => {
           {/* Pathogen List */}
           <div className="lg:col-span-1">
             <PathogenList
-              pathogens={filteredPathogens}
-              onSelectPathogen={handlePathogenSelect}
-              selectedPathogen={selectedPathogen}
+              pathogens={filteredPathogens as any[]}
+              onSelectPathogen={handlePathogenSelect as any}
+              selectedPathogen={selectedPathogen as any}
               searchTerm={searchTerm}
               onSearch={setSearchTerm}
               gramFilter={gramFilter}
@@ -209,16 +221,16 @@ const SimplePathogenExplorer: FC = () => {
 
           {/* Pathogen Details */}
           <div className="lg:col-span-1">
-            <PathogenCard pathogen={selectedPathogen} onClose={() => setSelectedPathogen(null)} />
+            <PathogenCard pathogen={selectedPathogen as any} onClose={() => setSelectedPathogen(null)} />
           </div>
 
           {/* Antibiotic List */}
           <div className="lg:col-span-1 xl:col-span-1">
             <AntibioticList
-              pathogen={selectedPathogen}
-              antibiotics={selectedPathogenAntibiotics}
-              onSelectAntibiotic={handleAntibioticSelect}
-              selectedAntibiotic={selectedAntibiotic}
+              pathogen={selectedPathogen as any}
+              antibiotics={selectedPathogenAntibiotics as any[]}
+              onSelectAntibiotic={handleAntibioticSelect as any}
+              selectedAntibiotic={selectedAntibiotic as any}
             />
           </div>
         </div>
@@ -227,23 +239,23 @@ const SimplePathogenExplorer: FC = () => {
           {/* Network View */}
           <div className="xl:col-span-2">
             <SimpleNetworkView
-              pathogens={filteredPathogens}
-              selectedPathogen={selectedPathogen}
-              onSelectPathogen={handlePathogenSelect}
-              relationships={pathogenAntibioticMap}
+              pathogens={filteredPathogens as any[]}
+              selectedPathogen={selectedPathogen as any}
+              onSelectPathogen={handlePathogenSelect as any}
+              relationships={pathogenAntibioticMap as any}
             />
           </div>
 
           {/* Side Panel */}
           <div className="space-y-6">
-            <PathogenCard pathogen={selectedPathogen} onClose={() => setSelectedPathogen(null)} />
+            <PathogenCard pathogen={selectedPathogen as any} onClose={() => setSelectedPathogen(null)} />
 
             {selectedPathogen && (
               <AntibioticList
-                pathogen={selectedPathogen}
-                antibiotics={selectedPathogenAntibiotics}
-                onSelectAntibiotic={handleAntibioticSelect}
-                selectedAntibiotic={selectedAntibiotic}
+                pathogen={selectedPathogen as any}
+                antibiotics={selectedPathogenAntibiotics as any[]}
+                onSelectAntibiotic={handleAntibioticSelect as any}
+                selectedAntibiotic={selectedAntibiotic as any}
               />
             )}
           </div>

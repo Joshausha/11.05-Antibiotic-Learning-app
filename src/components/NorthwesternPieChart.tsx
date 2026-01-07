@@ -24,20 +24,57 @@ interface NorthwesternSpectrum {
   gramNegative: number;
   MSSA: number;
   enterococcus_faecalis: number;
+  [key: string]: number; // Allow string key access for dynamic segment lookups
 }
 
 interface Antibiotic {
   id: string | number;
   name: string;
   northwesternSpectrum: NorthwesternSpectrum;
-  routeColor: 'red' | 'blue' | 'purple';
+  routeColor?: 'red' | 'blue' | 'purple'; // Optional - will default to 'blue'
   cellWallActive?: boolean;
   route?: string | string[];
+  formulations?: string[]; // Support canonical Antibiotic type
   [key: string]: any;
 }
 
+/**
+ * Derives route color from antibiotic route information
+ * IV-only = blue, PO-only = red, IV+PO = purple
+ */
+const deriveRouteColor = (antibiotic: Antibiotic): RouteColor => {
+  if (antibiotic.routeColor) return antibiotic.routeColor;
+
+  const route = antibiotic.route;
+  const formulations = antibiotic.formulations;
+
+  // Check formulations first (canonical Antibiotic type)
+  if (formulations && formulations.length > 0) {
+    const hasIV = formulations.some(f => f.toLowerCase().includes('iv'));
+    const hasPO = formulations.some(f => f.toLowerCase().includes('oral') || f.toLowerCase() === 'po');
+    if (hasIV && hasPO) return 'purple';
+    if (hasIV) return 'blue';
+    if (hasPO) return 'red';
+  }
+
+  // Fallback to route field
+  if (route) {
+    const routeStr = Array.isArray(route) ? route.join(' ') : route;
+    const routeLower = routeStr.toLowerCase();
+    const hasIV = routeLower.includes('iv');
+    const hasPO = routeLower.includes('oral') || routeLower.includes('po');
+    if (hasIV && hasPO) return 'purple';
+    if (hasIV) return 'blue';
+    if (hasPO) return 'red';
+  }
+
+  return 'blue'; // Default
+};
+
+type NorthwesternSegmentKey = 'MRSA' | 'VRE_faecium' | 'anaerobes' | 'atypicals' | 'pseudomonas' | 'gramNegative' | 'MSSA' | 'enterococcus_faecalis';
+
 interface SegmentDefinition {
-  key: keyof NorthwesternSpectrum;
+  key: NorthwesternSegmentKey;
   label: string;
   angle: number;
   description: string;
@@ -252,9 +289,14 @@ const NorthwesternPieChart: FC<NorthwesternPieChartProps> = ({
   const outerRadius = config.diameter / 2 - config.strokeWidth;
   const innerRadius = config.centerRadius;
 
+  // Derive route color once for use in validation and rendering
+  const effectiveRouteColor = useMemo((): RouteColor => {
+    return deriveRouteColor(antibiotic);
+  }, [antibiotic]);
+
   // Validate antibiotic data
   const isValid = useMemo((): boolean => {
-    if (!antibiotic || !antibiotic.northwesternSpectrum || !antibiotic.routeColor) {
+    if (!antibiotic || !antibiotic.northwesternSpectrum) {
       setError('Invalid antibiotic data');
       return false;
     }
@@ -284,13 +326,13 @@ const NorthwesternPieChart: FC<NorthwesternPieChartProps> = ({
       return {
         ...segment,
         path: createSegmentPath(startAngle, endAngle, outerRadius, innerRadius, centerX, centerY),
-        fill: getCoverageColor(coverage, antibiotic.routeColor as RouteColor),
-        stroke: getStrokeStyle(antibiotic.cellWallActive, antibiotic.routeColor as RouteColor),
+        fill: getCoverageColor(coverage, effectiveRouteColor),
+        stroke: getStrokeStyle(antibiotic.cellWallActive, effectiveRouteColor),
         coverage,
         id: `segment-${antibiotic.id}-${segment.key}`
       };
     });
-  }, [antibiotic, config, isValid]);
+  }, [antibiotic, config, isValid, effectiveRouteColor]);
 
   // Handle segment hover with enhanced context
   const handleSegmentHover = useCallback(
@@ -580,8 +622,10 @@ export {
   createSegmentPath,
   getCoverageColor,
   getStrokeStyle,
+  deriveRouteColor,
   type Antibiotic,
   type NorthwesternSpectrum,
+  type NorthwesternSegmentKey,
   type SegmentData,
   type EducationLevel,
   type Size,

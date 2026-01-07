@@ -31,12 +31,17 @@ interface Condition {
 }
 
 interface Antibiotic {
-  id: string;
+  id: string | number;
   name: string;
   class: string;
   conditions: Condition[];
   count?: number;
   northwesternSpectrum?: Record<string, number>;
+  formulations?: string[];
+  route?: string | string[];
+  routeColor?: 'red' | 'blue' | 'purple';
+  // Allow any additional properties from enhanced data
+  [key: string]: any;
 }
 
 interface AntibioticStats {
@@ -143,27 +148,27 @@ const AntibioticExplorer: FC<AntibioticExplorerProps> = ({
   // Enhanced antibiotics data with Northwestern information
   const enhancedAntibiotics: Antibiotic[] = useMemo(() => {
     return (antibiotics || []).map((antibiotic) => {
-      const enhanced = getAntibioticById(antibiotic.id);
-      return enhanced || antibiotic;
+      const numId = typeof antibiotic.id === 'string' ? parseInt(antibiotic.id, 10) : antibiotic.id;
+      const enhanced = getAntibioticById(numId);
+      return (enhanced ? { ...antibiotic, ...enhanced } : antibiotic) as Antibiotic;
     });
   }, [antibiotics]);
 
-  // Northwestern interaction handlers
+  // Northwestern interaction handlers - signatures match NorthwesternPieChart props
   const handleNorthwesternSegmentHover = (
-    segmentKey: string,
-    event: React.MouseEvent,
-    context: any
+    segment: string,
+    coverage: number,
+    context: string
   ): void => {
-    setSelectedSegment(segmentKey);
+    setSelectedSegment(segment);
   };
 
   const handleNorthwesternSegmentClick = (
-    segmentKey: string,
-    event: React.MouseEvent,
-    context: any
+    segment: string,
+    antibioticData: any
   ): void => {
-    if (context.antibiotic) {
-      const antibiotic = enhancedAntibiotics.find((ab) => ab.name === context.antibiotic);
+    if (antibioticData?.name) {
+      const antibiotic = enhancedAntibiotics.find((ab) => ab.name === antibioticData.name);
       if (antibiotic) {
         selectAntibiotic(antibiotic);
       }
@@ -468,7 +473,7 @@ const AntibioticExplorer: FC<AntibioticExplorerProps> = ({
 
                       <div className="flex justify-center">
                         <NorthwesternPieChart
-                          antibiotic={antibiotic}
+                          antibiotic={antibiotic as any}
                           size="small"
                           interactive={true}
                           onSegmentHover={handleNorthwesternSegmentHover}
@@ -522,7 +527,8 @@ const AntibioticExplorer: FC<AntibioticExplorerProps> = ({
 
           {/* Northwestern Coverage Visualization */}
           {(() => {
-            const enhancedSelected = getAntibioticById(selectedAntibiotic.id);
+            const numId = typeof selectedAntibiotic.id === 'string' ? parseInt(selectedAntibiotic.id, 10) : selectedAntibiotic.id;
+            const enhancedSelected = getAntibioticById(numId);
             return enhancedSelected?.northwesternSpectrum ? (
               <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
                 <div className="flex items-center justify-between mb-4">
@@ -537,15 +543,15 @@ const AntibioticExplorer: FC<AntibioticExplorerProps> = ({
 
                 <div className="flex items-center justify-center">
                   <NorthwesternPieChart
-                    antibiotic={enhancedSelected}
+                    antibiotic={enhancedSelected as any}
                     size="large"
                     interactive={true}
                     showLabels={false}
-                    onSegmentHover={(segment: string, event: React.MouseEvent, context: any) => {
+                    onSegmentHover={(segment: string, coverage: number, context: string) => {
                       setSelectedSegment(segment);
                     }}
-                    onSegmentClick={(segment: string, event: React.MouseEvent, context: any) => {
-                      console.log('Segment analysis:', segment, context);
+                    onSegmentClick={(segment: string, antibioticData: any) => {
+                      console.log('Segment analysis:', segment, antibioticData);
                     }}
                     selectedSegments={selectedSegment ? [selectedSegment] : []}
                     educationLevel="resident"
@@ -554,21 +560,24 @@ const AntibioticExplorer: FC<AntibioticExplorerProps> = ({
                   />
                 </div>
 
-                {selectedSegment && (
-                  <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
-                    <div className="text-sm">
-                      <span className="font-medium text-blue-900">
-                        {selectedSegment.replace('_', ' ')} Coverage:
-                      </span>
-                      <span className="ml-2">
-                        {enhancedSelected.northwesternSpectrum[selectedSegment] === 0 && 'No coverage'}
-                        {enhancedSelected.northwesternSpectrum[selectedSegment] === 1 &&
-                          'Moderate coverage'}
-                        {enhancedSelected.northwesternSpectrum[selectedSegment] === 2 && 'Good coverage'}
-                      </span>
+                {selectedSegment && (() => {
+                  const spectrum = enhancedSelected.northwesternSpectrum as unknown as Record<string, number>;
+                  const coverageLevel = spectrum[selectedSegment];
+                  return (
+                    <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
+                      <div className="text-sm">
+                        <span className="font-medium text-blue-900">
+                          {selectedSegment.replace('_', ' ')} Coverage:
+                        </span>
+                        <span className="ml-2">
+                          {coverageLevel === 0 && 'No coverage'}
+                          {coverageLevel === 1 && 'Moderate coverage'}
+                          {coverageLevel === 2 && 'Good coverage'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             ) : null;
           })()}
