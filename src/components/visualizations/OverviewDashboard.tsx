@@ -88,13 +88,13 @@ OverviewDashboard.displayName = 'OverviewDashboard';
  * Individual metric card component
  */
 interface MetricCardProps {
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   iconColor: string;
   value: number;
   label: string;
 }
 
-const MetricCard = memo<FC<MetricCardProps>>(({ icon: Icon, iconColor, value, label }) => (
+const MetricCard: FC<MetricCardProps> = memo(({ icon: Icon, iconColor, value, label }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border">
     <div className="flex items-center gap-3">
       <Icon className={iconColor} size={24} />
@@ -117,7 +117,7 @@ interface GramStatusCardProps {
   totalPathogens: number;
 }
 
-const GramStatusCard = memo<FC<GramStatusCardProps>>(({
+const GramStatusCard: FC<GramStatusCardProps> = memo(({
   gramPositive,
   gramNegative,
   totalPathogens
@@ -156,7 +156,7 @@ interface GramStatusBarProps {
   colorClass: string;
 }
 
-const GramStatusBar = memo<FC<GramStatusBarProps>>(({
+const GramStatusBar: FC<GramStatusBarProps> = memo(({
   label,
   count,
   total,
@@ -189,7 +189,7 @@ interface TopCategoriesCardProps {
   categoryDistribution: Record<string, number>;
 }
 
-const TopCategoriesCard = memo<FC<TopCategoriesCardProps>>(({ categoryDistribution }) => (
+const TopCategoriesCard: FC<TopCategoriesCardProps> = memo(({ categoryDistribution }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border">
     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
       <PieChart size={20} className="text-blue-600" />
@@ -197,13 +197,13 @@ const TopCategoriesCard = memo<FC<TopCategoriesCardProps>>(({ categoryDistributi
     </h3>
     <div className="space-y-2">
       {Object.entries(categoryDistribution)
-        .sort(([, a], [, b]) => b - a)
+        .sort(([, a], [, b]) => (b as number) - (a as number))
         .slice(0, 5)
         .map(([category, count]) => (
           <div key={category} className="flex items-center justify-between">
             <span className="text-gray-700 text-sm">{category}</span>
             <span className="text-sm font-medium bg-blue-100 text-blue-800 px-2 py-1 rounded">
-              {count}
+              {count as number}
             </span>
           </div>
         ))}
