@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-06)
 
 **Core value:** Accurate medical data with flexible, experimental interaction modes that transform antibiotic coverage knowledge into durable clinical recall.
-**Current focus:** Phase 6 — Multi-Modal Learning Flow
+**Current focus:** Phase 7 — Performance & Polish (Phase 6 complete)
 
 ## Current Position
 
 Phase: 6 of 8 (Multi-Modal Learning Flow)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-07 — Completed 06-01-PLAN.md (Learning Hub)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-07 — Completed 06-02-PLAN.md (Context Preservation)
 
-Progress: ████████████████████░░░░░░ 80%
+Progress: █████████████████████░░░░ 84%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 20
-- Average duration: 4.3 min
-- Total execution time: 1.45 hours
+- Total plans completed: 21
+- Average duration: 4.6 min
+- Total execution time: 1.6 hours
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: ████████████████████░░░�
 | 3 | 7 | 24 min | 3.4 min |
 | 4 | 3 | 16 min | 5.3 min |
 | 5 | 2 | 13 min | 6.5 min |
-| 6 | 1 | 3 min | 3 min |
+| 6 | 2 | 15 min | 7.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 4 min, 6 min, 5 min, 8 min, 3 min
-- Trend: Learning Hub established as central dashboard
+- Last 5 plans: 6 min, 5 min, 8 min, 3 min, 12 min
+- Trend: Phase 6 complete - multi-modal learning flow connected
 
 ## Accumulated Context
 
@@ -110,6 +110,9 @@ Recent decisions affecting current work:
 | 05-02 | Northwestern 8-segment model hardcoded in D3NetworkGraph | Reliable coverage mapping with props as fallback |
 | 06-01 | Add 'hub' to TabType at start of union | Makes hub the default landing page |
 | 06-01 | Update AppContext default in addition to App.tsx | AppContext defines actual initial state, not just destructuring default |
+| 06-02 | Separate SharedSelectionContext from AppContext | Clean separation: AppContext for UI/nav, SharedSelectionContext for learning state |
+| 06-02 | Bidirectional sync: read on mount, write on change | Inherit selections from other modes, propagate changes back |
+| 06-02 | Hub as first nav item in header | "Always get back to dashboard" UX per 06-CONTEXT requirements |
 
 ### Deferred Issues
 
@@ -131,6 +134,6 @@ None - Phase 6 in progress.
 ## Session Continuity
 
 Last session: 2026-01-07
-Stopped at: Completed 06-01-PLAN.md (Learning Hub)
-Next plan: 06-02-PLAN.md (Context Preservation)
+Stopped at: Completed 06-02-PLAN.md (Context Preservation) - Phase 6 complete
+Next phase: Phase 7 - Performance & Polish
 Resume file: None
