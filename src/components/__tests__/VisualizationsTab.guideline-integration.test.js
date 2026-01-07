@@ -77,13 +77,6 @@ jest.mock('../PathogenNetworkVisualization', () => {
   };
 });
 
-// Mock PathogenNetworkVisualizationCytoscape
-jest.mock('../PathogenNetworkVisualizationCytoscape', () => {
-  return function MockPathogenNetworkVisualizationCytoscape() {
-    return <div data-testid="pathogen-network-cytoscape">Pathogen Network Cytoscape</div>;
-  };
-});
-
 // Mock NetworkVisualizationD3
 jest.mock('../NetworkVisualizationD3', () => {
   return function MockNetworkVisualizationD3() {

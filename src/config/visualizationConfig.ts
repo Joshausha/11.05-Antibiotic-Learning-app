@@ -86,7 +86,6 @@ export const networkLayoutOptions = [
   { value: 'd3-interactive', label: 'D3 Interactive (Click-to-Explore)' },
   { value: 'd3', label: 'D3 Force-Directed' },
   { value: 'd3-pro', label: 'D3 Multi-Layout (New)' },
-  { value: 'cytoscape', label: 'Cytoscape Network' },
   { value: 'spatial', label: 'Northwestern Spatial' },
   { value: 'enhanced', label: 'Enhanced Clinical Lab' }
 ];

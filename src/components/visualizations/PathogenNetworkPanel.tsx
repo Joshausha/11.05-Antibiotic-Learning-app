@@ -8,7 +8,6 @@ import React, { memo, FC } from 'react';
 import { Network } from 'lucide-react';
 import ErrorBoundary from '../ErrorBoundary';
 import PathogenNetworkVisualization from '../PathogenNetworkVisualization';
-import PathogenNetworkVisualizationCytoscape from '../PathogenNetworkVisualizationCytoscape';
 import NetworkVisualizationD3 from '../NetworkVisualizationD3';
 import D3NetworkGraph from './D3NetworkGraph';
 import NorthwesternSpatialLayout from '../NorthwesternSpatialLayout';
@@ -104,8 +103,6 @@ const PathogenNetworkPanel: FC<PathogenNetworkPanelProps> = memo(({
         return 'Force-directed layout showing pathogen relationships through dynamic positioning';
       case 'd3-pro':
         return 'Professional D3.js multi-layout visualization: Switch between Force-Directed (similarity clustering), Hierarchical (clinical severity), and Circular (Gram stain classification) layouts. Click nodes for details and zoom/pan with mouse.';
-      case 'cytoscape':
-        return 'Cytoscape-powered network visualization.';
       case 'spatial':
         return `Northwestern spatial layout organizing ${antibioticData?.antibiotics?.length || 0} antibiotics using ${spatialViewMode} methodology with clinical workflow optimization`;
       default:
@@ -181,8 +178,6 @@ const PathogenNetworkPanel: FC<PathogenNetworkPanelProps> = memo(({
             height={600}
             onNodeClick={onNetworkNodeClick}
           />
-        ) : networkLayoutMode === 'cytoscape' ? (
-          <PathogenNetworkVisualizationCytoscape />
         ) : networkLayoutMode === 'enhanced' ? (
           <PathogenNetworkVisualizationEnhanced />
         ) : (
