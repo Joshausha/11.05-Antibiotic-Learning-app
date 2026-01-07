@@ -13,12 +13,13 @@
  * Based on Phase 2 research findings - uses D3 for physics, React for rendering.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useD3ForceSimulation, NetworkNode, NetworkEdge } from '../../hooks/useD3ForceSimulation';
 import { useNetworkFiltering } from '../../hooks/useNetworkFiltering';
 import { Pathogen, Antibiotic, NorthwesternSpectrum, Coverage } from '../../types/medical.types';
 import NetworkFilterControls from '../network/NetworkFilterControls';
 import NetworkLegend from '../network/NetworkLegend';
+import NetworkTooltip from '../network/NetworkTooltip';
 import { getGramStainColor, getNetworkNodeRadius } from '../../utils/networkNodeStyles';
 
 interface D3NetworkGraphProps {
@@ -154,6 +155,39 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
     { width, height }
   );
 
+  // Layer 2: Tooltip state for hover interactions
+  const [hoveredNode, setHoveredNode] = useState<NetworkNode | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+
+  // Create tooltip content from node data
+  const createTooltipContent = (node: NetworkNode) => {
+    const nodeData = node as any; // Type assertion for additional data
+
+    if (node.type === 'pathogen') {
+      // Count how many antibiotics cover this pathogen
+      const coverageCount = edges.filter(edge => {
+        const source = edge.source as NetworkNode;
+        return source.id === node.id;
+      }).length;
+
+      return {
+        name: node.name,
+        type: node.type,
+        gramStain: nodeData.gramStain,
+        clinicalRelevance: nodeData.clinicalRelevance,
+        coverageCount
+      };
+    } else {
+      // Antibiotic node
+      return {
+        name: node.name,
+        type: node.type,
+        mechanism: nodeData.mechanism,
+        antibioticClass: nodeData.class
+      };
+    }
+  };
+
   return (
     <div>
       {/* Filter Controls */}
@@ -232,6 +266,11 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
                 stroke="#fff"
                 strokeWidth={2}
                 style={{ cursor: 'pointer' }}
+                onMouseEnter={() => {
+                  setHoveredNode(node);
+                  setTooltipPosition({ x: node.x || 0, y: node.y || 0 });
+                }}
+                onMouseLeave={() => setHoveredNode(null)}
               />
               <text
                 textAnchor="middle"
@@ -247,6 +286,14 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
           );
         })}
       </g>
+
+      {/* Layer 2: Tooltip on hover */}
+      {hoveredNode && (
+        <NetworkTooltip
+          content={createTooltipContent(hoveredNode)}
+          position={tooltipPosition}
+        />
+      )}
     </svg>
 
       {/* Layer 1: Legend explains visual encoding */}
