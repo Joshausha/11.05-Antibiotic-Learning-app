@@ -431,10 +431,6 @@ export class NorthwesternPerformanceOptimizer {
 // MODULE EXPORTS
 // ============================================================================
 
-export {
-  VirtualizationManager,
-  PerformanceMonitor,
-  NorthwesternPerformanceOptimizer
-};
-
+// Classes are already exported inline with 'export class' declarations above
+// Just export the default for convenience
 export default NorthwesternPerformanceOptimizer;

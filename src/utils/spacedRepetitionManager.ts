@@ -171,7 +171,7 @@ class SpacedRepetitionManager {
 
     // First priority: due reviews
     const dueQuestions = dueCards.slice(0, Math.min(Math.floor(targetCount * 0.7), dueCards.length));
-    const validDueQuestions = dueQuestions
+    const validDueQuestions: RecommendedQuestion[] = dueQuestions
       .map(dc => {
         const foundQuestion = this.findQuestionById(allQuestions, dc.cardId);
         if (foundQuestion) {
@@ -180,7 +180,7 @@ class SpacedRepetitionManager {
             reason: 'Due for review',
             priority: 'high' as const,
             cardId: dc.cardId
-          };
+          } as RecommendedQuestion;
         }
         return null;
       })

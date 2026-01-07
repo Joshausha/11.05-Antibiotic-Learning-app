@@ -25,6 +25,43 @@ interface RboConditionData {
   notes: string[];
 }
 
+interface TransformedCondition {
+  id: string;
+  category: string;
+  name: string;
+  description: string;
+  commonPathogens: string[];
+  empiricTherapy: Record<string, string>;
+  duration: string;
+  keyPoints: string[];
+  clinicalPearls: string[];
+  transformed: boolean;
+  _originalData: {
+    antibioticDuration?: string[];
+    keyResources?: any;
+  };
+}
+
+interface DatasetStats {
+  totalConditions: number;
+  categories: string[];
+  categoryCount: Record<string, number>;
+  validConditions: number;
+}
+
+interface RboCondition {
+  id: string;
+  category: string;
+  name: string;
+  description?: string;
+  commonPathogens?: string[];
+  empiricAntibioticTherapy?: Array<{ condition: string; therapy: string }>;
+  antibioticDuration?: string[];
+  notes?: string[];
+  keyResources?: any;
+  [key: string]: any;
+}
+
 interface TransformationResult {
   data: RboConditionData[];
   stats?: Record<string, any>;
@@ -98,9 +135,9 @@ const rboJsonData: RboConditionData[] = [
  * @param statsFn - Optional stats function for testing
  */
 export const loadAndTransformRboData = async (
-  transformFn: (data: RboConditionData[]) => RboConditionData[] = transformRboDataset,
-  statsFn: (data: RboConditionData[]) => Record<string, any> = getDatasetStats
-): Promise<RboConditionData[]> => {
+  transformFn: (data: RboCondition[]) => TransformedCondition[] = transformRboDataset,
+  statsFn: (data: TransformedCondition[]) => DatasetStats = getDatasetStats
+): Promise<TransformedCondition[]> => {
   try {
     // Check if we have data
     if (!rboJsonData || !Array.isArray(rboJsonData)) {
@@ -109,7 +146,8 @@ export const loadAndTransformRboData = async (
     }
 
     // Use Promise.resolve to ensure Jest handles the function call correctly
-    const transformedData = await Promise.resolve(transformFn(rboJsonData));
+    // Cast to RboCondition[] since RboConditionData is compatible
+    const transformedData = await Promise.resolve(transformFn(rboJsonData as unknown as RboCondition[]));
 
     // Validate transformed data
     if (!Array.isArray(transformedData)) {

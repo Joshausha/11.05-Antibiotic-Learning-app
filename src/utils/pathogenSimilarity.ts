@@ -37,10 +37,13 @@ interface PathogenData {
   [key: string]: any;
 }
 
-interface SimplePathogen {
+// Use SimplePathogen from data file, but define a local type for strict gramStain
+type GramStainType = 'positive' | 'negative' | 'acid-fast' | 'atypical' | 'virus' | 'mixed' | string;
+
+interface SimplePathogenLocal {
   id: number;
   name: string;
-  gramStain: 'positive' | 'negative' | 'acid-fast' | 'atypical' | 'virus';
+  gramStain: GramStainType;
   commonSites: string[];
   [key: string]: any;
 }
@@ -171,8 +174,8 @@ export const validateRelationshipMedically = (
   const pid1 = Number(pathogenId1);
   const pid2 = Number(pathogenId2);
 
-  const pathogen1 = simplePathogens.find((p: SimplePathogen) => p.id === pid1);
-  const pathogen2 = simplePathogens.find((p: SimplePathogen) => p.id === pid2);
+  const pathogen1 = simplePathogens.find((p) => p.id === pid1) as SimplePathogenLocal | undefined;
+  const pathogen2 = simplePathogens.find((p) => p.id === pid2) as SimplePathogenLocal | undefined;
 
   if (!pathogen1 || !pathogen2) {
     return { valid: false, reason: 'Pathogen not found' };
@@ -307,8 +310,8 @@ const generateClinicalRationale = (
   pathogenId2: number,
   similarity: number
 ): string => {
-  const p1 = simplePathogens.find((p: SimplePathogen) => p.id === pathogenId1);
-  const p2 = simplePathogens.find((p: SimplePathogen) => p.id === pathogenId2);
+  const p1 = simplePathogens.find((p) => p.id === pathogenId1) as SimplePathogenLocal | undefined;
+  const p2 = simplePathogens.find((p) => p.id === pathogenId2) as SimplePathogenLocal | undefined;
 
   if (!p1 || !p2) return '';
 
