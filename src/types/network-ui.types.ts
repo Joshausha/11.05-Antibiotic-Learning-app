@@ -43,6 +43,13 @@ export const initialFilters: NetworkFilters = {
 };
 
 // ==========================================
+// VISUALIZATION MODE TYPES
+// ==========================================
+
+// Multi-mode visualization support for different learning approaches
+export type VisualizationMode = 'network' | 'filtered' | 'northwestern';
+
+// ==========================================
 // ANTIBIOTIC TYPES
 // ==========================================
 
