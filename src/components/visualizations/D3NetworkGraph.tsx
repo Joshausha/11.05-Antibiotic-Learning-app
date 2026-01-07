@@ -22,6 +22,7 @@ import NetworkFilterControls from '../network/NetworkFilterControls';
 import NetworkLegend from '../network/NetworkLegend';
 import NetworkTooltip from '../network/NetworkTooltip';
 import { getGramStainColor, getNetworkNodeRadius } from '../../utils/networkNodeStyles';
+import '../../styles/networkAnimations.css';
 
 // Opacity constants for selection-based fade effect
 const OPACITY = {

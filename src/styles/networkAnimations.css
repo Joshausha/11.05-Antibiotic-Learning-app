@@ -1,0 +1,29 @@
+/**
+ * Network Animation Styles
+ *
+ * CSS transitions for network visualization elements.
+ * Applied to D3NetworkGraph components for smooth fade effects.
+ *
+ * Phase 5: Enhanced Network Interactivity
+ */
+
+/* Smooth opacity transitions for nodes */
+.network-node {
+  transition: opacity 300ms ease-in-out, fill-opacity 300ms ease-in-out;
+}
+
+/* Edges fade more for visual hierarchy */
+.network-edge {
+  transition: opacity 300ms ease-in-out, stroke-opacity 300ms ease-in-out;
+}
+
+/* Highlight ring appears/disappears smoothly */
+.network-highlight-ring {
+  transition: opacity 200ms ease-out;
+}
+
+/* Connected nodes get subtle scale effect for emphasis */
+.network-node-connected {
+  transform: scale(1.05);
+  transition: transform 300ms ease-out, opacity 300ms ease-in-out;
+}
