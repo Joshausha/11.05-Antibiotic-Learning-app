@@ -3,7 +3,7 @@ import { Antibiotic } from '../types/medical.types';
 /**
  * Northwestern 8-Segment Antibiotic Schema
  * Enhanced data structure supporting Northwestern pie chart visualization
- * 
+ *
  * Northwestern 8-Segment Categories:
  * 1. MRSA (Methicillin-resistant Staphylococcus aureus)
  * 2. VRE faecium (Vancomycin-resistant Enterococcus faecium)
@@ -13,12 +13,60 @@ import { Antibiotic } from '../types/medical.types';
  * 6. Gram(-) (Gram-negative organisms)
  * 7. MSSA (Methicillin-sensitive Staphylococcus aureus)
  * 8. E. faecalis (Enterococcus faecalis)
- * 
+ *
  * Coverage Scale: 0=no coverage (white), 1=poor/ok coverage (light), 2=good coverage (dark)
  */
 
+// Type definitions for Northwestern schema
+type CoverageLevel = 0 | 1 | 2;
+
+interface NorthwesternSpectrum {
+  MRSA: CoverageLevel;
+  VRE_faecium: CoverageLevel;
+  anaerobes: CoverageLevel;
+  atypicals: CoverageLevel;
+  pseudomonas: CoverageLevel;
+  gramNegative: CoverageLevel;
+  MSSA: CoverageLevel;
+  enterococcus_faecalis: CoverageLevel;
+}
+
+type NorthwesternCategory = keyof NorthwesternSpectrum;
+
+interface NorthwesternPosition {
+  x: number;
+  y: number;
+  group: string;
+  hasBorder: boolean;
+}
+
+interface AntibioticWithOptionalId {
+  id?: number;
+  name?: string;
+  [key: string]: unknown;
+}
+
+interface NorthwesternEnhancedAntibiotic extends AntibioticWithOptionalId {
+  northwesternSpectrum: NorthwesternSpectrum;
+  cellWallActive: boolean;
+  generation: string;
+  routeColor: string;
+  northwesternPosition: NorthwesternPosition;
+}
+
+interface CoverageResult {
+  antibioticId: number;
+  coverage: CoverageLevel;
+}
+
+interface CategoryStats {
+  noCoverage: number;
+  someCoverage: number;
+  goodCoverage: number;
+}
+
 // Northwestern Spectrum Mapping - Medical accuracy verified against current literature
-const northwesternSpectrumMap = {
+const northwesternSpectrumMap: Record<number, NorthwesternSpectrum> = {
   // PENICILLINS
   1: { // Penicillin
     MRSA: 0, VRE_faecium: 0, anaerobes: 1, atypicals: 0, 
@@ -167,7 +215,7 @@ const northwesternSpectrumMap = {
 };
 
 // Antibiotic Name to ID Mapping (for cases where antibiotics lack numeric id property)
-const antibioticNameToIdMap = {
+const antibioticNameToIdMap: Record<string, number> = {
   'Penicillin': 1, 'Vancomycin': 2, 'Ciprofloxacin': 3, 'Ceftriaxone': 4,
   'Azithromycin': 5, 'Clindamycin': 6, 'Gentamicin': 7, 'Meropenem': 8,
   'Doxycycline': 9, 'Trimethoprim-Sulfamethoxazole': 10, 'TMP-SMX': 10,
@@ -180,7 +228,7 @@ const antibioticNameToIdMap = {
 };
 
 // Cell Wall Activity Classification (for dotted border visualization)
-const cellWallActiveMap = {
+const cellWallActiveMap: Record<number, boolean> = {
   1: true,   // Penicillin
   4: true,   // Ceftriaxone
   8: true,   // Meropenem
@@ -215,7 +263,7 @@ const cellWallActiveMap = {
 };
 
 // Generation Classification (for Northwestern layout grouping)
-const generationMap = {
+const generationMap: Record<number, string> = {
   // Penicillins
   1: "Natural Penicillin",
   15: "Aminopenicillin",
@@ -254,7 +302,7 @@ const generationMap = {
 };
 
 // Route Color Classification (for Northwestern visualization)
-const routeColorMap = {
+const routeColorMap: Record<number, string> = {
   // PO only (red)
   16: "red",   // Amoxicillin
   17: "red",   // Amoxicillin-clavulanate
@@ -293,7 +341,7 @@ const routeColorMap = {
 };
 
 // Northwestern Spatial Positioning (Canvas coordinates for pie chart layout)
-const northwesternPositionMap = {
+const northwesternPositionMap: Record<number, NorthwesternPosition> = {
   // Cell wall agents with dotted border grouping
   // Penicillins cluster
   1: { x: 100, y: 200, group: "penicillins", hasBorder: true },
@@ -338,33 +386,37 @@ const northwesternPositionMap = {
  * Enhanced antibiotic data structure with Northwestern 8-segment support
  * Maintains full backward compatibility with existing schema
  */
-export const createNorthwesternAntibioticData = (originalAntibiotics) => {
-  return originalAntibiotics.map(antibiotic => {
+export const createNorthwesternAntibioticData = (originalAntibiotics: AntibioticWithOptionalId[]): NorthwesternEnhancedAntibiotic[] => {
+  return originalAntibiotics.map((antibiotic: AntibioticWithOptionalId) => {
     // Try ID first, then name lookup fallback
-    let antibioticId = antibiotic.id;
+    let antibioticId: number | undefined = antibiotic.id;
     if (antibioticId === undefined && antibiotic.name) {
       antibioticId = antibioticNameToIdMap[antibiotic.name];
     }
+
+    const defaultSpectrum: NorthwesternSpectrum = {
+      MRSA: 0, VRE_faecium: 0, anaerobes: 0, atypicals: 0,
+      pseudomonas: 0, gramNegative: 0, MSSA: 0, enterococcus_faecalis: 0
+    };
+
+    const defaultPosition: NorthwesternPosition = {
+      x: 0, y: 0, group: "unclassified", hasBorder: false
+    };
 
     return {
       // Preserve all original fields for backward compatibility
       ...antibiotic,
 
       // Add Northwestern 8-segment spectrum coverage
-      northwesternSpectrum: northwesternSpectrumMap[antibioticId] || {
-        MRSA: 0, VRE_faecium: 0, anaerobes: 0, atypicals: 0,
-        pseudomonas: 0, gramNegative: 0, MSSA: 0, enterococcus_faecalis: 0
-      },
+      northwesternSpectrum: (antibioticId !== undefined ? northwesternSpectrumMap[antibioticId] : null) || defaultSpectrum,
 
       // Add Northwestern visualization properties
-      cellWallActive: cellWallActiveMap[antibioticId] || false,
-      generation: generationMap[antibioticId] || "Unclassified",
-      routeColor: routeColorMap[antibioticId] || "gray",
+      cellWallActive: (antibioticId !== undefined ? cellWallActiveMap[antibioticId] : false) || false,
+      generation: (antibioticId !== undefined ? generationMap[antibioticId] : "Unclassified") || "Unclassified",
+      routeColor: (antibioticId !== undefined ? routeColorMap[antibioticId] : "gray") || "gray",
 
       // Add spatial positioning for Northwestern layout
-      northwesternPosition: northwesternPositionMap[antibioticId] || {
-        x: 0, y: 0, group: "unclassified", hasBorder: false
-      }
+      northwesternPosition: (antibioticId !== undefined ? northwesternPositionMap[antibioticId] : null) || defaultPosition
     };
   });
 };
@@ -372,16 +424,16 @@ export const createNorthwesternAntibioticData = (originalAntibiotics) => {
 /**
  * Get Northwestern spectrum coverage for a specific antibiotic
  */
-export const getNorthwesternSpectrum = (antibioticId) => {
+export const getNorthwesternSpectrum = (antibioticId: number): NorthwesternSpectrum | null => {
   return northwesternSpectrumMap[antibioticId] || null;
 };
 
 /**
  * Get all antibiotics with coverage against a specific Northwestern category
  */
-export const getAntibioticsForNorthwesternCategory = (category, minCoverage = 1) => {
-  const results = [];
-  
+export const getAntibioticsForNorthwesternCategory = (category: NorthwesternCategory, minCoverage: CoverageLevel = 1): CoverageResult[] => {
+  const results: CoverageResult[] = [];
+
   Object.entries(northwesternSpectrumMap).forEach(([antibioticId, spectrum]) => {
     if (spectrum[category] >= minCoverage) {
       results.push({
@@ -390,100 +442,100 @@ export const getAntibioticsForNorthwesternCategory = (category, minCoverage = 1)
       });
     }
   });
-  
+
   return results.sort((a, b) => b.coverage - a.coverage);
 };
 
 /**
  * Get Northwestern coverage statistics
  */
-export const getNorthwesternCoverageStats = () => {
-  const categories = ['MRSA', 'VRE_faecium', 'anaerobes', 'atypicals', 
+export const getNorthwesternCoverageStats = (): Record<NorthwesternCategory, CategoryStats> => {
+  const categories: NorthwesternCategory[] = ['MRSA', 'VRE_faecium', 'anaerobes', 'atypicals',
                      'pseudomonas', 'gramNegative', 'MSSA', 'enterococcus_faecalis'];
-  
-  const stats = {};
-  
-  categories.forEach(category => {
+
+  const stats: Record<string, CategoryStats> = {};
+
+  categories.forEach((category: NorthwesternCategory) => {
     stats[category] = {
       noCoverage: 0,    // coverage = 0
-      someCoverage: 0,  // coverage = 1  
+      someCoverage: 0,  // coverage = 1
       goodCoverage: 0   // coverage = 2
     };
-    
-    Object.values(northwesternSpectrumMap).forEach(spectrum => {
+
+    Object.values(northwesternSpectrumMap).forEach((spectrum: NorthwesternSpectrum) => {
       if (spectrum[category] === 0) stats[category].noCoverage++;
       else if (spectrum[category] === 1) stats[category].someCoverage++;
       else if (spectrum[category] === 2) stats[category].goodCoverage++;
     });
   });
-  
-  return stats;
+
+  return stats as Record<NorthwesternCategory, CategoryStats>;
 };
 
 /**
  * Get cell wall active antibiotics (for dotted border grouping)
  */
-export const getCellWallActiveAntibiotics = () => {
+export const getCellWallActiveAntibiotics = (): number[] => {
   return Object.entries(cellWallActiveMap)
-    .filter(([id, isActive]) => isActive)
-    .map(([id, isActive]) => parseInt(id));
+    .filter(([_id, isActive]) => isActive)
+    .map(([id]) => parseInt(id));
 };
 
 /**
  * Get antibiotics by generation (for Northwestern layout grouping)
  */
-export const getAntibioticsByGeneration = () => {
-  const generations = {};
-  
+export const getAntibioticsByGeneration = (): Record<string, number[]> => {
+  const generations: Record<string, number[]> = {};
+
   Object.entries(generationMap).forEach(([antibioticId, generation]) => {
     if (!generations[generation]) {
       generations[generation] = [];
     }
     generations[generation].push(parseInt(antibioticId));
   });
-  
+
   return generations;
 };
 
 /**
  * Validate Northwestern schema data integrity
  */
-export const validateNorthwesternSchema = () => {
-  const errors = [];
+export const validateNorthwesternSchema = (): string[] | null => {
+  const errors: string[] = [];
   const antibioticIds = Object.keys(northwesternSpectrumMap).map(id => parseInt(id));
-  
+
   // Check that all antibiotics have complete Northwestern data
-  antibioticIds.forEach(id => {
+  antibioticIds.forEach((id: number) => {
     if (!northwesternSpectrumMap[id]) {
       errors.push(`Antibiotic ${id} missing Northwestern spectrum data`);
     }
-    
+
     if (cellWallActiveMap[id] === undefined) {
       errors.push(`Antibiotic ${id} missing cell wall activity classification`);
     }
-    
+
     if (!generationMap[id]) {
       errors.push(`Antibiotic ${id} missing generation classification`);
     }
-    
+
     if (!routeColorMap[id]) {
       errors.push(`Antibiotic ${id} missing route color classification`);
     }
-    
+
     if (!northwesternPositionMap[id]) {
       errors.push(`Antibiotic ${id} missing position data`);
     }
   });
-  
+
   // Validate Northwestern spectrum values
   Object.entries(northwesternSpectrumMap).forEach(([id, spectrum]) => {
-    Object.entries(spectrum).forEach(([category, value]) => {
+    (Object.entries(spectrum) as [NorthwesternCategory, CoverageLevel][]).forEach(([category, value]) => {
       if (![0, 1, 2].includes(value)) {
         errors.push(`Antibiotic ${id} has invalid coverage value ${value} for ${category}`);
       }
     });
   });
-  
+
   return errors.length === 0 ? null : errors;
 };
 
