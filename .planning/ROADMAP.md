@@ -67,15 +67,16 @@ Plans:
 - [x] 03-07: Mode Integration & Entry Points - Completed 2026-01-07
 
 ### Phase 4: Quiz System Core
-**Goal**: Functional quiz/flashcard system with question management
+**Goal**: Board-prep style quiz experience with teaching-focused explanations (UWorld/Board Vitals UX pattern)
 **Depends on**: Phase 1
-**Research**: Unlikely (React state management, existing quiz data structure)
+**Research**: Complete (2026-01-07)
+**Research topics**: Existing quiz infrastructure audit, component refactoring patterns
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: Create quiz component with question rendering and answer validation
-- [ ] 04-02: Implement quiz session state management
-- [ ] 04-03: Add quiz performance tracking (correct/incorrect, time spent)
+- [ ] 04-01: Quiz Explanation Component - THE teaching moment (core of quiz experience)
+- [ ] 04-02: Quiz Flow Components - QuizQuestion display and QuizStartScreen
+- [ ] 04-03: Session Orchestration & Integration - QuizSession, QuizResults, app integration
 
 ### Phase 5: Spaced Repetition Integration
 **Goal**: Spaced repetition algorithm driving quiz question scheduling for retention
