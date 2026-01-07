@@ -10,6 +10,7 @@ import ErrorBoundary from '../ErrorBoundary';
 import PathogenNetworkVisualization from '../PathogenNetworkVisualization';
 import PathogenNetworkVisualizationCytoscape from '../PathogenNetworkVisualizationCytoscape';
 import NetworkVisualizationD3 from '../NetworkVisualizationD3';
+import D3NetworkGraph from './D3NetworkGraph';
 import NorthwesternSpatialLayout from '../NorthwesternSpatialLayout';
 import PathogenNetworkVisualizationEnhanced from '../PathogenNetworkVisualizationEnhanced';
 import { networkLayoutOptions, spatialViewOptions } from '../../config/visualizationConfig';
@@ -22,6 +23,10 @@ interface PathogenNetworkPanelProps {
   setSpatialViewMode?: (mode: string) => void;
   antibioticData?: {
     antibiotics?: Antibiotic[];
+    [key: string]: any;
+  };
+  pathogenData?: {
+    pathogens?: Pathogen[];
     [key: string]: any;
   };
   onSelectPathogen?: (pathogen: Pathogen) => void;
@@ -38,6 +43,7 @@ const PathogenNetworkPanel: FC<PathogenNetworkPanelProps> = memo(({
   spatialViewMode = 'clinical',
   setSpatialViewMode = () => {},
   antibioticData,
+  pathogenData,
   onSelectPathogen,
   onNetworkNodeClick,
   emergencyMode = false,
@@ -92,6 +98,8 @@ const PathogenNetworkPanel: FC<PathogenNetworkPanelProps> = memo(({
   // Get layout description text
   const getLayoutDescription = (): string => {
     switch (networkLayoutMode) {
+      case 'd3-interactive':
+        return 'Click-to-explore: Click any node to highlight its connections. Click pathogens to see covering antibiotics, click antibiotics to see pathogens they cover. Click background or same node to reset.';
       case 'd3':
         return 'Force-directed layout showing pathogen relationships through dynamic positioning';
       case 'd3-pro':
@@ -150,7 +158,14 @@ const PathogenNetworkPanel: FC<PathogenNetworkPanelProps> = memo(({
       </div>
 
       <ErrorBoundary>
-        {networkLayoutMode === 'd3' ? (
+        {networkLayoutMode === 'd3-interactive' ? (
+          <D3NetworkGraph
+            pathogens={pathogenData?.pathogens || []}
+            antibiotics={antibioticData?.antibiotics || []}
+            width={900}
+            height={600}
+          />
+        ) : networkLayoutMode === 'd3' ? (
           <PathogenNetworkVisualization
             selectedPathogen={null}
             onSelectPathogen={onSelectPathogen}

@@ -482,6 +482,7 @@ const VisualizationsTab: React.FC<VisualizationsTabProps> = ({
             spatialViewMode={spatialViewMode}
             setSpatialViewMode={setSpatialViewMode}
             antibioticData={antibioticData}
+            pathogenData={pathogenData}
             onSelectPathogen={onSelectPathogen}
             onNetworkNodeClick={handleNetworkNodeClick}
             emergencyMode={emergencyMode}
