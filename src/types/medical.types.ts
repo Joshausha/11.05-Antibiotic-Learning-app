@@ -235,18 +235,80 @@ export interface ClinicalGuideline {
 // QUIZ TYPES
 // ==========================================
 
+export type QuestionType = 'multiple-choice' | 'true-false' | 'matching' | 'fill-blank';
+export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';
+
+// Legacy difficulty type for backward compatibility
 export type QuestionDifficulty = 'beginner' | 'intermediate' | 'advanced' | 'easy' | 'medium' | 'hard';
 
+/**
+ * Quiz Question Entity
+ *
+ * Represents a single quiz question with complete metadata for spaced repetition
+ * and multi-modal learning (visual, comparison, and quiz modes).
+ *
+ * @example
+ * const question: QuizQuestion = {
+ *   id: "mrsa-coverage-001",
+ *   question: "Which antibiotic provides excellent coverage for MRSA?",
+ *   type: "multiple-choice",
+ *   difficulty: "beginner",
+ *   options: ["Ceftriaxone", "Vancomycin", "Azithromycin", "Ciprofloxacin"],
+ *   correctAnswer: "Vancomycin",
+ *   explanation: "Vancomycin is a glycopeptide with excellent MRSA coverage...",
+ *   tags: ["gram-positive", "MRSA", "glycopeptide"],
+ *   relatedAntibiotics: ["Vancomycin", "Linezolid"],
+ *   medicalAccuracyVerified: true,
+ *   lastUpdated: "2026-01-06"
+ * }
+ */
 export interface QuizQuestion {
-  id?: string;
+  id: string | number;
   question: string;
-  options: string[];
-  correct: number;
-  correctAnswer?: number;
+
+  /** Type of question (multiple-choice, true-false, matching, fill-blank) */
+  type: QuestionType;
+
+  /** Difficulty level for adaptive learning */
+  difficulty: DifficultyLevel;
+
+  /** Correct answer (string for text, string[] for multiple answers) */
+  correctAnswer: string | string[];
+
+  /** Options for multiple choice questions */
+  options?: string[];
+
+  /** Detailed explanation of the correct answer with medical reasoning */
   explanation: string;
+
+  /** Tags for organization and filtering (e.g., ['gram-positive', 'MRSA']) */
+  tags: string[];
+
+  /** Related antibiotic names for cross-referencing */
+  relatedAntibiotics?: string[];
+
+  /** Related pathogen names for cross-referencing */
+  relatedPathogens?: string[];
+
+  /**
+   * CRITICAL: Medical accuracy verification flag
+   * Must be true for all clinical content before deployment
+   */
+  medicalAccuracyVerified: boolean;
+
+  /** ISO date string of last content update (YYYY-MM-DD) */
+  lastUpdated: string;
+
+  // Legacy fields for backward compatibility
+  /** @deprecated Use correctAnswer instead */
+  correct?: number;
+
+  /** @deprecated Use difficulty (DifficultyLevel) instead */
   category?: string;
+
+  /** @deprecated Use tags array instead */
   conditionId?: string;
-  difficulty?: QuestionDifficulty;
+
   [key: string]: any;
 }
 
@@ -264,6 +326,61 @@ export interface QuizSession {
   answers: QuizAnswer[];
   score?: number;
   totalQuestions: number;
+}
+
+/**
+ * User Learning Progress Tracking
+ *
+ * Tracks individual question performance for spaced repetition algorithms.
+ * Supports ts-fsrs or similar spaced repetition systems.
+ */
+export interface UserProgress {
+  questionId: string;
+  timesCorrect: number;
+  timesIncorrect: number;
+  lastAttempted: number; // Unix timestamp
+  nextReviewDate: number; // Unix timestamp
+  easeFactor?: number; // For spaced repetition (e.g., SuperMemo SM-2)
+  interval?: number; // Days until next review
+  repetitions?: number; // Number of successful reviews
+}
+
+/**
+ * Performance Metrics
+ *
+ * Analytics for tracking learning progress across topics and difficulty levels.
+ */
+export interface PerformanceMetrics {
+  userId?: string;
+  totalQuestions: number;
+  correctAnswers: number;
+  incorrectAnswers: number;
+  averageAccuracy: number; // Percentage (0-100)
+  byDifficulty: Record<DifficultyLevel, { correct: number; total: number }>;
+  byTags: Record<string, { correct: number; total: number }>;
+  lastUpdated: number; // Unix timestamp
+}
+
+/**
+ * Comparison Mode Types
+ *
+ * Supports side-by-side comparison of antibiotics or pathogens
+ * for visual learning and decision support.
+ */
+export type ComparisonItem = Antibiotic | Pathogen;
+
+export interface ComparisonProperty {
+  propertyName: string;
+  displayName: string;
+  item1Value: any;
+  item2Value: any;
+  isDifferent: boolean;
+}
+
+export interface DiffHighlight {
+  propertyName: string;
+  highlightLevel: 'critical' | 'important' | 'minor';
+  reason: string;
 }
 
 // ==========================================
