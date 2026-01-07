@@ -9,14 +9,59 @@
  * Generated from RBO_JSON data
  * Total questions: 91 (79 original + 12 Northwestern)
  * Covers 20 medical conditions + Northwestern coverage analysis
- * Last updated: 2025-08-18
+ * Last updated: 2026-01-07
  */
 
 import { QuizQuestion } from '../types/medical.types';
 import northwesternQuizQuestions from './northwesternQuizQuestions';
 
-// Type definition for combined questions that includes Northwestern extended properties
-const quizQuestions: QuizQuestion[] = [
+/**
+ * Legacy question format - used for backwards compatibility with generated RBO data
+ * Questions are transformed to QuizQuestion interface at export
+ */
+interface LegacyQuizQuestion {
+  question: string;
+  options: string[];
+  correct: number;
+  explanation: string;
+  category: string;
+  conditionId: string;
+}
+
+/**
+ * Transform legacy question format to QuizQuestion interface
+ * Adds required fields with sensible defaults for medical content validation
+ */
+function transformLegacyQuestion(
+  legacy: LegacyQuizQuestion,
+  index: number
+): QuizQuestion {
+  // Generate tags from category and conditionId
+  const tags: string[] = [
+    legacy.category.toLowerCase().replace(/\s+/g, '-'),
+    legacy.conditionId,
+  ];
+
+  return {
+    id: `rbo-${String(index + 1).padStart(3, '0')}`,
+    question: legacy.question,
+    type: 'multiple-choice',
+    difficulty: 'intermediate', // Default - needs medical review for proper classification
+    options: legacy.options,
+    correctAnswer: legacy.options[legacy.correct],
+    explanation: legacy.explanation,
+    tags,
+    medicalAccuracyVerified: false, // CRITICAL: Needs medical review before deployment
+    lastUpdated: '2026-01-07',
+    // Legacy fields preserved for backward compatibility
+    correct: legacy.correct,
+    category: legacy.category,
+    conditionId: legacy.conditionId,
+  };
+}
+
+// Legacy question data from RBO JSON generation
+const legacyQuestions: LegacyQuizQuestion[] = [
   {
     "question": "Which of the following is a common pathogen causing uti - pyelonephritis?",
     "options": [
@@ -1046,12 +1091,18 @@ const quizQuestions: QuizQuestion[] = [
   }
 ];
 
+// Transform legacy questions to QuizQuestion interface
+const quizQuestions: QuizQuestion[] = legacyQuestions.map(transformLegacyQuestion);
+
 // Combine original questions with Northwestern questions
 // Northwestern questions have additional optional properties (difficulty, northwesternFocus, etc.)
-const combinedQuizQuestions: Array<QuizQuestion | any> = [
+// They use the legacy correct index format, so we treat them as compatible via the index signature
+const combinedQuizQuestions: QuizQuestion[] = [
   ...quizQuestions,
-  ...northwesternQuizQuestions
+  // Northwestern questions are spread with type assertion since they have compatible structure
+  // but use NorthwesternQuizQuestion interface (they have extra fields that are allowed via index signature)
+  ...(northwesternQuizQuestions as unknown as QuizQuestion[])
 ];
 
 export default combinedQuizQuestions;
-export { northwesternQuizQuestions };
+export { northwesternQuizQuestions, quizQuestions };
