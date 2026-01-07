@@ -21,7 +21,7 @@ import {
   CLINICAL_TIMING,
   MEDICAL_EASING,
   generateCSSKeyframes
-} from '../NorthwesternAnimations.js';
+} from '../NorthwesternAnimations';
 
 // Mock DOM elements for testing
 const createMockElement = (tagName = 'div') => {
