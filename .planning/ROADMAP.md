@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Visual Network Exploration** - Interactive network/graph showing antibiotic-bacteria relationships (Complete - 4/4 plans complete)
 - [x] **Phase 3: Comparison Interface** - Side-by-side comparison for antibiotics and bacteria properties (Complete - 7/7 plans complete)
 - [ ] **Phase 4: Quiz System Core** - Basic quiz/flashcard functionality with question management (In progress - 1/3 plans complete)
-- [ ] **Phase 5: Spaced Repetition Integration** - Implement spaced repetition algorithm for retention
+- [ ] **Phase 5: Enhanced Network Interactivity** - Click-to-explore drill-down (PIVOTED from Spaced Repetition)
 - [ ] **Phase 6: Multi-Modal Learning Flow** - Connect visual, comparison, and quiz modes into cohesive experience
 - [ ] **Phase 7: Performance & Polish** - Testing coverage, build optimization, error handling
 - [ ] **Phase 8: Learning Analytics** - Track progress, identify weak areas, suggest focus topics
@@ -78,21 +78,20 @@ Plans:
 - [ ] 04-02: Quiz Flow Components - QuizQuestion display and QuizStartScreen
 - [ ] 04-03: Session Orchestration & Integration - QuizSession, QuizResults, app integration
 
-### Phase 5: Spaced Repetition Integration
-**Goal**: Spaced repetition algorithm driving quiz question scheduling for retention
-**Depends on**: Phase 4
-**Research**: Likely (spaced repetition algorithms)
-**Research topics**: ts-fsrs library implementation, spaced repetition best practices for medical education
-**Plans**: 3 plans
+### Phase 5: Enhanced Network Interactivity
+**Goal**: Click-to-explore drill-down for visual relationship exploration
+**Depends on**: Phase 2
+**Research**: None (uses existing D3 patterns)
+**Note**: PIVOTED from "Spaced Repetition Integration" - user determined visual network enhancement more valuable for learning project
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: Integrate ts-fsrs library for spaced repetition scheduling
-- [ ] 05-02: Implement card review scheduling based on performance
-- [ ] 05-03: Add progress persistence (local storage or simple backend)
+- [ ] 05-01: Selection State & Fade System - Track selection, fade unconnected nodes/edges
+- [ ] 05-02: Bidirectional Drill-Down & Animation - Click handlers, smooth transitions
 
 ### Phase 6: Multi-Modal Learning Flow
 **Goal**: Seamless navigation between visual, comparison, and quiz modes
-**Depends on**: Phase 2, Phase 3, Phase 5
+**Depends on**: Phase 2, Phase 3, Phase 4
 **Research**: Unlikely (UX design, React context/routing)
 **Plans**: 2 plans
 
@@ -133,7 +132,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Visual Network Exploration | 4/4 | ✅ Complete | 2026-01-07 |
 | 3. Comparison Interface | 7/7 | ✅ Complete | 2026-01-07 |
 | 4. Quiz System Core | 1/3 | In progress | - |
-| 5. Spaced Repetition Integration | 0/3 | Not started | - |
+| 5. Enhanced Network Interactivity | 0/2 | Not started | - |
 | 6. Multi-Modal Learning Flow | 0/2 | Not started | - |
 | 7. Performance & Polish | 0/3 | Not started | - |
 | 8. Learning Analytics | 0/2 | Not started | - |
