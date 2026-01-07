@@ -55,7 +55,11 @@
       "Bash(git push)",
       "Bash(rm:*)",
       "Skill(document-skills:frontend-design)",
-      "Bash(timeout 30 npm start)"
+      "Bash(timeout 30 npm start)",
+      "WebSearch",
+      "Bash(timeout 120 npm run build)",
+      "Bash(TSC_COMPILE_ON_ERROR=true npm run build:*)",
+      "Bash(npm start)"
     ]
   }
 }

@@ -20,7 +20,18 @@ interface RetentionHistoryItem {
   retentionRate: number;
 }
 
+interface SpacedRepetitionAnalytics {
+  totalCards: number;
+  learned: number;
+  mature: number;
+  dueToday: number;
+  retentionRate: number;
+  averageInterval: number;
+}
+
 interface SpacedRepetitionData {
+  analytics?: SpacedRepetitionAnalytics;
+  weakAreas?: string[];
   retentionHistory?: RetentionHistoryItem[];
 }
 
@@ -138,7 +149,7 @@ const RetentionCurveChart: React.FC<RetentionCurveChartProps> = ({
         text: 'Learning Retention Curve',
         font: {
           size: 16,
-          weight: 'bold',
+          weight: 'bold' as const,
           family: '"Inter", sans-serif',
         },
         color: '#1F2937',

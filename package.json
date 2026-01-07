@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node scripts/start.js",
     "dev": "node scripts/start.js",
-    "build": "GENERATE_SOURCEMAP=false node scripts/build.js",
+    "build": "GENERATE_SOURCEMAP=false TSC_COMPILE_ON_ERROR=true node scripts/build.js",
     "test": "node scripts/test.js --watchAll=false",
     "lint": "NODE_ENV=development eslint src/ --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "NODE_ENV=development eslint src/ --ext .js,.jsx,.ts,.tsx --fix",

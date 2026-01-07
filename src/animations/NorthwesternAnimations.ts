@@ -89,13 +89,32 @@ export const MEDICAL_EASING = {
 // =============================================================================
 
 export class ClinicalAnimationManager {
+  // TypeScript property declarations
+  activeAnimations: Map<string, unknown>;
+  animationQueue: unknown[];
+  emergencyMode: boolean;
+  reducedMotion: boolean;
+  performanceMode: string;
+  deviceInfo: { isMobile: boolean; isLowPower: boolean; screenSize: string };
+  isMobile: boolean;
+  isLowPowerDevice: boolean;
+  screenSize: string;
+  frameTime: number;
+  lastFrameTime: number;
+  frameCount: number;
+  animationFrameId: number | null;
+
   constructor() {
     this.activeAnimations = new Map();
     this.animationQueue = [];
     this.emergencyMode = false;
     this.reducedMotion = this.detectReducedMotion();
     this.performanceMode = 'standard'; // 'standard', 'performance', 'battery'
-    
+    this.frameTime = 0;
+    this.lastFrameTime = 0;
+    this.frameCount = 0;
+    this.animationFrameId = null;
+
     // Mobile and clinical device detection
     this.deviceInfo = this.detectDeviceCapabilities();
     this.isMobile = this.deviceInfo.isMobile;

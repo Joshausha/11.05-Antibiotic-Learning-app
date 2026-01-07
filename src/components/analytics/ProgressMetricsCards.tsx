@@ -25,6 +25,8 @@ interface SpacedRepetitionAnalytics {
 
 interface SpacedRepetitionData {
   analytics?: SpacedRepetitionAnalytics;
+  weakAreas?: string[];
+  retentionHistory?: { retentionRate: number }[];
 }
 
 interface ProgressMetricsCardsProps {
@@ -66,14 +68,14 @@ const ProgressMetricsCards: React.FC<ProgressMetricsCardsProps> = ({
   );
 
   const fsrsMetrics: FSRSMetrics = useMemo(() => {
-    const analytics = spacedRepetitionData.analytics || {};
+    const analytics = spacedRepetitionData.analytics;
     return {
-      totalCards: analytics.totalCards || 0,
-      dueToday: analytics.dueToday || 0,
-      learned: analytics.learned || 0,
-      mature: analytics.mature || 0,
-      retentionRate: analytics.retentionRate || 100,
-      averageInterval: analytics.averageInterval || 0,
+      totalCards: analytics?.totalCards ?? 0,
+      dueToday: analytics?.dueToday ?? 0,
+      learned: analytics?.learned ?? 0,
+      mature: analytics?.mature ?? 0,
+      retentionRate: analytics?.retentionRate ?? 100,
+      averageInterval: analytics?.averageInterval ?? 0,
     };
   }, [spacedRepetitionData]);
 

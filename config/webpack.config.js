@@ -337,6 +337,8 @@ module.exports = function (webpackEnv) {
           babelRuntimeRegenerator,
         ]),
       ],
+      // Handle ESM-only packages (D3 v7.x, etc.) that use fully specified imports
+      fullySpecified: false,
     },
     module: {
       strictExportPresence: true,
@@ -347,6 +349,13 @@ module.exports = function (webpackEnv) {
           exclude: /@babel(?:\/|\\{1,2})runtime/,
           test: /\.(js|mjs|jsx|ts|tsx|css)$/,
           loader: require.resolve('source-map-loader'),
+        },
+        // Handle ESM-only packages (D3 v7.x, Cytoscape, etc.)
+        {
+          test: /\.m?js$/,
+          resolve: {
+            fullySpecified: false,
+          },
         },
         {
           // "oneOf" will traverse all following loaders until one will

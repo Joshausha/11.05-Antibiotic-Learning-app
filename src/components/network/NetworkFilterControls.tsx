@@ -1,25 +1,38 @@
 /**
  * NetworkFilterControls Component
  * Filter controls for pathogen network visualization
- * Extracted from PathogenNetworkVisualization.js during Phase 4 refactoring
+ * Clinical design system styling
  */
 
 import React, { memo, ReactNode } from 'react';
-import { Filter, RotateCcw } from 'lucide-react';
+import { Filter, RotateCcw, Loader2 } from 'lucide-react';
 import { FILTER_OPTIONS } from '../../utils/networkFilterUtils';
 import { FilterDropdownProps, NetworkFilterControlsProps, FilterOption } from '../../types/network-ui.types';
 
 /**
- * Filter dropdown component
+ * Filter dropdown component with clinical styling
  */
 const FilterDropdown = memo<FilterDropdownProps>(({ id, label, value, options, onChange }) => (
   <div className="flex items-center gap-2">
-    <label htmlFor={id} className="text-gray-600">{label}:</label>
+    <label
+      htmlFor={id}
+      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+    >
+      {label}:
+    </label>
     <select
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="
+        border border-slate-200 rounded-md px-3 py-1.5 text-sm
+        bg-white text-slate-700
+        focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500
+        hover:border-slate-300
+        transition-all duration-150
+        shadow-sm
+        cursor-pointer
+      "
     >
       {options.map((option: FilterOption) => (
         <option key={option.value} value={option.value}>
@@ -34,14 +47,6 @@ FilterDropdown.displayName = 'FilterDropdown';
 
 /**
  * Network filter controls component
- * @param {Object} props
- * @param {Object} props.filters - Current filter values
- * @param {Function} props.onFilterChange - Filter change handler
- * @param {Function} props.onClearFilters - Clear all filters handler
- * @param {Function} props.onResetLayout - Reset layout handler
- * @param {boolean} props.showLabels - Show labels state
- * @param {Function} props.onToggleLabels - Toggle labels handler
- * @param {boolean} props.isLayoutStable - Layout stability state
  */
 const NetworkFilterControls = memo<NetworkFilterControlsProps>(({
   filters,
@@ -57,12 +62,12 @@ const NetworkFilterControls = memo<NetworkFilterControlsProps>(({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Filter Controls */}
       <div className="flex items-center gap-4 text-sm flex-wrap">
-        <div className="flex items-center gap-2">
-          <Filter size={16} className="text-gray-600" />
-          <span className="font-medium text-gray-700">Filters:</span>
+        <div className="flex items-center gap-2 text-slate-700">
+          <Filter size={16} className="text-blue-600" />
+          <span className="font-semibold">Filters:</span>
         </div>
 
         <FilterDropdown
@@ -107,36 +112,70 @@ const NetworkFilterControls = memo<NetworkFilterControlsProps>(({
       </div>
 
       {/* Action Controls */}
-      <div className="flex items-center gap-4 text-sm">
-        <label className="flex items-center gap-1">
+      <div className="flex items-center gap-3 text-sm flex-wrap">
+        {/* Show Labels Toggle */}
+        <label className="flex items-center gap-2 cursor-pointer group">
           <input
             type="checkbox"
             checked={showLabels}
             onChange={(e) => onToggleLabels(e.target.checked)}
-            className="rounded"
+            className="
+              w-4 h-4 rounded border-slate-300
+              text-blue-600
+              focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-0
+              cursor-pointer
+            "
           />
-          Show Labels
+          <span className="text-slate-600 group-hover:text-slate-800 transition-colors">
+            Show Labels
+          </span>
         </label>
 
+        {/* Divider */}
+        <div className="h-5 w-px bg-slate-200" />
+
+        {/* Clear Filters Button */}
         <button
           onClick={onClearFilters}
-          className="flex items-center gap-1 px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors cursor-pointer"
+          className="
+            flex items-center gap-1.5 px-3 py-1.5
+            bg-slate-100 text-slate-700
+            border border-slate-200
+            rounded-md
+            hover:bg-slate-200 hover:border-slate-300
+            active:scale-[0.98]
+            transition-all duration-150
+            text-sm font-medium
+          "
         >
           Clear Filters
         </button>
 
+        {/* Reset Layout Button */}
         <button
           onClick={onResetLayout}
-          className="flex items-center gap-1 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors cursor-pointer"
+          className="
+            flex items-center gap-1.5 px-3 py-1.5
+            bg-gradient-to-r from-blue-600 to-blue-500
+            text-white
+            border border-blue-600
+            rounded-md
+            hover:from-blue-700 hover:to-blue-600
+            active:scale-[0.98]
+            transition-all duration-150
+            shadow-sm shadow-blue-500/20
+            text-sm font-medium
+          "
         >
           <RotateCcw size={14} />
           Reset Layout
         </button>
 
+        {/* Stabilizing Indicator */}
         {!isLayoutStable && (
-          <div className="flex items-center gap-2 text-blue-600">
-            <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span>Stabilizing...</span>
+          <div className="flex items-center gap-2 text-blue-600 ml-2">
+            <Loader2 size={14} className="animate-spin" />
+            <span className="text-sm font-medium">Stabilizing...</span>
           </div>
         )}
       </div>

@@ -31,11 +31,13 @@ interface SpacedRepetitionAnalytics {
   mature: number;
   dueToday: number;
   retentionRate: number;
+  averageInterval: number;
 }
 
 interface SpacedRepetitionData {
-  analytics: SpacedRepetitionAnalytics;
-  weakAreas: string[];
+  analytics?: SpacedRepetitionAnalytics;
+  weakAreas?: string[];
+  retentionHistory?: { retentionRate: number }[];
 }
 
 interface LearningAnalyticsDashboardProps {
@@ -57,6 +59,7 @@ const LearningAnalyticsDashboard: React.FC<LearningAnalyticsDashboardProps> = ({
       mature: 0,
       dueToday: 0,
       retentionRate: 100,
+      averageInterval: 0,
     },
     weakAreas: [],
   },
@@ -201,27 +204,27 @@ const LearningAnalyticsDashboard: React.FC<LearningAnalyticsDashboardProps> = ({
             <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
               <div className="text-sm font-medium text-purple-800 mb-2">📚 Cards in System</div>
               <div className="text-2xl font-bold text-purple-900">
-                {spacedRepetitionData.analytics.totalCards || 0}
+                {spacedRepetitionData.analytics?.totalCards || 0}
               </div>
               <div className="text-xs text-purple-600 mt-1">
-                {spacedRepetitionData.analytics.learned || 0} learned,{' '}
-                {spacedRepetitionData.analytics.mature || 0} mature
+                {spacedRepetitionData.analytics?.learned || 0} learned,{' '}
+                {spacedRepetitionData.analytics?.mature || 0} mature
               </div>
             </div>
 
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
               <div className="text-sm font-medium text-blue-800 mb-2">⏰ Due for Review</div>
               <div className="text-2xl font-bold text-blue-900">
-                {spacedRepetitionData.analytics.dueToday || 0}
+                {spacedRepetitionData.analytics?.dueToday || 0}
               </div>
               <div className="text-xs text-blue-600 mt-1">Cards ready for optimal learning</div>
             </div>
 
-            {spacedRepetitionData.weakAreas.length > 0 && (
+            {(spacedRepetitionData.weakAreas?.length ?? 0) > 0 && (
               <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                 <div className="text-sm font-medium text-yellow-800 mb-2">🎯 Areas for Improvement</div>
                 <div className="text-sm text-yellow-700">
-                  {spacedRepetitionData.weakAreas.join(', ')}
+                  {spacedRepetitionData.weakAreas?.join(', ')}
                 </div>
               </div>
             )}
@@ -233,11 +236,11 @@ const LearningAnalyticsDashboard: React.FC<LearningAnalyticsDashboardProps> = ({
           <h3 className="text-lg font-semibold text-gray-900 mb-4">💡 Study Recommendations</h3>
 
           <div className="space-y-3">
-            {spacedRepetitionData.analytics.dueToday > 0 ? (
+            {(spacedRepetitionData.analytics?.dueToday ?? 0) > 0 ? (
               <div className="p-3 bg-green-50 rounded-lg border border-green-200">
                 <div className="text-sm font-medium text-green-800 mb-1">Start with Reviews</div>
                 <div className="text-xs text-green-700">
-                  You have {spacedRepetitionData.analytics.dueToday} cards due for review.
+                  You have {spacedRepetitionData.analytics?.dueToday} cards due for review.
                   Complete these first for optimal retention.
                 </div>
               </div>
@@ -261,7 +264,7 @@ const LearningAnalyticsDashboard: React.FC<LearningAnalyticsDashboardProps> = ({
 
             <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
               <div className="text-sm font-medium text-purple-800 mb-1">
-                Retention Rate: {spacedRepetitionData.analytics.retentionRate || 100}%
+                Retention Rate: {spacedRepetitionData.analytics?.retentionRate || 100}%
               </div>
               <div className="text-xs text-purple-700">
                 FSRS algorithm is optimizing your review schedule for 90% retention.
