@@ -15,7 +15,9 @@
 
 import React, { useMemo } from 'react';
 import { useD3ForceSimulation, NetworkNode, NetworkEdge } from '../../hooks/useD3ForceSimulation';
-import { Pathogen, Antibiotic, NorthwesternSpectrum } from '../../types/medical.types';
+import { useNetworkFiltering } from '../../hooks/useNetworkFiltering';
+import { Pathogen, Antibiotic, NorthwesternSpectrum, Coverage } from '../../types/medical.types';
+import NetworkFilterControls from '../network/NetworkFilterControls';
 
 interface D3NetworkGraphProps {
   pathogens: Pathogen[];
@@ -76,29 +78,68 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
   width = 800,
   height = 600
 }) => {
-  // Convert data to network format
+  // Create coverage edges from source data
+  const rawCoverage = useMemo(() => {
+    const coverage: Coverage[] = [];
+    let coverageId = 0;
+
+    antibiotics.forEach(antibiotic => {
+      pathogens.forEach(pathogen => {
+        const category = pathogen.northwestern8SegmentCategory as keyof NorthwesternSpectrum;
+        if (category && antibiotic.northwesternSpectrum) {
+          const coverageLevel = antibiotic.northwesternSpectrum[category];
+          if (coverageLevel >= 0) {
+            coverage.push({
+              id: coverageId++,
+              pathogenId: pathogen.id,
+              antibioticId: antibiotic.id,
+              coverageLevel
+            });
+          }
+        }
+      });
+    });
+
+    return coverage;
+  }, [pathogens, antibiotics]);
+
+  // Apply filters using centralized hook
+  const {
+    filters,
+    setFilters,
+    filteredPathogens,
+    filteredAntibiotics,
+    filteredCoverage
+  } = useNetworkFiltering(pathogens, antibiotics, rawCoverage);
+
+  // Convert filtered data to network format
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
-    // Create nodes for pathogens
-    const pathogenNodes: NetworkNode[] = pathogens.map(pathogen => ({
+    // Create nodes for filtered pathogens
+    const pathogenNodes: NetworkNode[] = filteredPathogens.map(pathogen => ({
       id: `pathogen-${pathogen.id}`,
       type: 'pathogen' as const,
       name: pathogen.name,
-      // D3 will set x, y during simulation
     }));
 
-    // Create nodes for antibiotics
-    const antibioticNodes: NetworkNode[] = antibiotics.map(antibiotic => ({
+    // Create nodes for filtered antibiotics
+    const antibioticNodes: NetworkNode[] = filteredAntibiotics.map(antibiotic => ({
       id: `antibiotic-${antibiotic.id}`,
       type: 'antibiotic' as const,
       name: antibiotic.name,
-      // D3 will set x, y during simulation
+    }));
+
+    // Create edges from filtered coverage
+    const edges: NetworkEdge[] = filteredCoverage.map((cov, idx) => ({
+      id: `edge-${idx}`,
+      source: `pathogen-${cov.pathogenId}`,
+      target: `antibiotic-${cov.antibioticId}`,
+      coverageLevel: cov.coverageLevel
     }));
 
     const nodes = [...pathogenNodes, ...antibioticNodes];
-    const edges = createCoverageEdges(pathogens, antibiotics);
 
     return { nodes, edges };
-  }, [pathogens, antibiotics]);
+  }, [filteredPathogens, filteredAntibiotics, filteredCoverage]);
 
   // Use D3 force simulation hook
   const { nodes, edges } = useD3ForceSimulation(
@@ -108,7 +149,17 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
   );
 
   return (
-    <svg width={width} height={height} style={{ border: '1px solid #e0e0e0' }}>
+    <div>
+      {/* Filter Controls */}
+      <div className="mb-4">
+        <NetworkFilterControls
+          filters={filters}
+          onChange={setFilters}
+        />
+      </div>
+
+      {/* Network Visualization */}
+      <svg width={width} height={height} style={{ border: '1px solid #e0e0e0' }}>
       {/* Define marker for arrow heads (optional for future) */}
       <defs>
         <marker
@@ -186,6 +237,7 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
         })}
       </g>
     </svg>
+    </div>
   );
 };
 
