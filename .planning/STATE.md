@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-01-06)
 
 ## Current Position
 
-Phase: 4 of 8 (Quiz System Core)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-01-07 — Completed 04-03-PLAN.md (Session Orchestration & Integration)
+Phase: 5 of 8 (Enhanced Network Interactivity)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-07 — Completed 05-01-PLAN.md (Selection State & Fade System)
 
-Progress: █████████████████░░░░░░░░░ 65%
+Progress: ██████████████████░░░░░░░░ 69%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
+- Total plans completed: 18
 - Average duration: 4.2 min
-- Total execution time: 1.2 hours
+- Total execution time: 1.3 hours
 
 **By Phase:**
 
@@ -31,10 +31,11 @@ Progress: █████████████████░░░░░░�
 | 2 | 4 | 17 min | 4.25 min |
 | 3 | 7 | 24 min | 3.4 min |
 | 4 | 3 | 16 min | 5.3 min |
+| 5 | 1 | 5 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 6 min, 6 min, 4 min, 6 min
-- Trend: Phase 4 complete with consistent execution
+- Last 5 plans: 6 min, 6 min, 4 min, 6 min, 5 min
+- Trend: Phase 5 started with selection state implementation
 
 ## Accumulated Context
 
@@ -100,6 +101,9 @@ Recent decisions affecting current work:
 | 04-03 | State machine with three phases (active/explanation/complete) | Clear flow control for quiz progression |
 | 04-03 | User-controlled navigation only - NO auto-advance | Per CONTEXT.md: "user controls when to proceed" - respect learning time |
 | 04-03 | Retry resets all state, exit calls parent callback | Clean separation of concerns between session and parent |
+| 05-01 | Use single NetworkSelectionState object per Phase 02-02 pattern | Prevents state combination bugs, single source of truth |
+| 05-01 | Opacity values: nodes fade to 30%, edges to 15% | Edges more faded for visual hierarchy and clarity |
+| 05-01 | Edge connections determined bidirectionally | Works for both pathogen and antibiotic selection |
 
 ### Deferred Issues
 
@@ -116,11 +120,11 @@ Recent decisions affecting current work:
 
 ### Blockers/Concerns
 
-None - Phase 4 complete, ready to proceed to Phase 5.
+None - Phase 5 in progress, plan 1 of 2 complete.
 
 ## Session Continuity
 
 Last session: 2026-01-07
-Stopped at: Completed 04-03-PLAN.md (Session Orchestration & Integration)
-Next plan: Phase 5 planning required (Enhanced Network Interactivity)
+Stopped at: Completed 05-01-PLAN.md (Selection State & Fade System)
+Next plan: 05-02-PLAN.md (Bidirectional Drill-Down & Animation)
 Resume file: None

@@ -86,7 +86,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: Selection State & Fade System - Track selection, fade unconnected nodes/edges
+- [x] 05-01: Selection State & Fade System - Track selection, fade unconnected nodes/edges - Completed 2026-01-07
 - [ ] 05-02: Bidirectional Drill-Down & Animation - Click handlers, smooth transitions
 
 ### Phase 6: Multi-Modal Learning Flow
@@ -132,7 +132,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Visual Network Exploration | 4/4 | ✅ Complete | 2026-01-07 |
 | 3. Comparison Interface | 7/7 | ✅ Complete | 2026-01-07 |
 | 4. Quiz System Core | 3/3 | ✅ Complete | 2026-01-07 |
-| 5. Enhanced Network Interactivity | 0/2 | Not started | - |
+| 5. Enhanced Network Interactivity | 1/2 | In progress | - |
 | 6. Multi-Modal Learning Flow | 0/2 | Not started | - |
 | 7. Performance & Polish | 0/3 | Not started | - |
 | 8. Learning Analytics | 0/2 | Not started | - |
