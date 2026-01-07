@@ -14,7 +14,7 @@ import React, { useState } from 'react';
 import { Pathogen, Antibiotic } from '../../types/medical.types';
 import { VisualizationMode } from '../../types/network-ui.types';
 import D3NetworkGraph from './D3NetworkGraph';
-import NorthwesternPieChart from '../NorthwesternPieChart';
+import NorthwesternSpatialLayout from '../NorthwesternSpatialLayout';
 
 interface NetworkVisualizationContainerProps {
   pathogens: Pathogen[];
@@ -117,10 +117,13 @@ export const NetworkVisualizationContainer: React.FC<NetworkVisualizationContain
             <p className="text-sm text-purple-900">
               <strong>Northwestern Charts:</strong> 8-segment coverage visualization showing antibiotic spectrum
               across key pathogen categories (MRSA, VRE, anaerobes, atypicals, pseudomonas, gram-negative, MSSA, enterococcus).
+              Organized by drug class with spatial grouping.
             </p>
           </div>
-          <NorthwesternPieChart
+          <NorthwesternSpatialLayout
             antibiotics={antibiotics}
+            viewMode="comparison"
+            groupingMode="drugClass"
           />
         </div>
       </div>
