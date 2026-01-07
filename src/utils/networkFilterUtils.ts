@@ -207,11 +207,102 @@ export const FILTER_OPTIONS: FilterOptionsMap = {
   ]
 };
 
+/**
+ * Apply comprehensive filters to network data
+ * Pure function - no mutations, returns filtered copies
+ *
+ * @param pathogens - All pathogens
+ * @param antibiotics - All antibiotics
+ * @param coverage - All coverage edges
+ * @param filters - Filter criteria
+ * @returns Filtered pathogens, antibiotics, and coverage edges
+ */
+export function applyFilters(
+  pathogens: any[],
+  antibiotics: any[],
+  coverage: any[],
+  filters: any
+): { pathogens: any[], antibiotics: any[], coverage: any[] } {
+  // Filter pathogens by gram stain
+  const filteredPathogens = pathogens.filter(pathogen => {
+    if (filters.gramStain === 'all') return true;
+    return pathogen.gramStatus === filters.gramStain;
+  });
+
+  // Filter antibiotics by class, formulation, and mechanism
+  const filteredAntibiotics = antibiotics.filter(antibiotic => {
+    // Filter by antibiotic classes (multiple selection)
+    if (filters.antibioticClasses.length > 0) {
+      if (!filters.antibioticClasses.includes(antibiotic.class)) {
+        return false;
+      }
+    }
+
+    // Filter by formulation
+    if (filters.formulation !== 'all') {
+      // Check if antibiotic has the required formulation in routes array
+      const routes = antibiotic.routes || [];
+      const hasFormulation = routes.some((route: string) =>
+        route.toLowerCase().includes(filters.formulation.toLowerCase())
+      );
+      if (!hasFormulation) return false;
+    }
+
+    // Filter by mechanism of action (multiple selection)
+    if (filters.mechanismOfAction.length > 0) {
+      const mechanism = antibiotic.mechanismOfAction || '';
+      const hasMatch = filters.mechanismOfAction.some((moa: string) =>
+        mechanism.toLowerCase().includes(moa.toLowerCase())
+      );
+      if (!hasMatch) return false;
+    }
+
+    return true;
+  });
+
+  // Create sets of visible IDs for edge filtering
+  const visiblePathogenIds = new Set(filteredPathogens.map(p => p.id));
+  const visibleAntibioticIds = new Set(filteredAntibiotics.map(a => a.id));
+
+  // Filter coverage edges
+  const filteredCoverage = coverage.filter(edge => {
+    // Only show edges where both nodes are visible
+    if (!visiblePathogenIds.has(edge.pathogenId)) return false;
+    if (!visibleAntibioticIds.has(edge.antibioticId)) return false;
+
+    // Filter by coverage threshold
+    if (filters.coverageThreshold !== 'all') {
+      const thresholds: Record<string, number> = {
+        high: 2,
+        medium: 1,
+        low: 0
+      };
+      const requiredLevel = thresholds[filters.coverageThreshold];
+      if (edge.coverageLevel < requiredLevel) return false;
+    }
+
+    // Filter by resistance status
+    if (!filters.showResistance) {
+      // Hide edges marked as resistant (coverageLevel 0)
+      if (edge.coverageLevel === 0) return false;
+    }
+
+    return true;
+  });
+
+  return {
+    pathogens: filteredPathogens,
+    antibiotics: filteredAntibiotics,
+    coverage: filteredCoverage
+  };
+}
+
 export default {
   getPathogenResistanceInfo,
   getDetailedAntibioticInfo,
   filterNodes,
   filterEdges,
   DEFAULT_FILTERS,
-  FILTER_OPTIONS
+  FILTER_OPTIONS,
+  applyFilters
 };
