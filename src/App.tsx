@@ -19,6 +19,7 @@ import spacedRepetitionManager from './utils/spacedRepetitionManager';
 import quizQuestions from './data/quizQuestions';
 
 // Lazy-loaded components for code splitting (loaded on-demand)
+const LearningHub = lazy(() => import('./components/LearningHub'));
 const QuizTab = lazy(() => import('./components/QuizTab'));
 const ConsolidatedPathogenExplorer = lazy(() => import('./components/ConsolidatedPathogenExplorer'));
 const AntibioticExplorer = lazy(() => import('./components/AntibioticExplorer'));
@@ -33,7 +34,7 @@ const ComparisonModeContainer = lazy(() => import('./components/comparison/Compa
 const AppContent: FC = () => {
   // Get all state and data from context
   const {
-    activeTab = 'learn',
+    activeTab = 'hub',
     setActiveTab,
     selectedCondition,
     setSelectedCondition,
@@ -94,6 +95,14 @@ const AppContent: FC = () => {
         {/* Main Content */}
         <main id="main-content" className="max-w-6xl mx-auto p-4 md:p-8">
           {/* Render appropriate tab component based on activeTab */}
+          {activeTab === 'hub' && (
+            <ErrorBoundary>
+              <Suspense fallback={<SkeletonLoader type="content" lines={4} />}>
+                <LearningHub onNavigate={setActiveTab} />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+
           {activeTab === 'learn' && (
             <ErrorBoundary>
               {/* @ts-ignore - HomeTab not yet TypeScript */}

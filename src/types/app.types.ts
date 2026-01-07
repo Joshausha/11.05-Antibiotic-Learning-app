@@ -9,7 +9,7 @@
 
 import type { MedicalCondition } from './medical.types';
 
-export type TabType = 'learn' | 'quiz' | 'analytics' | 'reference' | 'pathogen-explorer' | 'antibiotic-explorer' | 'visualizations' | 'comparison';
+export type TabType = 'hub' | 'learn' | 'quiz' | 'analytics' | 'reference' | 'pathogen-explorer' | 'antibiotic-explorer' | 'visualizations' | 'comparison';
 
 export interface SearchData {
   filteredItems: any[];

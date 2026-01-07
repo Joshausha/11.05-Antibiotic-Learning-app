@@ -22,7 +22,7 @@ const AppContext = createContext<AppContextValue | undefined>(undefined);
  */
 export const AppProvider: FC<AppProviderProps> = ({ children }) => {
   // Core app state
-  const [activeTab, setActiveTab] = useState<TabType>('learn');
+  const [activeTab, setActiveTab] = useState<TabType>('hub');
   const [selectedCondition, setSelectedCondition] = useState<MedicalCondition | null>(null);
   const [showMobileMenu, setShowMobileMenu] = useState<boolean>(false);
 
@@ -89,7 +89,7 @@ export const useAppContext = (): AppContextValue => {
 
   // Agent T4: Defensive programming - ensure required properties exist
   const {
-    activeTab = 'learn',
+    activeTab = 'hub',
     setActiveTab,
     selectedCondition = null,
     setSelectedCondition,
