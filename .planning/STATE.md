@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-06)
 
 **Core value:** Accurate medical data with flexible, experimental interaction modes that transform antibiotic coverage knowledge into durable clinical recall.
-**Current focus:** Phase 5 complete — Ready for Phase 6
+**Current focus:** Phase 6 — Multi-Modal Learning Flow
 
 ## Current Position
 
-Phase: 5 of 8 (Enhanced Network Interactivity)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-07 — Completed 05-02-PLAN.md (Bidirectional Drill-Down & Animation)
+Phase: 6 of 8 (Multi-Modal Learning Flow)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-07 — Completed 06-01-PLAN.md (Learning Hub)
 
-Progress: ████████████████████░░░░░░ 77%
+Progress: ████████████████████░░░░░░ 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19
+- Total plans completed: 20
 - Average duration: 4.3 min
-- Total execution time: 1.4 hours
+- Total execution time: 1.45 hours
 
 **By Phase:**
 
@@ -32,10 +32,11 @@ Progress: ████████████████████░░░�
 | 3 | 7 | 24 min | 3.4 min |
 | 4 | 3 | 16 min | 5.3 min |
 | 5 | 2 | 13 min | 6.5 min |
+| 6 | 1 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 6 min, 4 min, 6 min, 5 min, 8 min
-- Trend: Phase 5 complete with click-to-explore interaction
+- Last 5 plans: 4 min, 6 min, 5 min, 8 min, 3 min
+- Trend: Learning Hub established as central dashboard
 
 ## Accumulated Context
 
@@ -107,6 +108,8 @@ Recent decisions affecting current work:
 | 05-02 | Use refs instead of state closure in D3 tick handler | Avoids stale closure bug - tick handler needs current simulation data |
 | 05-02 | CSS transitions (300ms) over D3.transition() | CSS works better with React declarative rendering |
 | 05-02 | Northwestern 8-segment model hardcoded in D3NetworkGraph | Reliable coverage mapping with props as fallback |
+| 06-01 | Add 'hub' to TabType at start of union | Makes hub the default landing page |
+| 06-01 | Update AppContext default in addition to App.tsx | AppContext defines actual initial state, not just destructuring default |
 
 ### Deferred Issues
 
@@ -123,11 +126,11 @@ Recent decisions affecting current work:
 
 ### Blockers/Concerns
 
-None - Phase 5 complete, ready for Phase 6.
+None - Phase 6 in progress.
 
 ## Session Continuity
 
 Last session: 2026-01-07
-Stopped at: Completed 05-02-PLAN.md (Phase 5 complete)
-Next plan: 06-01-PLAN.md (Multi-Modal Learning Flow)
+Stopped at: Completed 06-01-PLAN.md (Learning Hub)
+Next plan: 06-02-PLAN.md (Context Preservation)
 Resume file: None
