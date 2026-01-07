@@ -1,5 +1,6 @@
 import React from "react";
 import { Antibiotic } from "../../types/medical.types";
+import { PropertyComparisonRow } from "./PropertyComparisonRow";
 
 interface PairComparisonProps {
   leftAntibiotic: Antibiotic | null;
@@ -25,8 +26,16 @@ export const PairComparison: React.FC<PairComparisonProps> = ({
     );
   }
 
+  // Count Northwestern coverage for summary display
+  const countCoverage = (antibiotic: Antibiotic): number => {
+    return Object.values(antibiotic.northwesternSpectrum).filter(level => level >= 1).length;
+  };
+
+  const leftCoverageCount = countCoverage(leftAntibiotic);
+  const rightCoverageCount = countCoverage(rightAntibiotic);
+
   return (
-    <div className="relative border rounded-lg p-4 bg-white">
+    <div className="relative border rounded-lg p-6 bg-white">
       {/* Close button */}
       <button
         onClick={onClose}
@@ -36,25 +45,50 @@ export const PairComparison: React.FC<PairComparisonProps> = ({
         ×
       </button>
 
-      {/* Two-column grid layout */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Left column */}
-        <div className="border-r pr-4">
-          <h2 className="text-2xl font-bold mb-1">{leftAntibiotic.name}</h2>
-          <h3 className="text-lg text-gray-600 mb-4">{leftAntibiotic.class}</h3>
-          <div className="space-y-2">
-            {/* Content area for property rows - will be added in Task 2 */}
+      {/* Headers showing antibiotic names */}
+      <div className="mb-6">
+        <div className="grid grid-cols-3 gap-4">
+          <div></div>
+          <div className="text-center">
+            <h2 className="text-2xl font-bold">{leftAntibiotic.name}</h2>
+            <h3 className="text-lg text-gray-600">{leftAntibiotic.class}</h3>
+          </div>
+          <div className="text-center">
+            <h2 className="text-2xl font-bold">{rightAntibiotic.name}</h2>
+            <h3 className="text-lg text-gray-600">{rightAntibiotic.class}</h3>
           </div>
         </div>
+      </div>
 
-        {/* Right column */}
-        <div className="pl-4">
-          <h2 className="text-2xl font-bold mb-1">{rightAntibiotic.name}</h2>
-          <h3 className="text-lg text-gray-600 mb-4">{rightAntibiotic.class}</h3>
-          <div className="space-y-2">
-            {/* Content area for property rows - will be added in Task 2 */}
-          </div>
-        </div>
+      {/* Property comparison rows */}
+      <div className="space-y-0">
+        <PropertyComparisonRow
+          propertyName="Mechanism"
+          leftValue={leftAntibiotic.mechanism}
+          rightValue={rightAntibiotic.mechanism}
+          isDifferent={leftAntibiotic.mechanism !== rightAntibiotic.mechanism}
+        />
+
+        <PropertyComparisonRow
+          propertyName="Class"
+          leftValue={leftAntibiotic.class}
+          rightValue={rightAntibiotic.class}
+          isDifferent={leftAntibiotic.class !== rightAntibiotic.class}
+        />
+
+        <PropertyComparisonRow
+          propertyName="Formulations"
+          leftValue={leftAntibiotic.formulations}
+          rightValue={rightAntibiotic.formulations}
+          isDifferent={JSON.stringify(leftAntibiotic.formulations) !== JSON.stringify(rightAntibiotic.formulations)}
+        />
+
+        <PropertyComparisonRow
+          propertyName="Coverage"
+          leftValue={`${leftCoverageCount} segments covered`}
+          rightValue={`${rightCoverageCount} segments covered`}
+          isDifferent={leftCoverageCount !== rightCoverageCount}
+        />
       </div>
     </div>
   );
