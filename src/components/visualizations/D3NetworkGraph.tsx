@@ -18,6 +18,8 @@ import { useD3ForceSimulation, NetworkNode, NetworkEdge } from '../../hooks/useD
 import { useNetworkFiltering } from '../../hooks/useNetworkFiltering';
 import { Pathogen, Antibiotic, NorthwesternSpectrum, Coverage } from '../../types/medical.types';
 import NetworkFilterControls from '../network/NetworkFilterControls';
+import NetworkLegend from '../network/NetworkLegend';
+import { getGramStainColor, getNetworkNodeRadius } from '../../utils/networkNodeStyles';
 
 interface D3NetworkGraphProps {
   pathogens: Pathogen[];
@@ -114,19 +116,23 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
 
   // Convert filtered data to network format
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
-    // Create nodes for filtered pathogens
+    // Create nodes for filtered pathogens - include medical data for visual encoding
     const pathogenNodes: NetworkNode[] = filteredPathogens.map(pathogen => ({
       id: `pathogen-${pathogen.id}`,
       type: 'pathogen' as const,
       name: pathogen.name,
-    }));
+      gramStain: pathogen.gramStain, // For color encoding
+      clinicalRelevance: pathogen.clinicalRelevance, // For tooltips
+    } as NetworkNode));
 
-    // Create nodes for filtered antibiotics
+    // Create nodes for filtered antibiotics - include mechanism for tooltips
     const antibioticNodes: NetworkNode[] = filteredAntibiotics.map(antibiotic => ({
       id: `antibiotic-${antibiotic.id}`,
       type: 'antibiotic' as const,
       name: antibiotic.name,
-    }));
+      mechanism: antibiotic.mechanism, // For tooltips
+      class: antibiotic.class, // For tooltips
+    } as NetworkNode));
 
     // Create edges from filtered coverage
     const edges: NetworkEdge[] = filteredCoverage.map((cov, idx) => ({
@@ -209,9 +215,14 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
             return null;
           }
 
-          // Visual encoding: pathogen nodes blue, antibiotic nodes green
-          const fillColor = node.type === 'pathogen' ? '#3B82F6' : '#10B981';
-          const radius = 20;
+          // Layer 1: Visual encoding
+          // Pathogen nodes: colored by gram stain (blue=positive, red=negative, gray=unknown)
+          // Antibiotic nodes: green
+          const fillColor = node.type === 'pathogen'
+            ? getGramStainColor((node as any).gramStain)
+            : '#10B981'; // Green for antibiotics
+
+          const radius = getNetworkNodeRadius(node.type);
 
           return (
             <g key={node.id} transform={`translate(${node.x}, ${node.y})`}>
@@ -237,6 +248,9 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
         })}
       </g>
     </svg>
+
+      {/* Layer 1: Legend explains visual encoding */}
+      <NetworkLegend />
     </div>
   );
 };

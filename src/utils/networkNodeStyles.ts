@@ -233,6 +233,55 @@ export const shouldShowSeverityIndicator = (node: Node): boolean => {
   return node.severity === 'high';
 };
 
+// ==========================================
+// D3 NETWORK GRAPH ENCODING FUNCTIONS
+// (for D3NetworkGraph component)
+// ==========================================
+
+/**
+ * Get gram stain color for D3 network visualization
+ * Layer 1: Visual encoding for quick recognition
+ */
+export function getGramStainColor(gramStain?: string): string {
+  if (!gramStain) return '#6B7280'; // Gray for unknown
+
+  const gramLower = gramStain.toLowerCase();
+
+  if (gramLower.includes('positive')) {
+    return '#3B82F6'; // Blue for gram-positive
+  }
+  if (gramLower.includes('negative')) {
+    return '#EF4444'; // Red for gram-negative
+  }
+
+  return '#6B7280'; // Gray for atypical/unknown
+}
+
+/**
+ * Get node radius based on type
+ * Pathogens and antibiotics have same size for simplicity
+ */
+export function getNetworkNodeRadius(type: 'pathogen' | 'antibiotic'): number {
+  return 20; // Uniform size for cleaner visual design
+}
+
+/**
+ * Get resistance stroke styling
+ * Orange stroke indicates resistance concerns
+ */
+export function getResistanceStroke(hasResistance: boolean): {
+  stroke?: string;
+  strokeWidth?: number;
+} {
+  if (hasResistance) {
+    return {
+      stroke: '#FFA500', // Orange for resistance
+      strokeWidth: 3
+    };
+  }
+  return {}; // No additional stroke
+}
+
 export default {
   GRAM_COLOR_SCHEMES,
   EDGE_STROKE_COLORS,
@@ -242,5 +291,9 @@ export default {
   getNodeShape,
   getEdgeStyle,
   shouldShowResistanceWarning,
-  shouldShowSeverityIndicator
+  shouldShowSeverityIndicator,
+  // New D3 network functions
+  getGramStainColor,
+  getNetworkNodeRadius,
+  getResistanceStroke
 };
