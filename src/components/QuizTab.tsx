@@ -175,7 +175,7 @@ const QuizTab: React.FC<QuizTabProps> = ({
           // Defensive programming: ensure we got a valid array with valid questions
           if (Array.isArray(adaptiveRecommendations) &&
               adaptiveRecommendations.length > 0 &&
-              adaptiveRecommendations.every((q: QuizQuestion) => q && q.question)) {
+              adaptiveRecommendations.every((q: any) => q && q.question)) {
             questionsToUse = adaptiveRecommendations as AdaptiveQuizQuestion[];
             setAdaptiveQuestions(adaptiveRecommendations as AdaptiveQuizQuestion[]);
             console.log(`Using ${adaptiveRecommendations.length} spaced repetition questions`);
@@ -638,7 +638,7 @@ const QuizTab: React.FC<QuizTabProps> = ({
               {/* Conditional Question Rendering */}
               {(currentQuestions[currentQuizQuestion] as AdaptiveQuizQuestion).northwesternFocus ? (
                 <NorthwesternQuizComponent
-                  question={currentQuestions[currentQuizQuestion]}
+                  question={currentQuestions[currentQuizQuestion] as any}
                   currentAnswer={selectedAnswers[currentQuizQuestion]}
                   onAnswerSelect={(index: number) => handleQuizAnswer(index)}
                   showResult={selectedAnswers[currentQuizQuestion] !== undefined}
@@ -655,7 +655,7 @@ const QuizTab: React.FC<QuizTabProps> = ({
 
                   {/* Standard Answer Options */}
                   <div className="space-y-3">
-                    {currentQuestions[currentQuizQuestion].options.map((option, index) => {
+                    {(currentQuestions[currentQuizQuestion]?.options || []).map((option, index) => {
                       const selectedAnswer = selectedAnswers[currentQuizQuestion];
                       const showAnswer = selectedAnswer !== undefined;
                       const isCorrect = index === currentQuestions[currentQuizQuestion].correct;

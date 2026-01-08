@@ -271,11 +271,11 @@ const NorthwesternGroupOrganization: FC<NorthwesternGroupOrganizationProps> = ({
 
     try {
       // Get enhanced medical grouping data
-      const medicalData = getMedicalGroupingData(spatialGroups, MEDICAL_GROUP_DEFINITIONS) as any;
+      const medicalData = getMedicalGroupingData(spatialGroups as any, MEDICAL_GROUP_DEFINITIONS) as any;
 
       // Classify antibiotics by various medical criteria
-      const mechanismClassification = classifyByMechanism(positionedAntibiotics) as Record<string, any[]>;
-      const routeClassification = classifyByRoute(positionedAntibiotics) as Record<string, any>;
+      const mechanismClassification = classifyByMechanism(positionedAntibiotics as any) as Record<string, any[]>;
+      const routeClassification = classifyByRoute(positionedAntibiotics as any) as Record<string, any>;
 
       // Calculate enhanced group data
       const enhancedGroups: Record<string, EnhancedGroup> = {};
@@ -344,10 +344,10 @@ const NorthwesternGroupOrganization: FC<NorthwesternGroupOrganizationProps> = ({
       const group = medicalGroupData.groups[groupKey];
       if (group.antibiotics && group.antibiotics.length > 0) {
         // Calculate comprehensive statistics
-        statistics[groupKey] = calculateGroupStatistics(group.antibiotics);
+        statistics[groupKey] = calculateGroupStatistics(group.antibiotics as any);
 
         // Calculate coverage summaries
-        summaries[groupKey] = calculateCoverageSummary(group.antibiotics);
+        summaries[groupKey] = calculateCoverageSummary(group.antibiotics as any);
       }
     });
 
@@ -418,8 +418,7 @@ const NorthwesternGroupOrganization: FC<NorthwesternGroupOrganizationProps> = ({
     const baseStyles: CSSProperties = {
       display: 'grid',
       width: '100%',
-      position: 'relative',
-      ...emergencyOptimizations
+      position: 'relative'
     };
 
     switch (screenSize) {

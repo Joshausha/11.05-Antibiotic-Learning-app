@@ -1017,12 +1017,12 @@ export const getSpectrumOverlap = (antibiotic1: string, antibiotic2: string): nu
 
   if (!data1 || !data2) return 0;
 
-  const categories: PathogenCategory[] = ['gramPositive', 'gramNegative', 'atypical', 'anaerobes'];
+  const categories = ['gramPositive', 'gramNegative', 'atypical', 'anaerobes'] as const;
   let totalOverlap = 0;
 
   categories.forEach(category => {
-    const val1 = (data1.spectrum as Record<string, number>)[category];
-    const val2 = (data2.spectrum as Record<string, number>)[category];
+    const val1 = (data1.spectrum as any)[category];
+    const val2 = (data2.spectrum as any)[category];
 
     if (antibiotic1 === antibiotic2) {
       totalOverlap += 1;

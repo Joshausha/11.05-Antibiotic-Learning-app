@@ -209,7 +209,7 @@ const ResearchIntegration: FC<ResearchIntegrationProps> = ({
 
       setResearch(prev => ({
         ...prev,
-        guidelines: { articles: results },
+        guidelines: { articles: results as any },
         resistance: { articles: [] },
         pediatric: { articles: [] },
         loading: false,
@@ -330,7 +330,7 @@ const ResearchIntegration: FC<ResearchIntegrationProps> = ({
 
   interface EmptyStateProps {
     message: string;
-    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    icon: React.ComponentType<any>;
   }
 
   const EmptyState: FC<EmptyStateProps> = ({ message, icon: Icon }) => (

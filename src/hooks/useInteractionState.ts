@@ -505,7 +505,7 @@ const useInteractionState = (
       touchInteraction.handleTouchStart(event, (e) => handleLongPress(segmentKey, e)),
     onTouchMove: touchInteraction.handleTouchMove,
     onTouchEnd: (segmentKey, event) =>
-      touchInteraction.handleTouchEnd(event, (e) => handleSegmentClick(segmentKey, e))
+      touchInteraction.handleTouchEnd(event, (e) => handleSegmentClick(segmentKey, e as any))
   };
 
   return {

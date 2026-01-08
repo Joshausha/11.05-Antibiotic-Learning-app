@@ -103,31 +103,31 @@ const usePathogenData = (medicalConditions: any[]): UsePathogenDataReturn => {
     if (!medicalConditions || medicalConditions.length === 0) {
       return null;
     }
-    return buildIndexes(medicalConditions);
+    return buildIndexes(medicalConditions) as any;
   }, [medicalConditions]);
 
   // Get filtered and sorted pathogens
   const pathogens = useMemo<Pathogen[]>(() => {
     if (!indexes) return [];
 
-    return searchPathogens(indexes, {
+    return searchPathogens(indexes as any, {
       query: searchQuery,
-      gramStatus: gramFilter,
-      pathogenType: typeFilter,
-      sortBy: sortBy
-    });
+      gramStatus: gramFilter as any,
+      pathogenType: typeFilter as any,
+      sortBy: sortBy as any
+    }) as any;
   }, [indexes, searchQuery, gramFilter, typeFilter, sortBy]);
 
   // Get conditions for selected pathogen
   const selectedPathogenConditions = useMemo<any[]>(() => {
     if (!indexes || !selectedPathogen) return [];
-    return getConditionsForPathogen(indexes, selectedPathogen.name);
+    return getConditionsForPathogen(indexes as any, selectedPathogen.name);
   }, [indexes, selectedPathogen]);
 
   // Get antibiotics for selected pathogen
   const selectedPathogenAntibiotics = useMemo<any[]>(() => {
     if (!indexes || !selectedPathogen) return [];
-    return getAntibioticsForPathogen(indexes, selectedPathogen.name);
+    return getAntibioticsForPathogen(indexes as any, selectedPathogen.name);
   }, [indexes, selectedPathogen]);
 
   // Get pathogen statistics

@@ -103,7 +103,7 @@ const PathogenNetworkVisualization: FC<PathogenNetworkVisualizationProps> = ({
   const [showLabels, setShowLabels] = useState<boolean>(true);
   const [nodePositions, setNodePositions] = useState<Record<string, NodePosition>>({});
   const [isLayoutStable, setIsLayoutStable] = useState<boolean>(false);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
   const layoutIterations = useRef<number>(0);
   const nodePositionsRef = useRef<Record<string, NodePosition>>({});
 
@@ -157,14 +157,14 @@ const PathogenNetworkVisualization: FC<PathogenNetworkVisualizationProps> = ({
   };
 
   // Create filtered network data
-  const filteredNodes = filterNodes(allNetworkData.nodes, filters);
+  const filteredNodes = filterNodes(allNetworkData.nodes, filters as any);
   const networkData: NetworkData = {
-    nodes: filteredNodes,
+    nodes: filteredNodes as any,
     edges: filterEdges(
       allNetworkData.edges,
-      filteredNodes,
+      filteredNodes as any,
       filters.connectionFilter
-    ),
+    ) as any,
   };
 
   // Handle filter changes
@@ -386,13 +386,15 @@ const PathogenNetworkVisualization: FC<PathogenNetworkVisualizationProps> = ({
         </div>
 
         <NetworkFilterControls
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          onClearFilters={clearAllFilters}
-          onResetLayout={handleResetLayout}
-          showLabels={showLabels}
-          onToggleLabels={setShowLabels}
-          isLayoutStable={isLayoutStable}
+          {...{
+            filters: filters as any,
+            onFilterChange: handleFilterChange,
+            onClearFilters: clearAllFilters,
+            onResetLayout: handleResetLayout,
+            showLabels,
+            onToggleLabels: setShowLabels,
+            isLayoutStable
+          } as any}
         />
       </div>
 
@@ -468,7 +470,7 @@ const PathogenNetworkVisualization: FC<PathogenNetworkVisualizationProps> = ({
           <g className="nodes">
             {networkData.nodes.map((node) => {
               const pos = getNodePosition(node.id) as NodePosition | { x: number; y: number };
-              const style = getNodeStyle(node, selectedPathogen, hoveredNode);
+              const style = getNodeStyle(node, selectedPathogen as any, hoveredNode as any);
               const radius = getNodeRadius(node);
               const shape = getNodeShape(node);
               const isSelected = selectedPathogen && selectedPathogen.id === node.id;
@@ -637,7 +639,7 @@ const PathogenNetworkVisualization: FC<PathogenNetworkVisualizationProps> = ({
 
       {/* Info Panel */}
       <PathogenInfoPanel
-        pathogen={selectedNodeDetails}
+        pathogen={selectedNodeDetails as any}
         isVisible={showInfoPanel}
         onClose={() => setShowInfoPanel(false)}
       />

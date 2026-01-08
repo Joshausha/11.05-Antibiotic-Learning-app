@@ -12,7 +12,7 @@ const SkeletonItem: React.FC<{ className?: string }> = ({ className = '' }) => (
 );
 
 // Card skeleton for condition cards
-export const ConditionCardSkeleton: React.FC = () => (
+export const ConditionCardSkeleton: React.FC<Record<string, any>> = () => (
   <div className="card animate-pulse">
     <div className="skeleton-title w-3/4"></div>
     <div className="skeleton-text w-1/2 mb-4"></div>
@@ -27,7 +27,7 @@ export const ConditionCardSkeleton: React.FC = () => (
 );
 
 // List skeleton for pathogen lists
-export const PathogenListSkeleton: React.FC = () => (
+export const PathogenListSkeleton: React.FC<Record<string, any>> = () => (
   <div className="space-y-3">
     {[...Array(5)].map((_, i) => (
       <div key={i} className="flex items-center p-3 bg-white rounded-lg shadow-sm animate-pulse">
@@ -43,7 +43,7 @@ export const PathogenListSkeleton: React.FC = () => (
 );
 
 // Quiz skeleton
-export const QuizSkeleton: React.FC = () => (
+export const QuizSkeleton: React.FC<Record<string, any>> = () => (
   <div className="card animate-pulse">
     <div className="skeleton h-2 w-full mb-6"></div>
     <div className="skeleton-text w-1/4 mb-4"></div>

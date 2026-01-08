@@ -15,7 +15,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ComparisonMode } from '../../types/comparison.types';
 import { Antibiotic } from '../../types/medical.types';
-import enhancedAntibiotics, { getAntibioticByName } from '../../data/EnhancedAntibioticData';
+import enhancedAntibiotics, { getAntibioticByName, EnhancedAntibiotic } from '../../data/EnhancedAntibioticData';
 import { AntibioticSelector } from './AntibioticSelector';
 import { PairComparison } from './PairComparison';
 import { ReferenceComparison } from './ReferenceComparison';
@@ -153,7 +153,7 @@ export const ComparisonModeContainer: React.FC<ComparisonModeContainerProps> = (
   const selectedAntibioticObjects = useMemo(() => {
     return selectedAntibiotics
       .map(name => getAntibioticByName(name))
-      .filter((ab): ab is Antibiotic => ab !== undefined);
+      .filter((ab): ab is EnhancedAntibiotic => ab !== undefined);
   }, [selectedAntibiotics]);
 
   // Get reference antibiotic object
@@ -356,7 +356,7 @@ export const ComparisonModeContainer: React.FC<ComparisonModeContainerProps> = (
       {/* Antibiotic Selector */}
       <div className="selector-section mb-6">
         <AntibioticSelector
-          antibiotics={enhancedAntibiotics as Antibiotic[]}
+          antibiotics={enhancedAntibiotics as unknown as Antibiotic[]}
           selectedIds={selectedAntibiotics}
           onSelectionChange={handleSelectionChange}
           maxSelections={getMaxSelections()}
@@ -393,8 +393,8 @@ export const ComparisonModeContainer: React.FC<ComparisonModeContainerProps> = (
         {/* Mode 1: Pair Comparison */}
         <div style={{ display: comparisonMode === 'pair' ? 'block' : 'none' }}>
           <PairComparison
-            leftAntibiotic={selectedAntibioticObjects[0] || null}
-            rightAntibiotic={selectedAntibioticObjects[1] || null}
+            leftAntibiotic={(selectedAntibioticObjects[0] || null) as any}
+            rightAntibiotic={(selectedAntibioticObjects[1] || null) as any}
             onClose={handleClose}
           />
         </div>
@@ -402,8 +402,8 @@ export const ComparisonModeContainer: React.FC<ComparisonModeContainerProps> = (
         {/* Mode 2: Reference Comparison (PRIMARY) */}
         <div style={{ display: comparisonMode === 'reference' ? 'block' : 'none' }}>
           <ReferenceComparison
-            referenceAntibiotic={referenceAntibioticObject}
-            comparisonAntibiotics={comparisonAntibioticObjects}
+            referenceAntibiotic={referenceAntibioticObject as any}
+            comparisonAntibiotics={comparisonAntibioticObjects as any}
             onRemoveComparison={handleRemoveComparison}
             onClose={handleClose}
           />
@@ -412,7 +412,7 @@ export const ComparisonModeContainer: React.FC<ComparisonModeContainerProps> = (
         {/* Mode 3: Grid Comparison */}
         <div style={{ display: comparisonMode === 'grid' ? 'block' : 'none' }}>
           <GridComparison
-            antibiotics={selectedAntibioticObjects}
+            antibiotics={selectedAntibioticObjects as any}
             onRemove={handleRemoveFromGrid}
             onClose={handleClose}
           />

@@ -192,26 +192,26 @@ export const createMockPathogenAntibioticMap = () => ({
  * Mock helper functions for SimplePathogenData
  */
 export const mockPathogenHelpers = {
-  searchPathogens: jest.fn((term, pathogens) => {
+  searchPathogens: jest.fn((term: any, pathogens: any) => {
     if (!term) return pathogens;
-    return pathogens.filter(p =>
+    return pathogens.filter((p: any) =>
       p.commonName.toLowerCase().includes(term.toLowerCase()) ||
       p.name.toLowerCase().includes(term.toLowerCase())
     );
   }),
-  getPathogensByGramStatus: jest.fn((status, pathogens) => {
+  getPathogensByGramStatus: jest.fn((status: any, pathogens: any) => {
     if (status === 'all') return pathogens;
-    return pathogens.filter(p => p.gramStain === status);
+    return pathogens.filter((p: any) => p.gramStain === status);
   }),
-  getPathogensBySeverity: jest.fn((severity, pathogens) => {
+  getPathogensBySeverity: jest.fn((severity: any, pathogens: any) => {
     if (severity === 'all') return pathogens;
-    return pathogens.filter(p => p.severity === severity);
+    return pathogens.filter((p: any) => p.severity === severity);
   }),
-  getPathogenById: jest.fn((id, pathogens) =>
-    pathogens.find(p => p.id === id)
+  getPathogenById: jest.fn((id: any, pathogens: any) =>
+    pathogens.find((p: any) => p.id === id)
   ),
-  getPathogenByName: jest.fn((name, pathogens) =>
-    pathogens.find(p =>
+  getPathogenByName: jest.fn((name: any, pathogens: any) =>
+    pathogens.find((p: any) =>
       p.commonName.toLowerCase() === name.toLowerCase() ||
       p.name.toLowerCase() === name.toLowerCase()
     )
@@ -223,13 +223,13 @@ export const mockPathogenHelpers = {
  * Mock helper functions for SimpleAntibioticData
  */
 export const mockAntibioticHelpers = {
-  getAntibioticById: jest.fn((id, antibiotics) => {
-    const antibiotic = antibiotics.find(a => a.id === id);
+  getAntibioticById: jest.fn((id: any, antibiotics: any) => {
+    const antibiotic = antibiotics.find((a: any) => a.id === id);
     return antibiotic || createMockAntibiotic({ id, name: `Antibiotic ${id}` });
   }),
   validateAntibioticData: jest.fn(() => null),
-  getAllDrugClasses: jest.fn((antibiotics) =>
-    [...new Set(antibiotics.map(a => a.class))]
+  getAllDrugClasses: jest.fn((antibiotics: any) =>
+    [...new Set(antibiotics.map((a: any) => a.class))]
   )
 };
 

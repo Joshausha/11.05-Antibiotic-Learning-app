@@ -70,7 +70,7 @@ interface AntibioticPieChartCardProps {
   index: number;
 }
 
-const AntibioticPieChartCard = memo<FC<AntibioticPieChartCardProps>>(({ antibiotic, index }) => (
+const AntibioticPieChartCard: FC<AntibioticPieChartCardProps> = memo(({ antibiotic, index }) => (
   <div className="bg-gray-50 rounded-lg p-4">
     <h4 className="text-lg font-medium text-gray-900 mb-3 text-center">
       {antibiotic.name || `Antibiotic ${index + 1}`}
@@ -99,7 +99,7 @@ AntibioticPieChartCard.displayName = 'AntibioticPieChartCard';
 /**
  * No data placeholder
  */
-const NoDataPlaceholder = memo<FC>(() => (
+const NoDataPlaceholder: FC = memo(() => (
   <div className="text-center py-8">
     <Activity size={48} className="mx-auto text-gray-400 mb-4" />
     <p className="text-gray-500">Antibiotic data loading...</p>
@@ -119,7 +119,7 @@ interface DrugClassDistributionProps {
   totalAntibiotics: number;
 }
 
-const DrugClassDistribution = memo<FC<DrugClassDistributionProps>>(({
+const DrugClassDistribution: FC<DrugClassDistributionProps> = memo(({
   drugClassDistribution,
   totalAntibiotics
 }) => (

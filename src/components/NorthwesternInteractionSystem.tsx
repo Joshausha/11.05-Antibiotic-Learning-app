@@ -465,13 +465,13 @@ const NorthwesternInteractionSystem: FC<NorthwesternInteractionSystemProps> = ({
       onMouseLeave={handlers.onMouseLeave}
     >
       {/* Enhanced children with interaction handlers */}
-      {React.cloneElement(children as React.ReactElement, {
+      {React.cloneElement(children as React.ReactElement<any>, {
         onSegmentHover: handlers.onSegmentHover,
         onSegmentClick: handlers.onSegmentClick,
         hoveredSegment,
         selectedSegments: Array.from(selectedSegments),
         interactive: true,
-        className: `${(children as React.ReactElement).props.className || ''} ${comparisonMode ? 'comparison-mode' : ''}`
+        className: `${(children as React.ReactElement<any>).props.className || ''} ${comparisonMode ? 'comparison-mode' : ''}`
       })}
 
       {/* Clinical Tooltip */}

@@ -165,8 +165,8 @@ const PathogenNetworkPanel: FC<PathogenNetworkPanelProps> = memo(({
         ) : networkLayoutMode === 'd3' ? (
           <PathogenNetworkVisualization
             selectedPathogen={null}
-            onSelectPathogen={onSelectPathogen}
-            onShowPathDetails={(pathogen) => {
+            onSelectPathogen={onSelectPathogen as any}
+            onShowPathDetails={(pathogen: any) => {
               if (onSelectPathogen) onSelectPathogen(pathogen);
             }}
           />
@@ -183,10 +183,10 @@ const PathogenNetworkPanel: FC<PathogenNetworkPanelProps> = memo(({
         ) : (
           <NorthwesternSpatialLayout
             antibiotics={antibioticData?.antibiotics || []}
-            viewMode={spatialViewMode}
+            viewMode={spatialViewMode as any}
             showConnections={true}
-            onAntibioticSelect={handleSpatialAntibioticSelect}
-            onGroupSelect={handleGroupSelect}
+            onAntibioticSelect={handleSpatialAntibioticSelect as any}
+            onGroupSelect={handleGroupSelect as any}
             emergencyMode={emergencyMode}
             clinicalContext="education"
           />

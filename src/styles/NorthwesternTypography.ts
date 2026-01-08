@@ -439,7 +439,9 @@ export const ACCESSIBILITY_TYPOGRAPHY: AccessibilityConfig = {
       color: '#ff0000',
       backgroundColor: '#ffffff',
       fontWeight: '800',
-      textShadow: '0 0 2px rgba(0, 0, 0, 0.5)'
+      textShadow: '0 0 2px rgba(0, 0, 0, 0.5)',
+      fontSize: '1rem',
+      lineHeight: '1.5'
     }
   },
 
@@ -526,9 +528,9 @@ export const generateTypographyCSSVars = (context: string = 'clinical'): { [key:
   Object.entries(contextConfig).forEach(([level, config]) => {
     const prefix = `--medical-${context}-${level.replace('Text', '')}`;
 
-    Object.entries(config).forEach(([property, value]) => {
+    Object.entries(config as any).forEach(([property, value]) => {
       const cssProperty = property.replace(/([A-Z])/g, '-$1').toLowerCase();
-      cssVars[`${prefix}-${cssProperty}`] = value;
+      cssVars[`${prefix}-${cssProperty}`] = value as any;
     });
   });
 

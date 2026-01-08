@@ -4,7 +4,7 @@
  * Enables efficient lookup of conditions by pathogen, antibiotic, drug class, etc.
  */
 
-import { ProcessedConditionsResult, processConditionsData } from './dataParser';
+import { processConditionsData } from './dataParser';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -224,7 +224,7 @@ interface RecommendationPreferences {
  * Build comprehensive indexes from processed condition data
  */
 export const buildIndexes = (conditions: unknown[]): DataIndexes => {
-  const processedData = processConditionsData(conditions) || {
+  const processedData = processConditionsData(conditions as any) || {
     conditions: [],
     pathogens: [],
     antibiotics: [],
@@ -832,7 +832,7 @@ export const getPathogenRecommendations = (
     .sort((a, b) => b.weight - a.weight)
     .slice(0, 5);
 
-  recommendations.push(...directConnections);
+  recommendations.push(...directConnections as any);
 
   // Get pathogens from same gram status if user prefers systematic learning
   if (preferences.systematicLearning && currentNode.clusterData.gramStatus !== 'unknown') {
@@ -855,17 +855,17 @@ export const getPathogenRecommendations = (
   }
 
   // Get pathogens that treat similar conditions
-  const currentConditions = new Set(currentNode.pathogen.conditions || []);
+  const currentConditions = new Set((currentNode.pathogen as any).conditions || []);
   const conditionBasedRecommendations = (indexes.pathogens as Array<any>)
     .filter(p => {
       if (p.name === currentPathogen) return false;
       if (recommendations.some(r => r.pathogen === p.name)) return false;
 
-      const sharedConditions = (p.conditions || []).filter(c => currentConditions.has(c));
+      const sharedConditions = (p.conditions || []).filter((c: any) => currentConditions.has(c));
       return sharedConditions.length > 0;
     })
     .map(p => {
-      const sharedConditions = (p.conditions || []).filter(c => currentConditions.has(c));
+      const sharedConditions = (p.conditions || []).filter((c: any) => currentConditions.has(c));
       const weight = sharedConditions.length / Math.max(currentConditions.size, (p.conditions || []).length);
 
       return {

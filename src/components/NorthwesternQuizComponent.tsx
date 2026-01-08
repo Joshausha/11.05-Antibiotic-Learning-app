@@ -49,7 +49,7 @@ const NorthwesternQuizComponent: FC<NorthwesternQuizComponentProps> = ({
   const [showDetailedView, setShowDetailedView] = useState(false);
 
   // Find relevant antibiotic for visualization
-  const relevantAntibiotic = useMemo((): Antibiotic | null => {
+  const relevantAntibiotic = useMemo((): any => {
     if (!question.visualComponent) return null;
 
     // Try to extract antibiotic name from question or options
@@ -134,12 +134,12 @@ const NorthwesternQuizComponent: FC<NorthwesternQuizComponentProps> = ({
 
         <div className="flex justify-center mb-4">
           <NorthwesternPieChart
-            antibiotic={relevantAntibiotic}
+            antibiotic={relevantAntibiotic as any}
             size="large"
             interactive={true}
             showLabels={showDetailedView}
-            onSegmentHover={handleSegmentHover}
-            onSegmentClick={handleSegmentClick}
+            onSegmentHover={handleSegmentHover as any}
+            onSegmentClick={handleSegmentClick as any}
             selectedSegments={
               selectedSegment
                 ? [selectedSegment]

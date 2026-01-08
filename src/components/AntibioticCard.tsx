@@ -174,7 +174,7 @@ const AntibioticCard: React.FC<AntibioticCardProps> = ({
 
           <div className="flex justify-center mb-4">
             <NorthwesternPieChart
-              antibiotic={enhancedAntibiotic}
+              antibiotic={enhancedAntibiotic as any}
               size={(size === 'small' ? 'small' : 'medium') as any}
               interactive={interactive}
               showLabels={showDetailedView}

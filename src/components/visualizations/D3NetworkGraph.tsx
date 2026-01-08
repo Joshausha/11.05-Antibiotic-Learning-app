@@ -172,7 +172,7 @@ export const D3NetworkGraph: React.FC<D3NetworkGraphProps> = ({
 
   // Create coverage edges from source data
   const rawCoverage = useMemo(() => {
-    const coverage: Coverage[] = [];
+    const coverage: Array<{ id: number; pathogenId: number; antibioticId: number; coverageLevel: Coverage }> = [];
     let coverageId = 0;
 
     antibiotics.forEach(antibiotic => {

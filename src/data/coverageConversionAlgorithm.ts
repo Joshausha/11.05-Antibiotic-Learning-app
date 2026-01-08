@@ -169,7 +169,7 @@ export const convertPathogenMapToNorthwestern = (pathogenAntibioticMap: Pathogen
   Object.entries(pathogenAntibioticMap).forEach(([pathogenId, pathogenData]) => {
     northwesternMap[parseInt(pathogenId)] = {
       pathogenName: pathogenData.pathogenName,
-      antibiotics: pathogenData.antibiotics.map(antibiotic => ({
+      antibiotics: pathogenData.antibiotics.map((antibiotic: any) => ({
         ...antibiotic,
         originalEffectiveness: antibiotic.effectiveness,
         northwesternEffectiveness: convertToNorthwesternScale(antibiotic.effectiveness)
@@ -191,7 +191,7 @@ export const convertNorthwesternToPathogenMap = (northwesternMap: NorthwesternPa
   Object.entries(northwesternMap).forEach(([pathogenId, pathogenData]) => {
     originalMap[parseInt(pathogenId)] = {
       pathogenName: pathogenData.pathogenName,
-      antibiotics: pathogenData.antibiotics.map(antibiotic => ({
+      antibiotics: pathogenData.antibiotics.map((antibiotic: any) => ({
         antibioticId: antibiotic.antibioticId,
         name: antibiotic.name,
         effectiveness: antibiotic.originalEffectiveness ||
@@ -260,7 +260,7 @@ export const batchConvertWithValidation = (
       antibiotics: []
     };
 
-    pathogenData.antibiotics.forEach(antibiotic => {
+    pathogenData.antibiotics.forEach((antibiotic: any) => {
       const antibioticName = antibioticData[antibiotic.antibioticId]?.name || antibiotic.name || 'Unknown';
       const conversion = convertWithValidation(
         antibiotic.effectiveness,
@@ -304,7 +304,7 @@ export const getEffectivenessDistribution = (pathogenAntibioticMap: PathogenAnti
   };
 
   Object.values(pathogenAntibioticMap).forEach(pathogenData => {
-    pathogenData.antibiotics.forEach(antibiotic => {
+    pathogenData.antibiotics.forEach((antibiotic: any) => {
       distribution.total++;
 
       // Count original effectiveness
@@ -347,7 +347,7 @@ export const validateMedicalAccuracy = (conversions: BatchConversionResult): Med
   ];
 
   Object.values(conversions.convertedData).forEach(pathogenData => {
-    pathogenData.antibiotics.forEach(antibiotic => {
+    pathogenData.antibiotics.forEach((antibiotic: any) => {
       if (antibiotic.originalEffectiveness === 'medium' &&
           antibiotic.northwesternEffectiveness === 1) {
 

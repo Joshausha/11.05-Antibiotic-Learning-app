@@ -117,8 +117,8 @@ export const drugClassColors = {
  * @param {string} drugClass - Drug class name
  * @returns {string} Tailwind CSS color class
  */
-export const getDrugClassColor = (drugClass) => {
-  return drugClassColors[drugClass] || drugClassColors.default;
+export const getDrugClassColor = (drugClass: string): string => {
+  return (drugClassColors as Record<string, string>)[drugClass] || drugClassColors.default;
 };
 
 /**

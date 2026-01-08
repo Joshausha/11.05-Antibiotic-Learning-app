@@ -77,7 +77,7 @@ const NorthwesternFallbackInterface = memo<NorthwesternFallbackInterfaceProps>(
           </button>
         </div>
 
-        <style jsx>{`
+        <style>{`
           .northwestern-fallback-interface {
             padding: 20px;
             max-width: 800px;

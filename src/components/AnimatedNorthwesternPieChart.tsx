@@ -25,7 +25,7 @@ import React, {
   CSSProperties,
   ReactNode
 } from 'react';
-import NorthwesternPieChart from './NorthwesternPieChart';
+import NorthwesternPieChart, { type Antibiotic as NorthwesternAntibiotic } from './NorthwesternPieChart';
 import {
   ClinicalAnimationManager,
   GPUAccelerationOptimizer,
@@ -47,17 +47,8 @@ type EducationLevel = 'student' | 'resident' | 'attending';
 type AnimationPhase = 'initializing' | 'loading' | 'revealing' | 'interactive' | 'emergency' | 'complete';
 type Size = 'small' | 'medium' | 'large';
 
-interface Antibiotic {
-  id: string | number;
-  name: string;
-  class?: string;
-  northwesternSpectrum?: Record<string, number>;
-  routeColor?: 'red' | 'blue' | 'purple';
-  cellWallActive?: boolean;
-  route?: string | string[];
-  generation?: string;
-  [key: string]: any;
-}
+// Using NorthwesternAntibiotic from NorthwesternPieChart for type compatibility
+type Antibiotic = NorthwesternAntibiotic;
 
 interface AnimationTiming {
   loading: number;
@@ -364,6 +355,27 @@ const AnimatedNorthwesternPieChart: FC<AnimatedNorthwesternPieChartProps> = ({
     [animationsEnabled, emergencyMode, onSegmentClick]
   );
 
+  // Adapter functions to match NorthwesternPieChart callback signatures
+  const adaptedHoverHandler = useCallback(
+    (segment: string, coverage: number, context: string): void => {
+      // Create synthetic event and context for internal handler
+      const syntheticContext: SegmentContext = { coverage };
+      // Fire and forget - don't await the async handler
+      handleAnimatedSegmentHover(segment, {} as MouseEvent<any>, syntheticContext);
+    },
+    [handleAnimatedSegmentHover]
+  );
+
+  const adaptedClickHandler = useCallback(
+    (segment: string, clickedAntibiotic: Antibiotic): void => {
+      // Create synthetic event and context for internal handler
+      const syntheticContext: SegmentContext = {};
+      // Fire and forget - don't await the async handler
+      handleAnimatedSegmentClick(segment, {} as MouseEvent<any>, syntheticContext);
+    },
+    [handleAnimatedSegmentClick]
+  );
+
   // Animation lifecycle management
   useEffect(() => {
     const executeAnimationSequence = async (): Promise<void> => {
@@ -443,18 +455,20 @@ const AnimatedNorthwesternPieChart: FC<AnimatedNorthwesternPieChartProps> = ({
       style={containerStyle}
     >
       {/* Enhanced Northwestern Pie Chart with animation handlers */}
-      <NorthwesternPieChart
-        antibiotic={antibiotic}
-        size={size}
-        onSegmentHover={handleAnimatedSegmentHover}
-        onSegmentClick={handleAnimatedSegmentClick}
-        showLabels={showLabels}
-        interactive={interactive && currentPhase === ANIMATION_PHASES.INTERACTIVE}
-        educationLevel={educationLevel}
-        emergencyMode={emergencyMode}
-        {...baseProps}
-        className="northwestern-pie-chart--animated"
-      />
+      {antibiotic && (
+        <NorthwesternPieChart
+          antibiotic={antibiotic}
+          size={size}
+          onSegmentHover={adaptedHoverHandler}
+          onSegmentClick={adaptedClickHandler}
+          showLabels={showLabels}
+          interactive={interactive && currentPhase === ANIMATION_PHASES.INTERACTIVE}
+          educationLevel={educationLevel}
+          emergencyMode={emergencyMode}
+          {...baseProps}
+          className="northwestern-pie-chart--animated"
+        />
+      )}
 
       {/* Learning Progress Indicator */}
       {learningProgressVisible && educationLevel !== 'attending' && (
@@ -480,7 +494,7 @@ const AnimatedNorthwesternPieChart: FC<AnimatedNorthwesternPieChartProps> = ({
       )}
 
       {/* Animation Performance Styles */}
-      <style jsx>{`
+      <style>{`
         .animated-northwestern-pie-chart {
           contain: layout style paint;
         }

@@ -159,7 +159,7 @@ export const AntibioticSelector: React.FC<AntibioticSelectorProps> = ({
         })}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .antibiotic-selector {
           border: 1px solid #e5e7eb;
           border-radius: 8px;

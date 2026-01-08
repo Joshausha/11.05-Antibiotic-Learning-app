@@ -29,7 +29,8 @@ const DurationIndicator: React.FC<DurationIndicatorProps & {
 }) => {
   // Parse duration and get display properties
   const parsedDuration = useMemo(() => {
-    return parseDurationString(duration);
+    const durationStr = typeof duration === 'number' ? String(duration) : duration;
+    return parseDurationString(durationStr);
   }, [duration]);
 
   const IconComponent = useMemo(() => {
@@ -319,11 +320,12 @@ export const DurationSummary: React.FC<{
   }
 
   // Group durations by category
-  const groupedDurations: Record<string, Array<{
+  type DurationGroup = Array<{
     duration: string;
     conditionName: string;
     parsed: any;
-  }>> = durations.reduce((groups, duration) => {
+  }>;
+  const groupedDurations: Record<string, DurationGroup> = durations.reduce((groups: Record<string, DurationGroup>, duration) => {
     const parsed = parseDurationString(duration.duration);
     const category = parsed.isComplex ? 'complex' : parsed.category;
 
@@ -335,7 +337,7 @@ export const DurationSummary: React.FC<{
       parsed
     });
     return groups;
-  }, {});
+  }, {} as Record<string, DurationGroup>);
 
   const categoryOrder = ['short', 'medium', 'long', 'extended', 'complex'];
   const orderedCategories = categoryOrder.filter(cat => groupedDurations[cat]);

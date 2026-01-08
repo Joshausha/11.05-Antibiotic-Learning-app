@@ -7,7 +7,7 @@
 
 import simplePathogens from './SimplePathogenData';
 import simpleAntibiotics from './SimpleAntibioticData';
-import { rboConditionsMap } from './RBOMappingSystem.ts';
+import { rboConditionsMap } from './RBOMappingSystem';
 import pathogenAntibioticMap from './pathogenAntibioticMap';
 import {
   mapPathogenToConditions,
@@ -94,7 +94,7 @@ export const createEnhancedPathogenAntibioticMap = (): Record<string | number, E
   const enhancedMap: Record<string | number, EnhancedPathogenData> = {};
 
   Object.keys(pathogenAntibioticMap).forEach(pathogenId => {
-    const pathogenData = pathogenAntibioticMap[pathogenId];
+    const pathogenData = (pathogenAntibioticMap as any)[pathogenId];
     const pathogen = simplePathogens.find(p => p.id === parseInt(pathogenId));
 
     if (!pathogen) return;
@@ -260,7 +260,7 @@ export const getAntibioticDurationInfo = (antibioticId: number): AntibioticDurat
   const effectivePathogens: any[] = [];
 
   Object.keys(pathogenAntibioticMap).forEach(pathogenId => {
-    const pathogenData = pathogenAntibioticMap[pathogenId];
+    const pathogenData = (pathogenAntibioticMap as any)[pathogenId];
     const antibioticEntry = pathogenData.antibiotics.find((ab: any) => ab.antibioticId === parseInt(antibioticId.toString()));
 
     if (antibioticEntry && (antibioticEntry.effectiveness === 'high' || antibioticEntry.effectiveness === 'medium')) {

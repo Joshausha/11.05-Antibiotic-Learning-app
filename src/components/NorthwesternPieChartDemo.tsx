@@ -16,7 +16,7 @@ import { Antibiotic } from '../types/medical.types';
 type SizeOption = 'small' | 'medium' | 'large';
 
 const NorthwesternPieChartDemo: FC = () => {
-  const [selectedAntibiotic, setSelectedAntibiotic] = useState<Antibiotic>(enhancedAntibiotics[0]);
+  const [selectedAntibiotic, setSelectedAntibiotic] = useState<Antibiotic>(enhancedAntibiotics[0] as any);
   const [selectedSize, setSelectedSize] = useState<SizeOption>('medium');
   const [showLabels, setShowLabels] = useState<boolean>(false);
   const [interactive, setInteractive] = useState<boolean>(true);
@@ -49,7 +49,7 @@ const NorthwesternPieChartDemo: FC = () => {
               value={selectedAntibiotic.id}
               onChange={(e) => {
                 const antibiotic = enhancedAntibiotics.find(ab => ab.id === parseInt(e.target.value));
-                if (antibiotic) setSelectedAntibiotic(antibiotic);
+                if (antibiotic) setSelectedAntibiotic(antibiotic as any);
               }}
               className="w-full p-2 border border-gray-300 rounded-md"
             >
@@ -119,12 +119,12 @@ const NorthwesternPieChartDemo: FC = () => {
         <div className="bg-white rounded-lg shadow p-8">
           <div className="flex justify-center">
             <NorthwesternPieChart
-              antibiotic={selectedAntibiotic}
+              antibiotic={selectedAntibiotic as any}
               size={selectedSize}
               showLabels={showLabels}
               interactive={interactive}
-              onSegmentHover={handleSegmentHover}
-              onSegmentClick={handleSegmentClick}
+              onSegmentHover={handleSegmentHover as any}
+              onSegmentClick={handleSegmentClick as any}
               className="border border-gray-200 rounded-lg"
             />
           </div>
@@ -178,10 +178,10 @@ const NorthwesternPieChartDemo: FC = () => {
             {enhancedAntibiotics.slice(0, 8).map(antibiotic => (
               <div key={antibiotic.id} className="text-center">
                 <NorthwesternPieChart
-                  antibiotic={antibiotic}
+                  antibiotic={antibiotic as any}
                   size="small"
                   interactive={true}
-                  onSegmentClick={() => setSelectedAntibiotic(antibiotic)}
+                  onSegmentClick={() => setSelectedAntibiotic(antibiotic as any)}
                   className="mx-auto mb-2 cursor-pointer hover:shadow-md transition-shadow"
                 />
                 <h4 className="text-sm font-medium text-gray-700">

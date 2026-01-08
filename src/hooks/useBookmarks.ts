@@ -73,6 +73,7 @@ const useBookmarks = (): UseBookmarksReturn => {
 
       // Add bookmark with timestamp
       const bookmarkData: BookmarkedCondition = {
+        name: condition.name || '',
         ...condition,
         bookmarkedAt: new Date().toISOString(),
         bookmarkId: `${condition.name}_${Date.now()}`
@@ -107,6 +108,7 @@ const useBookmarks = (): UseBookmarksReturn => {
         }
 
         const bookmarkData: BookmarkedCondition = {
+          name: condition.name || '',
           ...condition,
           bookmarkedAt: new Date().toISOString(),
           bookmarkId: `${condition.name}_${Date.now()}`

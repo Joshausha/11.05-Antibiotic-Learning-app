@@ -76,7 +76,7 @@ interface FilterOptionsMap {
  * @returns Resistance info with counts and percentages
  */
 export const getPathogenResistanceInfo = (pathogenId: string): ResistanceInfo => {
-  const antibiotics = pathogenAntibioticMap[pathogenId]?.antibiotics || [];
+  const antibiotics = (pathogenAntibioticMap as any)[pathogenId]?.antibiotics || [];
   const resistant = antibiotics.filter((ab: Antibiotic) => ab.effectiveness === 'resistant').length;
   const total = antibiotics.length;
   const resistancePercentage = total > 0 ? (resistant / total) * 100 : 0;
@@ -95,7 +95,7 @@ export const getPathogenResistanceInfo = (pathogenId: string): ResistanceInfo =>
  * @returns Categorized antibiotics
  */
 export const getDetailedAntibioticInfo = (pathogenId: string): DetailedAntibioticsInfo => {
-  const antibiotics = pathogenAntibioticMap[pathogenId]?.antibiotics || [];
+  const antibiotics = (pathogenAntibioticMap as any)[pathogenId]?.antibiotics || [];
 
   return {
     high: antibiotics.filter((ab: Antibiotic) => ab.effectiveness === 'high'),

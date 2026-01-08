@@ -117,6 +117,7 @@ export type DrugStrength = 'first-line' | 'alternative' | 'avoid';
  * }
  */
 export type CoverageLevel = 0 | 1 | 2; // 0=none, 1=poor/moderate, 2=good
+export type Coverage = CoverageLevel; // Alias for backwards compatibility
 
 export interface NorthwesternSpectrum {
   MRSA: CoverageLevel;
@@ -127,6 +128,7 @@ export interface NorthwesternSpectrum {
   gramNegative: CoverageLevel;
   MSSA: CoverageLevel;
   enterococcus_faecalis: CoverageLevel;
+  [key: string]: CoverageLevel; // Allow string key access for dynamic segment lookups
 }
 
 /**

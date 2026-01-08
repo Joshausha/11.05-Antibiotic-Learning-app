@@ -446,13 +446,13 @@ const NorthwesternAnimationDemo: FC<NorthwesternAnimationDemoProps> = ({
 
   // Clinical insight handler
   const handleClinicalInsight = useCallback(
-    (insight: { clinicalNote: string }): void => {
+    (insight: { clinicalNote?: string }): void => {
       setAnimationLog((prev) => [
         ...prev.slice(-19),
         {
           timestamp: new Date(),
           event: 'clinical_insight',
-          insight: insight.clinicalNote
+          insight: insight.clinicalNote || ''
         }
       ]);
     },
@@ -512,13 +512,13 @@ const NorthwesternAnimationDemo: FC<NorthwesternAnimationDemoProps> = ({
 
             <div className="flex justify-center">
               <NorthwesternInteractionSystem
-                antibiotic={currentAntibiotic}
+                antibiotic={currentAntibiotic as any}
                 educationLevel={educationLevel}
-                onClinicalInsight={handleClinicalInsight}
+                onClinicalInsight={handleClinicalInsight as any}
                 showAdvancedFeatures={true}
               >
                 <AnimatedNorthwesternPieChart
-                  antibiotic={currentAntibiotic}
+                  antibiotic={currentAntibiotic as any}
                   size="large"
                   educationLevel={educationLevel}
                   emergencyMode={emergencyMode}

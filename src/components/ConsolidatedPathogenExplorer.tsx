@@ -373,19 +373,15 @@ const ConsolidatedPathogenExplorer: FC<ConsolidatedPathogenExplorerProps> = ({
               </div>
             ) : view === 'list' ? (
               <PathogenList
-                pathogens={filteredPathogens}
-                selectedPathogen={selectedPathogen}
-                onPathogenSelect={handlePathogenSelect}
-                className="p-0"
-                data-testid="pathogen-list"
+                pathogens={filteredPathogens as any}
+                selectedPathogen={selectedPathogen as any}
+                onSelectPathogen={handlePathogenSelect as any}
               />
             ) : (
               <SimpleNetworkView
-                pathogens={filteredPathogens}
-                selectedPathogen={selectedPathogen}
-                onPathogenSelect={handlePathogenSelect}
-                className="p-4"
-                data-testid="network-view"
+                pathogens={filteredPathogens as any}
+                selectedPathogen={selectedPathogen as any}
+                onSelectPathogen={handlePathogenSelect as any}
               />
             )}
           </div>
@@ -401,7 +397,7 @@ const ConsolidatedPathogenExplorer: FC<ConsolidatedPathogenExplorerProps> = ({
               <div data-testid="pathogen-card-empty">No pathogen selected</div>
             ) : (
               <div data-testid="pathogen-card">
-                <PathogenCard pathogen={selectedPathogen} onClose={handleClosePathogen} />
+                <PathogenCard pathogen={selectedPathogen as any} onClose={handleClosePathogen} />
                 <div className="mt-2 flex gap-2">
                   <button
                     onClick={handleClosePathogen}
@@ -439,9 +435,9 @@ const ConsolidatedPathogenExplorer: FC<ConsolidatedPathogenExplorerProps> = ({
               <div data-testid="antibiotic-list">
                 <h3>Antibiotics for {selectedPathogen.name}</h3>
                 <AntibioticList
-                  pathogen={selectedPathogen}
-                  selectedAntibiotic={selectedAntibiotic}
-                  onSelectAntibiotic={setSelectedAntibiotic}
+                  pathogen={selectedPathogen as any}
+                  selectedAntibiotic={selectedAntibiotic as any}
+                  onSelectAntibiotic={setSelectedAntibiotic as any}
                 />
                 {selectedAntibiotic && (
                   <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">

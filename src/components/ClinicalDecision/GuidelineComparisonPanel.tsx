@@ -347,7 +347,13 @@ const GuidelineComparisonPanel: FC<GuidelineComparisonPanelProps> = ({
               Dosing
             </h5>
             <p style={{ fontSize: '14px', margin: 0 }}>
-              {(guideline as GuidelineData).dosing?.amount} {(guideline as GuidelineData).dosing?.frequency}
+              {(() => {
+                const dosing = (guideline as GuidelineData).dosing;
+                if (typeof dosing === 'object' && dosing !== null) {
+                  return `${dosing.amount} ${dosing.frequency}`;
+                }
+                return dosing ?? '';
+              })()}
             </p>
           </div>
         )}

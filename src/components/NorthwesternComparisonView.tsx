@@ -347,7 +347,7 @@ const NorthwesternComparisonView: FC<NorthwesternComparisonViewProps> = ({
                     handleSegmentHover(segment, coverage, context, antibiotic.id)
                   }
                   onSegmentClick={(segment: string) => handleSegmentClick(segment, antibiotic)}
-                  hoveredSegment={hoveredSegment}
+                  hoveredSegment={hoveredSegment ?? undefined}
                   selectedSegments={selectedSegment ? [selectedSegment] : []}
                   educationLevel={educationLevel}
                   emergencyMode={emergencyMode}

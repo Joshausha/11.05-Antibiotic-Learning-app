@@ -88,7 +88,7 @@ const NorthwesternLoadingInterface = memo<NorthwesternLoadingInterfaceProps>(({
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .northwestern-loading-interface {
           display: flex;
           flex-direction: column;

@@ -24,8 +24,11 @@ export interface ErrorMessageProps {
 }
 
 export interface SkeletonLoaderProps {
-  type?: 'content' | 'card' | 'list' | 'quiz';
+  type?: 'content' | 'card' | 'list' | 'quiz' | 'table';
   rows?: number;
+  columns?: number;
+  lines?: number;
+  title?: boolean;
 }
 
 export interface ProgressBarProps {
@@ -48,6 +51,8 @@ export interface DurationIndicatorProps {
   type?: 'spent' | 'remaining' | 'total';
   showIcon?: boolean;
   format?: 'short' | 'long';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
+  showLabel?: boolean;
 }
 
 // ==========================================

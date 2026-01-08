@@ -148,17 +148,17 @@ const NorthwesternSpatialLayoutDemo: FC = () => {
 
   // Performance tracking
   useEffect(() => {
-    if (renderStart) {
-      const timer = setTimeout(() => {
-        const renderTime = Date.now() - renderStart;
-        setPerformanceMetrics(prev => ({
-          lastRenderTime: renderTime,
-          averageRenderTime: prev ? (prev.averageRenderTime + renderTime) / 2 : renderTime
-        }));
-      }, 100);
+    if (!renderStart) return;
 
-      return () => clearTimeout(timer);
-    }
+    const timer = setTimeout(() => {
+      const renderTime = Date.now() - renderStart;
+      setPerformanceMetrics(prev => ({
+        lastRenderTime: renderTime,
+        averageRenderTime: prev ? (prev.averageRenderTime + renderTime) / 2 : renderTime
+      }));
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [renderStart]);
 
   return (
@@ -280,13 +280,13 @@ const NorthwesternSpatialLayoutDemo: FC = () => {
       {/* Main Demo Layout */}
       <div className="demo-layout-container">
         <NorthwesternSpatialLayout
-          antibiotics={enhancedAntibiotics}
-          viewMode={viewMode}
-          screenSize={screenSize}
+          antibiotics={enhancedAntibiotics as any}
+          viewMode={viewMode as any}
+          screenSize={screenSize as any}
           showConnections={showConnections}
           highlightedClasses={highlightedClasses}
-          onAntibioticSelect={handleAntibioticSelect}
-          onGroupSelect={handleGroupSelect}
+          onAntibioticSelect={handleAntibioticSelect as any}
+          onGroupSelect={handleGroupSelect as any}
           emergencyMode={emergencyMode}
           clinicalContext={emergencyMode ? 'emergency' : 'education'}
           enableVirtualization={enhancedAntibiotics.length > 20}
@@ -378,7 +378,7 @@ const NorthwesternSpatialLayoutDemo: FC = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .northwestern-spatial-demo {
           max-width: 1400px;
           margin: 0 auto;

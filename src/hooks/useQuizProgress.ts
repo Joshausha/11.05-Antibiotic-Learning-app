@@ -143,6 +143,7 @@ const useQuizProgress = (): UseQuizProgressReturn => {
     // Handle object parameter (enhanced test format)
     if (typeof quizIdOrConfig === 'object' && quizIdOrConfig !== null) {
       session = {
+        totalQuestions: (quizIdOrConfig as any).totalQuestions || 0,
         ...quizIdOrConfig, // Spread the config object
         startTime, // Timestamp format
         answers: [],

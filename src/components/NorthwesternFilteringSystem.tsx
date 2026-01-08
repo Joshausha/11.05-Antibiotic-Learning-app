@@ -233,10 +233,10 @@ const NorthwesternFilteringSystem: FC<NorthwesternFilteringSystemProps> = ({
 
     try {
       // Apply Northwestern filters
-      const results = applyNorthwesternFilters(antibiotics, filterState) as FilteredResults;
+      const results = applyNorthwesternFilters(antibiotics, filterState) as unknown as FilteredResults;
 
       // Validate filter configuration
-      const validation = validateFilterConfiguration(filterState) as ValidationResult;
+      const validation = validateFilterConfiguration(filterState) as unknown as ValidationResult;
 
       // Update state with results
       setFilteredResults(results);
@@ -391,7 +391,7 @@ const NorthwesternFilteringSystem: FC<NorthwesternFilteringSystemProps> = ({
     // Generate clinical decision support
     if (filteredResults?.matchingAntibiotics) {
       const scenarioResults = applyClinicalScenario(
-        antibiotics,
+        antibiotics as any,
         scenarioKey
       );
 
@@ -425,7 +425,7 @@ const NorthwesternFilteringSystem: FC<NorthwesternFilteringSystemProps> = ({
   const handleSuggestionApply = useCallback((suggestion: FilterSuggestion): void => {
     const newState = new FilterState();
 
-    if (suggestion.type === 'scenario') {
+    if (suggestion.type === 'scenario' && suggestion.scenarioKey) {
       newState.applyScenario?.(suggestion.scenarioKey);
     } else if (suggestion.filterConfig) {
       newState.updateFilter?.(suggestion.filterConfig);

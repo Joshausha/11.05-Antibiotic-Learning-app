@@ -109,33 +109,33 @@ const useAntibioticData = (medicalConditions: any[]): UseAntibioticDataReturn =>
     if (!medicalConditions || medicalConditions.length === 0) {
       return null;
     }
-    return buildIndexes(medicalConditions);
+    return buildIndexes(medicalConditions) as any;
   }, [medicalConditions]);
 
   // Get filtered and sorted antibiotics
   const antibiotics = useMemo<Antibiotic[]>(() => {
     if (!indexes) return [];
 
-    const searchResults = searchAntibiotics(indexes, {
+    const searchResults = searchAntibiotics(indexes as any, {
       query: searchQuery,
       drugClass: drugClassFilter,
-      sortBy: sortBy
+      sortBy: sortBy as any
     });
 
     // Merge Northwestern data from NorthwesternAntibioticSchema
-    return createNorthwesternAntibioticData(searchResults);
+    return createNorthwesternAntibioticData(searchResults as any) as any;
   }, [indexes, searchQuery, drugClassFilter, sortBy]);
 
   // Get conditions for selected antibiotic
   const selectedAntibioticConditions = useMemo<any[]>(() => {
     if (!indexes || !selectedAntibiotic) return [];
-    return getConditionsForAntibiotic(indexes, selectedAntibiotic.name);
+    return getConditionsForAntibiotic(indexes as any, selectedAntibiotic.name);
   }, [indexes, selectedAntibiotic]);
 
   // Get drug class statistics
   const drugClassStats = useMemo<any[]>(() => {
     if (!indexes) return [];
-    return getDrugClassStats(indexes);
+    return getDrugClassStats(indexes as any);
   }, [indexes]);
 
   // Get available drug classes for filtering

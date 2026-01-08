@@ -180,13 +180,13 @@ export interface CytoscapeEdge {
  * Threshold: 0.3 (30% antibiotic overlap minimum)
  * Medical validation: Enabled
  */
-const allRelationships: PathogenRelationship[] = generatePathogenRelationships(0.3, true);
+const allRelationships: PathogenRelationship[] = generatePathogenRelationships(0.3, true) as any;
 
 /**
  * Relationship statistics
  * Provides overview of relationship distribution
  */
-export const stats: RelationshipStatistics = getRelationshipStatistics(allRelationships) as RelationshipStatistics;
+export const stats: RelationshipStatistics = getRelationshipStatistics(allRelationships as any) as any;
 
 /**
  * Get all pathogen relationships

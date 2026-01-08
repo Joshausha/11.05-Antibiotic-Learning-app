@@ -20,8 +20,8 @@
  * Coverage Scale: 0=no coverage, 1=poor/moderate coverage, 2=good coverage
  */
 
-import simpleAntibiotics from './SimpleAntibioticData.ts';
-import { createNorthwesternAntibioticData } from './NorthwesternAntibioticSchema.ts';
+import simpleAntibiotics from './SimpleAntibioticData';
+import { createNorthwesternAntibioticData } from './NorthwesternAntibioticSchema';
 
 interface NorthwesternSpectrum {
   MRSA: 0 | 1 | 2;
@@ -41,7 +41,7 @@ interface NorthwesternPosition {
   region: string;
 }
 
-interface EnhancedAntibiotic {
+export interface EnhancedAntibiotic {
   id: number;
   name: string;
   category: string;
@@ -74,7 +74,7 @@ interface GenerationMap {
 }
 
 // Generate the enhanced dataset with Northwestern integration
-const enhancedAntibiotics: EnhancedAntibiotic[] = createNorthwesternAntibioticData(simpleAntibiotics);
+const enhancedAntibiotics: EnhancedAntibiotic[] = createNorthwesternAntibioticData(simpleAntibiotics as any) as any;
 
 // Validate the migration - ensure all original data is preserved
 const validateMigration = (): string[] | null => {

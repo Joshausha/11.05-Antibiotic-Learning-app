@@ -96,12 +96,7 @@ interface ValidationResult {
 }
 
 interface PerformanceMetrics {
-  [key: string]: number;
-  summary?: {
-    allLayouts: number[];
-    averageTime: number;
-    fastestLayout: string;
-  };
+  [key: string]: any;
 }
 
 interface SimulationNode extends LayoutNode {
@@ -207,15 +202,15 @@ export class NetworkLayoutEngine {
 
     // Create node positions array
     const nodes: SimulationNode[] = this.pathogens.map((pathogen) => ({
+      ...pathogen,
       id: pathogen.id,
       name: pathogen.name,
-      ...pathogen,
       // Initialize positions randomly within bounds
       x: this.width / 2 + (Math.random() - 0.5) * 200,
       y: this.height / 2 + (Math.random() - 0.5) * 200,
       vx: 0,
       vy: 0
-    }));
+    } as SimulationNode));
 
     // Create links array (directional)
     const links: LayoutEdge[] = this.relationships.map(rel => ({
@@ -343,7 +338,7 @@ export class NetworkLayoutEngine {
 
     return {
       nodes,
-      edges: this.relationships as LayoutEdge[],
+      edges: this.relationships as any as LayoutEdge[],
       algorithm: 'hierarchical',
       executionTime: this.performanceMetrics.hierarchical
     };
@@ -450,7 +445,7 @@ export class NetworkLayoutEngine {
 
     return {
       nodes,
-      edges: this.relationships as LayoutEdge[],
+      edges: this.relationships as any as LayoutEdge[],
       algorithm: 'circular',
       executionTime: this.performanceMetrics.circular
     };

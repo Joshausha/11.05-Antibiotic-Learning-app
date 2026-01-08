@@ -512,30 +512,30 @@ const ClinicalTooltip: React.FC<ClinicalTooltipProps> = ({
 
   // Handle keyboard events
   useEffect(() => {
+    if (!isVisible) return;
+
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         handleClose();
       }
     };
 
-    if (isVisible) {
-      document.addEventListener('keydown', handleKeyPress);
-      return () => document.removeEventListener('keydown', handleKeyPress);
-    }
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
   }, [isVisible]);
 
   // Handle click outside
   useEffect(() => {
+    if (!isVisible) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
         handleClose();
       }
     };
 
-    if (isVisible) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isVisible]);
 
   useEffect(() => {

@@ -9,13 +9,16 @@
 
 import { useState, useMemo } from 'react';
 import { NetworkFilters, initialFilters } from '../types/network-ui.types';
-import { Pathogen, Antibiotic, Coverage } from '../types/medical.types';
+import { Pathogen, Antibiotic } from '../types/medical.types';
 import { applyFilters } from '../utils/networkFilterUtils';
+
+// Coverage edge type for network visualization
+type CoverageEdge = { id: number; pathogenId: number; antibioticId: number; coverageLevel: number };
 
 export function useNetworkFiltering(
   pathogens: Pathogen[],
   antibiotics: Antibiotic[],
-  coverage: Coverage[]
+  coverage: CoverageEdge[]
 ) {
   const [filters, setFilters] = useState<NetworkFilters>(initialFilters);
 

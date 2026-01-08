@@ -4,8 +4,8 @@
  * Updated: 2025-07-17 14:30:00
  */
 
-import simpleAntibiotics from './SimpleAntibioticData.ts';
-import simplePathogens from './SimplePathogenData.ts';
+import simpleAntibiotics from './SimpleAntibioticData';
+import simplePathogens from './SimplePathogenData';
 
 interface RBOCondition {
   id: string;

@@ -339,13 +339,13 @@ const NorthwesternInteractionDemo: FC = () => {
 
               {showTooltips ? (
                 <NorthwesternInteractionSystem
-                  antibiotic={DEMO_ANTIBIOTIC}
+                  antibiotic={DEMO_ANTIBIOTIC as any}
                   educationLevel={educationLevel}
                   onClinicalInsight={handleClinicalInsight}
                   className="w-full max-w-md mx-auto"
                 >
                   <NorthwesternPieChart
-                    antibiotic={DEMO_ANTIBIOTIC}
+                    antibiotic={DEMO_ANTIBIOTIC as any}
                     size="large"
                     interactive={true}
                     educationLevel={educationLevel}
@@ -355,16 +355,16 @@ const NorthwesternInteractionDemo: FC = () => {
                 </NorthwesternInteractionSystem>
               ) : (
                 <NorthwesternPieChart
-                  antibiotic={DEMO_ANTIBIOTIC}
+                  antibiotic={DEMO_ANTIBIOTIC as any}
                   size="large"
                   interactive={true}
                   educationLevel={educationLevel}
                   emergencyMode={emergencyMode}
                   enableTouchInteractions={true}
-                  hoveredSegment={hoveredSegment}
+                  hoveredSegment={hoveredSegment ?? undefined}
                   selectedSegments={Array.from(selectedSegments)}
-                  onSegmentHover={handlers.onSegmentHover}
-                  onSegmentClick={handlers.onSegmentClick}
+                  onSegmentHover={handlers.onSegmentHover as any}
+                  onSegmentClick={handlers.onSegmentClick as any}
                   className="w-full max-w-md mx-auto"
                 />
               )}
@@ -403,16 +403,16 @@ const NorthwesternInteractionDemo: FC = () => {
             <h2 className="text-xl font-bold text-gray-900 mb-4">Enhanced Standalone Chart</h2>
             <div className="inline-block">
               <NorthwesternPieChart
-                antibiotic={DEMO_ANTIBIOTIC}
+                antibiotic={DEMO_ANTIBIOTIC as any}
                 size="large"
                 interactive={true}
                 educationLevel={educationLevel}
                 emergencyMode={emergencyMode}
                 enableTouchInteractions={true}
-                hoveredSegment={hoveredSegment}
+                hoveredSegment={hoveredSegment ?? undefined}
                 selectedSegments={Array.from(selectedSegments)}
-                onSegmentHover={handlers.onSegmentHover}
-                onSegmentClick={handlers.onSegmentClick}
+                onSegmentHover={handlers.onSegmentHover as any}
+                onSegmentClick={handlers.onSegmentClick as any}
               />
             </div>
 
@@ -436,7 +436,7 @@ const NorthwesternInteractionDemo: FC = () => {
               <div className="text-center">
                 <h3 className="font-medium text-gray-800 mb-3">Normal Mode</h3>
                 <NorthwesternPieChart
-                  antibiotic={DEMO_ANTIBIOTIC}
+                  antibiotic={DEMO_ANTIBIOTIC as any}
                   size="medium"
                   interactive={true}
                   educationLevel={educationLevel}
@@ -445,7 +445,7 @@ const NorthwesternInteractionDemo: FC = () => {
               <div className="text-center">
                 <h3 className="font-medium text-red-800 mb-3">Emergency Mode</h3>
                 <NorthwesternPieChart
-                  antibiotic={DEMO_ANTIBIOTIC}
+                  antibiotic={DEMO_ANTIBIOTIC as any}
                   size="medium"
                   interactive={true}
                   educationLevel={educationLevel}

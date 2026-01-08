@@ -377,7 +377,7 @@ export const groupByCoverageBreadth = (antibiotics: Antibiotic[]): GroupedAntibi
       (sum: number, val: any) => sum + (val || 0),
       0
     );
-    return { ...ab, coverageScore };
+    return { ...ab, coverageScore } as PositionedAntibiotic;
   });
 
   // Sort by coverage score (ascending: narrow to broad)
@@ -421,7 +421,7 @@ export const applySpatialGrouping = (
     spatialGroups[groupKey] = {
       ...SPATIAL_GROUPS[groupKey],
       antibiotics: [],
-      classes: {}
+      classes: {} as any
     };
   });
 

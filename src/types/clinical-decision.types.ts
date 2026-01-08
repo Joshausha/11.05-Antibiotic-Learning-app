@@ -25,7 +25,7 @@ export interface TreeNode {
 export interface TreeBranch {
   condition: {
     field: string;
-    operator: string;
+    operator?: string;
     value?: unknown;
     operator2?: string;
     value2?: unknown;
@@ -44,6 +44,7 @@ export interface DecisionNode {
   medicalContext?: string;
   branches?: TreeBranch[];
   next?: string;
+  data?: Record<string, unknown>;
 }
 
 // ==========================================

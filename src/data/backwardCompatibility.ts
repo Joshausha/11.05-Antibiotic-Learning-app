@@ -221,7 +221,7 @@ class CompatibilityAdapter {
       const northwesternClass = getNorthwesternClassification(pathogen.pathogenId);
       if (northwesternClass) {
         const category = getContextualNorthwesternCategory(pathogen.pathogenId);
-        if (spectrum.hasOwnProperty(category)) {
+        if (category && spectrum.hasOwnProperty(category)) {
           const northwesternEffectiveness = convertToNorthwesternScale(pathogen.effectiveness);
           const categoryKey = category as keyof NorthwesternSpectrum;
           spectrum[categoryKey] = Math.max(spectrum[categoryKey], northwesternEffectiveness) as 0 | 1 | 2;

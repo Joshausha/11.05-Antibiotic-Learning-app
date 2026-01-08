@@ -456,9 +456,9 @@ export const calculateGroupStatistics = (groupAntibiotics: Antibiotic[]): GroupS
     }
     if (ab.coverage) {
       if (typeof ab.coverage === 'string') {
-        ab.coverage.split(',').forEach(c => coverageSpectra.add(c.trim()));
+        ab.coverage.split(',').forEach((c: string) => coverageSpectra.add(c.trim()));
       } else if (Array.isArray(ab.coverage)) {
-        ab.coverage.forEach(c => coverageSpectra.add(typeof c === 'string' ? c : c.toString()));
+        (ab.coverage as any[]).forEach((c: any) => coverageSpectra.add(typeof c === 'string' ? c : c.toString()));
       }
     }
   });
@@ -495,9 +495,9 @@ export const calculateCoverageSummary = (groupAntibiotics: Antibiotic[]): Covera
   groupAntibiotics.forEach(ab => {
     if (ab.coverage) {
       if (typeof ab.coverage === 'string') {
-        ab.coverage.split(',').forEach(c => coveragePatterns.add(c.trim()));
+        ab.coverage.split(',').forEach((c: string) => coveragePatterns.add(c.trim()));
       } else if (Array.isArray(ab.coverage)) {
-        ab.coverage.forEach(c => coveragePatterns.add(typeof c === 'string' ? c : c.toString()));
+        (ab.coverage as any[]).forEach((c: any) => coveragePatterns.add(typeof c === 'string' ? c : c.toString()));
       }
     }
   });

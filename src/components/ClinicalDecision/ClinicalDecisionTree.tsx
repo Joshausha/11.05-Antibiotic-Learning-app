@@ -105,7 +105,7 @@ const ClinicalDecisionTree: FC<ClinicalDecisionTreeProps> = ({
     if (!decisionTreeData?.nodes) return null;
 
     try {
-      const nodes = decisionTreeData.nodes as Record<string, Record<string, unknown>>;
+      const nodes = decisionTreeData.nodes as unknown as Record<string, Record<string, unknown>>;
       const rootId = 'root';
 
       const createHierarchy = (nodeId: string): ProcessedNode | null => {
@@ -189,7 +189,7 @@ const ClinicalDecisionTree: FC<ClinicalDecisionTreeProps> = ({
   const navigateToNextNode = useCallback((nodeId: string) => {
     if (!decisionTreeData?.nodes) return;
 
-    const nodes = decisionTreeData.nodes as Record<string, Record<string, unknown>>;
+    const nodes = decisionTreeData.nodes as unknown as Record<string, Record<string, unknown>>;
     const currentNodeData = nodes[nodeId];
 
     if (!currentNodeData) return;
@@ -263,7 +263,7 @@ const ClinicalDecisionTree: FC<ClinicalDecisionTreeProps> = ({
   useEffect(() => {
     if (!decisionTreeData?.nodes) return;
 
-    const nodes = decisionTreeData.nodes as Record<string, Record<string, unknown>>;
+    const nodes = decisionTreeData.nodes as unknown as Record<string, Record<string, unknown>>;
     const currentNodeData = nodes[currentNode];
 
     if (currentNodeData?.type === NODE_TYPES.OUTCOME) {

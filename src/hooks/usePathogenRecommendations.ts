@@ -92,7 +92,7 @@ const usePathogenRecommendations = (
 
   // Analyze user behavior patterns (memoized for performance)
   const behaviorAnalysis = useMemo<BehaviorAnalysis>(() => {
-    return analyzeBehaviorPatterns(userBehavior);
+    return analyzeBehaviorPatterns(userBehavior as any);
   }, [userBehavior]);
 
   // Calculate recommendations when dependencies change
@@ -103,10 +103,10 @@ const usePathogenRecommendations = (
     }
 
     const newRecommendations = calculatePathogenRecommendations(
-      indexes,
-      selectedPathogen,
-      behaviorAnalysis,
-      userPreferences
+      indexes as any,
+      selectedPathogen as any,
+      behaviorAnalysis as any,
+      userPreferences as any
     );
 
     setRecommendations(newRecommendations);
@@ -120,9 +120,9 @@ const usePathogenRecommendations = (
     }
 
     const newLearningPath = generateLearningPath(
-      indexes,
-      userPreferences,
-      behaviorAnalysis
+      indexes as any,
+      userPreferences as any,
+      behaviorAnalysis as any
     );
 
     setLearningPath(newLearningPath);
@@ -140,7 +140,7 @@ const usePathogenRecommendations = (
 
   // Categorize recommendations for UI display
   const getRecommendationsByCategory = useMemo(() => {
-    return categorizeRecommendations(recommendations, selectedPathogen);
+    return categorizeRecommendations(recommendations as any, selectedPathogen as any);
   }, [recommendations, selectedPathogen]);
 
   return {

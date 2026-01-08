@@ -41,9 +41,9 @@ interface ConditionDetailModalProps {
 }
 
 interface Indexes {
-  pathogenToConditions?: Map<string, string[]>;
-  antibioticToConditions?: Map<string, string[]>;
-  [key: string]: any;
+  pathogenToConditions?: Map<string, unknown[]>;
+  antibioticToConditions?: Map<string, unknown[]>;
+  [key: string]: unknown;
 }
 
 const ConditionDetailModal: FC<ConditionDetailModalProps> = ({
@@ -84,7 +84,7 @@ const ConditionDetailModal: FC<ConditionDetailModalProps> = ({
       // Safe index building with error handling
       let indexes: Indexes;
       try {
-        indexes = buildIndexes(allConditions);
+        indexes = buildIndexes(allConditions) as unknown as Indexes;
       } catch (indexError) {
         console.warn('Error building indexes:', indexError);
         return null;
@@ -137,7 +137,7 @@ const ConditionDetailModal: FC<ConditionDetailModalProps> = ({
             if (cleanPathogen && indexes.pathogenToConditions && indexes.pathogenToConditions.has(cleanPathogen)) {
               const relatedConditions = indexes.pathogenToConditions.get(cleanPathogen);
               if (Array.isArray(relatedConditions)) {
-                const filteredConditions = relatedConditions.filter((cond) => cond && cond !== condition.name);
+                const filteredConditions = relatedConditions.filter((cond) => cond && cond !== condition.name) as string[];
                 if (filteredConditions.length > 0) {
                   relatedByPathogen.set(cleanPathogen, filteredConditions);
                 }
@@ -156,7 +156,7 @@ const ConditionDetailModal: FC<ConditionDetailModalProps> = ({
           if (typeof antibiotic === 'string' && indexes.antibioticToConditions && indexes.antibioticToConditions.has(antibiotic)) {
             const relatedConditions = indexes.antibioticToConditions.get(antibiotic);
             if (Array.isArray(relatedConditions)) {
-              const filteredConditions = relatedConditions.filter((cond) => cond && cond !== condition.name);
+              const filteredConditions = relatedConditions.filter((cond) => cond && cond !== condition.name) as string[];
               if (filteredConditions.length > 0) {
                 relatedByAntibiotic.set(antibiotic, filteredConditions);
               }

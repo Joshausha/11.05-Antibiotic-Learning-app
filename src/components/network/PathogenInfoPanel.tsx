@@ -65,7 +65,7 @@ EffectivenessSection.displayName = 'EffectivenessSection';
 const PathogenInfoPanel = memo<PathogenInfoPanelProps>(({ pathogen, isVisible, onClose }) => {
   if (!isVisible || !pathogen) return null;
 
-  const antibiotics = getDetailedAntibioticInfo?.(pathogen.pathogenId) || { high: [], medium: [], low: [], resistant: [] };
+  const antibiotics = getDetailedAntibioticInfo?.(String(pathogen.pathogenId ?? '')) || { high: [], medium: [], low: [], resistant: [] };
   const resistancePercentage = pathogen.resistanceInfo?.resistancePercentage || 0;
 
   const getSeverityColor = (): string => {
@@ -145,22 +145,22 @@ const PathogenInfoPanel = memo<PathogenInfoPanelProps>(({ pathogen, isVisible, o
           <div className="space-y-4">
             <EffectivenessSection
               title="High Effectiveness"
-              antibiotics={antibiotics.high || []}
+              antibiotics={(antibiotics.high || []) as any}
               colorScheme={EFFECTIVENESS_COLORS.high}
             />
             <EffectivenessSection
               title="Medium Effectiveness"
-              antibiotics={antibiotics.medium || []}
+              antibiotics={(antibiotics.medium || []) as any}
               colorScheme={EFFECTIVENESS_COLORS.medium}
             />
             <EffectivenessSection
               title="Low Effectiveness"
-              antibiotics={antibiotics.low || []}
+              antibiotics={(antibiotics.low || []) as any}
               colorScheme={EFFECTIVENESS_COLORS.low}
             />
             <EffectivenessSection
               title="Resistant"
-              antibiotics={antibiotics.resistant || []}
+              antibiotics={(antibiotics.resistant || []) as any}
               colorScheme={EFFECTIVENESS_COLORS.resistant}
             />
           </div>

@@ -12,7 +12,7 @@
  * Created: 2025-10-12
  */
 
-import cytoscape from 'cytoscape';
+// import cytoscape from 'cytoscape'; // Module not installed - using any type
 
 /**
  * Type definitions for graph algorithm utilities
@@ -21,7 +21,7 @@ import cytoscape from 'cytoscape';
 interface CentralityNode {
   id: string | number;
   label: string;
-  centralityScore: number;
+  centralityScore?: number;
   connections?: number;
   gramStatus?: string;
   severity?: string;
@@ -169,7 +169,7 @@ export function calculateDegreeCentrality(cy: any): CentralityNode[] {
     });
   });
 
-  return results.sort((a, b) => b.centralityScore - a.centralityScore);
+  return results.sort((a, b) => (b.centralityScore || 0) - (a.centralityScore || 0));
 }
 
 /**
@@ -391,7 +391,7 @@ export function identifyHubPathogens(cy: any, threshold: number = 0.5): HubPatho
   const maxScore = centrality[0]?.centralityScore || 1;
 
   return centrality
-    .filter(node => node.centralityScore >= threshold * maxScore)
+    .filter(node => (node.centralityScore || 0) >= threshold * maxScore)
     .map(node => ({
       ...node,
       hubRank: centrality.findIndex(n => n.id === node.id) + 1,

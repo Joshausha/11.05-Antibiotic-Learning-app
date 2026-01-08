@@ -16,12 +16,15 @@ export interface ClinicalInfo {
   resistanceMechanisms?: string[];
   treatmentOptions: {
     firstLine: string[];
-    alternative: string[];
+    alternative?: string[];
     avoid?: string[];
     cDiff?: string[];
     combination?: string[];
     esbl?: string[];
     experimental?: string[];
+    cre?: string[];
+    endocarditis?: string[];
+    [key: string]: string[] | undefined;
   };
   emergencyInfo: {
     immediate: string;
@@ -32,6 +35,7 @@ export interface ClinicalInfo {
     student?: string;
     resident?: string;
     attending?: string;
+    medical_student?: string;
   };
   mortality?: Record<string, string>;
   prevalence?: Record<string, string>;
@@ -47,7 +51,7 @@ export type ClinicalDatabaseKey =
   | 'MSSA'
   | 'enterococcus_faecalis';
 
-export type ClinicalDatabase = Record<ClinicalDatabaseKey, ClinicalInfo>;
+export type ClinicalDatabase = Record<ClinicalDatabaseKey, ClinicalInfo> & { [key: string]: ClinicalInfo | undefined };
 
 // ==========================================
 // COVERAGE CLINICAL TYPES

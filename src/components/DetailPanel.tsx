@@ -15,6 +15,7 @@
 
 import React, { useState, useCallback, useMemo, FC } from 'react';
 import { CLINICAL_DATABASE, COVERAGE_CLINICAL } from './ClinicalTooltip';
+import type { ClinicalInfo } from '../types/clinical-ui.types';
 
 // Types
 interface ClinicalScenarioOption {
@@ -238,7 +239,7 @@ const ComparisonMatrix: FC<ComparisonMatrixProps> = ({ segments, antibiotic, onS
             {segments.map((segment) => {
               const coverage = antibiotic?.northwesternSpectrum?.[segment] || 0;
               const coverageData = COVERAGE_CLINICAL[coverage] || {};
-              const clinicalData = CLINICAL_DATABASE[segment] || {};
+              const clinicalData = CLINICAL_DATABASE[segment as keyof typeof CLINICAL_DATABASE] || {} as Partial<ClinicalInfo>;
 
               return (
                 <tr
@@ -594,7 +595,7 @@ const DetailPanel: FC<DetailPanelProps> = ({
             {segments.map((segment) => {
               const coverage = antibiotic?.northwesternSpectrum?.[segment] || 0;
               const coverageData = COVERAGE_CLINICAL[coverage] || {};
-              const clinicalData = CLINICAL_DATABASE[segment] || {};
+              const clinicalData = CLINICAL_DATABASE[segment as keyof typeof CLINICAL_DATABASE] || {} as Partial<ClinicalInfo>;
 
               return (
                 <div key={segment} className="segment-detail mb-4 p-3 border border-gray-200 rounded">

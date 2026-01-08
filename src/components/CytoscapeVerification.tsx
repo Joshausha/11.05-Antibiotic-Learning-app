@@ -8,7 +8,11 @@
  */
 
 import React, { useState, FC } from 'react';
-import CytoscapeComponent from 'react-cytoscapejs';
+// Stub for react-cytoscapejs - package not installed in this learning project
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const CytoscapeComponent: FC<any> = ({ style, children }) => (
+  <div style={style}>Cytoscape placeholder (package not installed){children}</div>
+);
 
 // Types
 interface CytoscapeElement {

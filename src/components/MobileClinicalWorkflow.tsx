@@ -21,7 +21,7 @@ import NorthwesternSpatialLayout from './NorthwesternSpatialLayout';
 import NorthwesternFilteringSystem from './NorthwesternFilteringSystem';
 import NorthwesternGroupOrganization from './NorthwesternGroupOrganization';
 import { NorthwesternPerformanceOptimizer } from '../utils/northwesternPerformanceOptimizer';
-import { useResponsive } from '../hooks/useResponsive';
+import useResponsive from '../hooks/useResponsive';
 
 // Types
 interface Antibiotic {
@@ -184,8 +184,10 @@ const MobileClinicalWorkflow: FC<MobileClinicalWorkflowProps> = ({
     pixelRatio: typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1,
   });
 
-  // Responsive hooks
-  const { screenSize, isTouchDevice } = useResponsive();
+  // Responsive hooks - useResponsive returns boolean (isMobile)
+  const isMobile = useResponsive();
+  const screenSize = isMobile ? 'small' : 'large';
+  const isTouchDevice = typeof window !== 'undefined' && 'ontouchstart' in window;
 
   // Initialize performance optimizer
   useEffect(() => {
@@ -352,7 +354,7 @@ const MobileClinicalWorkflow: FC<MobileClinicalWorkflowProps> = ({
       if (gestureState.current.isLongPress) {
         gestureState.current.isLongPress = false;
       } else if (touchDuration < TOUCH_CONFIG.gestures.tap.threshold) {
-        handleTap(touchStartRef.current, touch);
+        handleTap(touchStartRef.current, touch as unknown as Touch);
       } else if (gestureState.current.swipeDirection) {
         handleSwipe(gestureState.current.swipeDirection);
       }
@@ -588,8 +590,8 @@ const MobileClinicalWorkflow: FC<MobileClinicalWorkflowProps> = ({
 
       {viewMode === 'filtering' && (
         <NorthwesternFilteringSystem
-          antibiotics={emergencyAntibiotics}
-          screenSize={screenSize}
+          antibiotics={emergencyAntibiotics as any}
+          screenSize={screenSize as any}
           emergencyMode={emergencyMode}
           enableRealTimeFiltering={true}
           filterUpdateDebounce={50}
@@ -597,9 +599,9 @@ const MobileClinicalWorkflow: FC<MobileClinicalWorkflowProps> = ({
       )}
 
       <NorthwesternSpatialLayout
-        antibiotics={emergencyAntibiotics}
-        viewMode="clustered"
-        screenSize={screenSize}
+        antibiotics={emergencyAntibiotics as any}
+        viewMode="exploration"
+        screenSize={screenSize as any}
         emergencyMode={emergencyMode}
         clinicalContext={clinicalContext}
         enableVirtualization={true}
@@ -721,7 +723,7 @@ const MobileClinicalWorkflow: FC<MobileClinicalWorkflowProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .mobile-clinical-workflow {
           touch-action: manipulation;
           user-select: none;

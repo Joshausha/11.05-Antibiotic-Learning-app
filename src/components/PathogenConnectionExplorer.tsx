@@ -95,7 +95,7 @@ const PathogenConnectionExplorer: FC<PathogenConnectionExplorerProps> = ({
   // Calculate available paths when target changes
   useEffect(() => {
     if (selectedPathogen && targetPathogen && indexes) {
-      const paths = findPathogenPaths(indexes, selectedPathogen.name, targetPathogen.name, 4);
+      const paths = findPathogenPaths(indexes as any, selectedPathogen.name, targetPathogen.name, 4);
       setAvailablePaths(paths);
 
       if (paths.length > 0) {
@@ -120,7 +120,7 @@ const PathogenConnectionExplorer: FC<PathogenConnectionExplorerProps> = ({
   // Update recommendations when pathogen changes
   useEffect(() => {
     if (selectedPathogen && indexes) {
-      const recs = getPathogenRecommendations(indexes, selectedPathogen.name, recentlyViewed, userPreferences);
+      const recs = getPathogenRecommendations(indexes as any, selectedPathogen.name, recentlyViewed, userPreferences);
       setRecommendations(recs);
     }
   }, [selectedPathogen, indexes, recentlyViewed, userPreferences]);

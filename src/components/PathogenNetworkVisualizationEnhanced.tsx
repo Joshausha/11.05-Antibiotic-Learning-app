@@ -189,7 +189,7 @@ const PathogenNetworkVisualizationEnhanced: FC<PathogenNetworkVisualizationEnhan
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
   const [edgeThreshold, setEdgeThreshold] = useState(0.3);
 
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
   const layoutIterations = useRef(0);
 
   // Process pathogen data

@@ -207,10 +207,10 @@ const QuizAnalyticsDashboard: React.FC<QuizAnalyticsDashboardProps> = ({
 
   // Animation effect
   useEffect(() => {
-    if (animationEnabled) {
-      const timer = setTimeout(() => setAnimationEnabled(false), 2000);
-      return () => clearTimeout(timer);
-    }
+    if (!animationEnabled) return;
+
+    const timer = setTimeout(() => setAnimationEnabled(false), 2000);
+    return () => clearTimeout(timer);
   }, [animationEnabled]);
 
   return (

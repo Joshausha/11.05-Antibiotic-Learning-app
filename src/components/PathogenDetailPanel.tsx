@@ -116,7 +116,7 @@ const PathogenDetailPanel: React.FC<PathogenDetailPanelProps> = ({
     if (pathogen) {
       // Small delay to ensure DOM is ready
       setTimeout(() => {
-        const panelElement = document.querySelector('[data-pathogen-panel="true"]');
+        const panelElement = document.querySelector('[data-pathogen-panel="true"]') as HTMLElement | null;
         if (panelElement && defaultAnimationController) {
           defaultAnimationController.animate?.(panelElement, 'fade-in', 400);
         }
@@ -469,7 +469,7 @@ const PathogenDetailPanel: React.FC<PathogenDetailPanelProps> = ({
                       <h4 className="font-medium text-gray-900">{similar.pathogen.name}</h4>
                       <p className="text-sm text-gray-600 mt-1">{similar.reasoning}</p>
 
-                      {similar.similarity?.details?.sharedConditionNames?.length ?? 0 > 0 && (
+                      {(similar.similarity?.details?.sharedConditionNames?.length ?? 0) > 0 && (
                         <div className="text-xs text-blue-600 mt-2">
                           Shared conditions: {similar.similarity?.details?.sharedConditionNames?.slice(0, 2).join(', ')}
                           {(similar.similarity?.details?.sharedConditionNames?.length ?? 0) > 2 && '...'}

@@ -248,7 +248,7 @@ const EnhancedNorthwesternPieChart: FC<EnhancedNorthwesternPieChartProps> = ({
 
   // Generate enhanced route colors with medical context
   const enhancedRouteColors = useMemo((): RouteColors => {
-    const baseColors = getRouteColors(antibiotic?.routeColor || 'blue') as RouteColors;
+    const baseColors = getRouteColors(antibiotic?.routeColor || 'blue') as unknown as RouteColors;
 
     // Apply clinical context enhancements
     if (effectiveContext === 'emergency') {
@@ -276,7 +276,7 @@ const EnhancedNorthwesternPieChart: FC<EnhancedNorthwesternPieChartProps> = ({
   // Enhanced segment color calculation
   const calculateSegmentColors = useCallback((segmentKey: string, coverage: number): SegmentColorResult => {
     try {
-      const baseColors = getSegmentColors(segmentKey, antibiotic?.routeColor, coverage) as any;
+      const baseColors = getSegmentColors(segmentKey, antibiotic?.routeColor || 'blue', coverage) as any;
       const routeColors = enhancedRouteColors;
 
       // Apply visual theme enhancements
@@ -539,20 +539,22 @@ const EnhancedNorthwesternPieChart: FC<EnhancedNorthwesternPieChartProps> = ({
       style={chartStyle}
     >
       {/* Enhanced Northwestern Pie Chart with integrated design system */}
-      <NorthwesternPieChart
-        antibiotic={antibiotic}
-        size={size}
-        onSegmentHover={handleEnhancedSegmentHover}
-        onSegmentClick={handleEnhancedSegmentClick}
-        showLabels={showLabels}
-        interactive={interactive}
-        className="enhanced-northwestern-pie-chart__core"
-        hoveredSegment={hoveredSegment}
-        selectedSegments={selectedSegments}
-        educationLevel={educationLevel}
-        emergencyMode={emergencyMode}
-        enableTouchInteractions={enableTouchInteractions}
-      />
+      {antibiotic && (
+        <NorthwesternPieChart
+          antibiotic={antibiotic}
+          size={size}
+          onSegmentHover={handleEnhancedSegmentHover as any}
+          onSegmentClick={handleEnhancedSegmentClick as any}
+          showLabels={showLabels}
+          interactive={interactive}
+          className="enhanced-northwestern-pie-chart__core"
+          hoveredSegment={hoveredSegment ?? undefined}
+          selectedSegments={selectedSegments}
+          educationLevel={educationLevel}
+          emergencyMode={emergencyMode}
+          enableTouchInteractions={enableTouchInteractions}
+        />
+      )}
 
       {/* Enhanced visual indicators */}
       {showCoverageIndicators && (
