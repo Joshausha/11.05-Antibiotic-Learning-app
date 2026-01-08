@@ -2,6 +2,7 @@ import React, { lazy, Suspense, FC, ReactNode } from 'react';
 
 // Import Error Boundary and Context
 import ErrorBoundary from './components/ErrorBoundary';
+import SectionErrorBoundary from './components/SectionErrorBoundary';
 import { AppProvider, useAppContext } from './contexts/AppContext';
 import { SharedSelectionProvider } from './contexts/SharedSelectionContext';
 
@@ -97,22 +98,22 @@ const AppContent: FC = () => {
         <main id="main-content" className="max-w-6xl mx-auto p-4 md:p-8">
           {/* Render appropriate tab component based on activeTab */}
           {activeTab === 'hub' && (
-            <ErrorBoundary>
+            <SectionErrorBoundary sectionName="Learning Hub">
               <Suspense fallback={<SkeletonLoader type="content" lines={4} />}>
                 <LearningHub onNavigate={setActiveTab} />
               </Suspense>
-            </ErrorBoundary>
+            </SectionErrorBoundary>
           )}
 
           {activeTab === 'learn' && (
-            <ErrorBoundary>
+            <SectionErrorBoundary sectionName="Learning Content">
               {/* @ts-ignore - HomeTab not yet TypeScript */}
               <HomeTab setActiveTab={setActiveTab} />
-            </ErrorBoundary>
+            </SectionErrorBoundary>
           )}
 
           {activeTab === 'quiz' && (
-            <ErrorBoundary>
+            <SectionErrorBoundary sectionName="Quiz">
               <Suspense fallback={<SkeletonLoader type="quiz" />}>
                 {/* @ts-ignore - QuizTab not yet TypeScript */}
                 <QuizTab {...({
@@ -120,24 +121,24 @@ const AppContent: FC = () => {
                   setActiveTab
                 } as any)} />
               </Suspense>
-            </ErrorBoundary>
+            </SectionErrorBoundary>
           )}
 
           {activeTab === 'analytics' && (
-            <ErrorBoundary>
+            <SectionErrorBoundary sectionName="Analytics Dashboard">
               <Suspense fallback={<SkeletonLoader type="content" lines={5} />}>
                 <LearningAnalyticsDashboard
                   quizHistory={quizHistory || []}
                   spacedRepetitionData={spacedRepetitionData}
                 />
               </Suspense>
-            </ErrorBoundary>
+            </SectionErrorBoundary>
           )}
 
           {activeTab === 'reference' && (
             <div className="space-y-6">
               {/* Medical Conditions Reference */}
-              <ErrorBoundary>
+              <SectionErrorBoundary sectionName="Medical Conditions Reference">
                 <div className="bg-white rounded-xl shadow-sm border p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">Medical Conditions Reference</h2>
                   {/* @ts-ignore - ConditionsTab not yet TypeScript */}
@@ -148,43 +149,43 @@ const AppContent: FC = () => {
                     setSearchTerm: searchData.setSearchTerm
                   } as any)} />
                 </div>
-              </ErrorBoundary>
+              </SectionErrorBoundary>
 
               {/* Consolidated Pathogen & Antibiotic Explorer */}
-              <ErrorBoundary>
+              <SectionErrorBoundary sectionName="Pathogen Explorer">
                 <Suspense fallback={<SkeletonLoader type="list" />}>
                   <ConsolidatedPathogenExplorer
                     pathogenData={pathogenData}
                     onSelectCondition={(condition: any) => setSelectedCondition(condition as any)}
                   />
                 </Suspense>
-              </ErrorBoundary>
+              </SectionErrorBoundary>
             </div>
           )}
 
           {activeTab === 'pathogen-explorer' && (
-            <ErrorBoundary>
+            <SectionErrorBoundary sectionName="Pathogen Explorer">
               <Suspense fallback={<SkeletonLoader type="list" />}>
                 <ConsolidatedPathogenExplorer
                   pathogenData={pathogenData}
                   onSelectCondition={(condition: any) => setSelectedCondition(condition as any)}
                 />
               </Suspense>
-            </ErrorBoundary>
+            </SectionErrorBoundary>
           )}
 
           {activeTab === 'antibiotic-explorer' && (
-            <ErrorBoundary>
+            <SectionErrorBoundary sectionName="Antibiotic Explorer">
               <Suspense fallback={<SkeletonLoader type="list" />}>
                 <AntibioticExplorer
                   antibioticData={antibioticData}
                 />
               </Suspense>
-            </ErrorBoundary>
+            </SectionErrorBoundary>
           )}
 
           {activeTab === 'visualizations' && (
-            <ErrorBoundary>
+            <SectionErrorBoundary sectionName="Visualizations">
               <Suspense fallback={<SkeletonLoader type="content" lines={8} />}>
                 <VisualizationsTab
                   pathogenData={pathogenData}
@@ -196,11 +197,11 @@ const AppContent: FC = () => {
                   }}
                 />
               </Suspense>
-            </ErrorBoundary>
+            </SectionErrorBoundary>
           )}
 
           {activeTab === 'comparison' && (
-            <ErrorBoundary>
+            <SectionErrorBoundary sectionName="Antibiotic Comparison">
               <Suspense fallback={<SkeletonLoader type="content" lines={6} />}>
                 <div className="bg-white rounded-xl shadow-sm border p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">Antibiotic Comparison</h2>
@@ -212,19 +213,19 @@ const AppContent: FC = () => {
                   />
                 </div>
               </Suspense>
-            </ErrorBoundary>
+            </SectionErrorBoundary>
           )}
 
           {/* Condition Detail Modal */}
           {selectedCondition && (
-            <ErrorBoundary>
+            <SectionErrorBoundary sectionName="Condition Details">
               {/* @ts-ignore - ConditionDetailModal not yet TypeScript */}
               <ConditionDetailModal {...({
                 condition: selectedCondition,
                 conditions: medicalConditions,
                 onClose: () => setSelectedCondition(null)
               } as any)} />
-            </ErrorBoundary>
+            </SectionErrorBoundary>
           )}
         </main>
       </div>
