@@ -13,6 +13,7 @@ import {
   findCombinationTherapyConditions
 } from '../utils/dataIndexer';
 import { createNorthwesternAntibioticData } from '../data/NorthwesternAntibioticSchema';
+import { logDevError, logDevWarning, validateAntibioticData } from '../utils/devErrorLogger';
 
 /**
  * Type definitions for antibiotic data management
@@ -107,23 +108,61 @@ const useAntibioticData = (medicalConditions: any[]): UseAntibioticDataReturn =>
   // Build indexes once when conditions data changes
   const indexes = useMemo<AntibioticIndexes | null>(() => {
     if (!medicalConditions || medicalConditions.length === 0) {
+      logDevWarning('No medical conditions data available for antibiotic indexing', {
+        conditionsLength: medicalConditions?.length ?? 0
+      });
       return null;
     }
-    return buildIndexes(medicalConditions) as any;
+
+    try {
+      const result = buildIndexes(medicalConditions) as any;
+
+      // Validate indexes in development
+      if (process.env.NODE_ENV === 'development' && result?.antibiotics) {
+        const issues: string[] = [];
+        result.antibiotics.slice(0, 5).forEach((antibiotic: any) => {
+          const antibioticIssues = validateAntibioticData(antibiotic);
+          issues.push(...antibioticIssues);
+        });
+        if (issues.length > 0) {
+          logDevWarning('Antibiotic data validation issues (first 5 checked)', { issues });
+        }
+      }
+
+      return result;
+    } catch (error) {
+      logDevError({
+        file: 'useAntibioticData.ts',
+        operation: 'Building antibiotic indexes',
+        error,
+        context: { conditionsCount: medicalConditions.length }
+      });
+      return null;
+    }
   }, [medicalConditions]);
 
   // Get filtered and sorted antibiotics
   const antibiotics = useMemo<Antibiotic[]>(() => {
     if (!indexes) return [];
 
-    const searchResults = searchAntibiotics(indexes as any, {
-      query: searchQuery,
-      drugClass: drugClassFilter,
-      sortBy: sortBy as any
-    });
+    try {
+      const searchResults = searchAntibiotics(indexes as any, {
+        query: searchQuery,
+        drugClass: drugClassFilter,
+        sortBy: sortBy as any
+      });
 
-    // Merge Northwestern data from NorthwesternAntibioticSchema
-    return createNorthwesternAntibioticData(searchResults as any) as any;
+      // Merge Northwestern data from NorthwesternAntibioticSchema
+      return createNorthwesternAntibioticData(searchResults as any) as any;
+    } catch (error) {
+      logDevError({
+        file: 'useAntibioticData.ts',
+        operation: 'Searching/filtering antibiotics',
+        error,
+        context: { searchQuery, drugClassFilter, sortBy }
+      });
+      return [];
+    }
   }, [indexes, searchQuery, drugClassFilter, sortBy]);
 
   // Get conditions for selected antibiotic

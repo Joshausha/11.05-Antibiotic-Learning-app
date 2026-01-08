@@ -11,6 +11,7 @@ import {
   getConditionsForPathogen,
   getAntibioticsForPathogen
 } from '../utils/dataIndexer';
+import { logDevError, logDevWarning, validatePathogenData } from '../utils/devErrorLogger';
 
 /**
  * Type definitions for pathogen data management
@@ -101,21 +102,59 @@ const usePathogenData = (medicalConditions: any[]): UsePathogenDataReturn => {
   // Build indexes once when conditions data changes
   const indexes = useMemo<PathogenIndexes | null>(() => {
     if (!medicalConditions || medicalConditions.length === 0) {
+      logDevWarning('No medical conditions data available for pathogen indexing', {
+        conditionsLength: medicalConditions?.length ?? 0
+      });
       return null;
     }
-    return buildIndexes(medicalConditions) as any;
+
+    try {
+      const result = buildIndexes(medicalConditions) as any;
+
+      // Validate indexes in development
+      if (process.env.NODE_ENV === 'development' && result?.pathogens) {
+        const issues: string[] = [];
+        result.pathogens.slice(0, 5).forEach((pathogen: any) => {
+          const pathogenIssues = validatePathogenData(pathogen);
+          issues.push(...pathogenIssues);
+        });
+        if (issues.length > 0) {
+          logDevWarning('Pathogen data validation issues (first 5 checked)', { issues });
+        }
+      }
+
+      return result;
+    } catch (error) {
+      logDevError({
+        file: 'usePathogenData.ts',
+        operation: 'Building pathogen indexes',
+        error,
+        context: { conditionsCount: medicalConditions.length }
+      });
+      return null;
+    }
   }, [medicalConditions]);
 
   // Get filtered and sorted pathogens
   const pathogens = useMemo<Pathogen[]>(() => {
     if (!indexes) return [];
 
-    return searchPathogens(indexes as any, {
-      query: searchQuery,
-      gramStatus: gramFilter as any,
-      pathogenType: typeFilter as any,
-      sortBy: sortBy as any
-    }) as any;
+    try {
+      return searchPathogens(indexes as any, {
+        query: searchQuery,
+        gramStatus: gramFilter as any,
+        pathogenType: typeFilter as any,
+        sortBy: sortBy as any
+      }) as any;
+    } catch (error) {
+      logDevError({
+        file: 'usePathogenData.ts',
+        operation: 'Searching/filtering pathogens',
+        error,
+        context: { searchQuery, gramFilter, typeFilter, sortBy }
+      });
+      return [];
+    }
   }, [indexes, searchQuery, gramFilter, typeFilter, sortBy]);
 
   // Get conditions for selected pathogen
