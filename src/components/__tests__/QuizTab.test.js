@@ -625,25 +625,25 @@ describe('QuizTab Component', () => {
   describe('Performance', () => {
     test('handles rapid answer selections without errors', async () => {
       render(<QuizTab {...defaultProps} />);
-      
+
       fireEvent.click(screen.getByText(/start.*quiz/i));
-      
+
       await waitFor(() => {
         expect(screen.getByText('Which antibiotic is first-line for pneumonia?')).toBeInTheDocument();
       });
-      
+
       // In a real user interaction, the element would be removed after the first click.
       // The test should check that the application transitions correctly after one click.
       const answerButton = screen.getByText(/Amoxicillin/i);
       fireEvent.click(answerButton);
-      
+
       // The component should handle this single click gracefully and show the explanation.
       // Subsequent clicks are not possible as the view changes.
       await waitFor(() => {
         expect(screen.getByText('Explanation:')).toBeInTheDocument();
       });
 
-      // To test rapid clicks, we can verify that nothing breaks if we try to click again, 
+      // To test rapid clicks, we can verify that nothing breaks if we try to click again,
       // though the element won't be there.
       // This confirms the component is robust against stale event handlers if any existed.
       expect(screen.queryByText('A. Amoxicillin')).not.toBeInTheDocument();
@@ -658,17 +658,155 @@ describe('QuizTab Component', () => {
         explanation: `Explanation ${i}`,
         difficulty: 'intermediate'
       }));
-      
+
       const largeProps = {
         quizQuestions: largeQuestionSet,
         setActiveTab: mockSetActiveTab
       };
-      
+
       expect(() => {
         render(<QuizTab {...largeProps} />);
       }).not.toThrow();
-      
+
       expect(screen.getByText('100')).toBeInTheDocument();
+    });
+  });
+
+  describe('Quiz Integration Flow', () => {
+    test('complete quiz flow with mixed correct/incorrect answers', async () => {
+      render(<QuizTab {...defaultProps} />);
+
+      // Start quiz
+      fireEvent.click(screen.getByText(/start.*quiz/i));
+      await waitFor(() => {
+        expect(screen.getByText('Which antibiotic is first-line for pneumonia?')).toBeInTheDocument();
+      });
+
+      // Q1: Correct answer
+      fireEvent.click(screen.getByText(/Amoxicillin/i));
+      await waitFor(() => {
+        expect(screen.getByText('What is the mechanism of action of penicillins?')).toBeInTheDocument();
+      }, { timeout: 2000 });
+
+      // Q2: Wrong answer
+      fireEvent.click(screen.getByText(/Protein synthesis inhibition/i));
+      await waitFor(() => {
+        expect(screen.getByText('Which organism is associated with MRSA infections?')).toBeInTheDocument();
+      }, { timeout: 2000 });
+
+      // Q3: Correct answer
+      fireEvent.click(screen.getByText(/Staphylococcus aureus/i));
+
+      // Verify final score (2/3)
+      await waitFor(() => {
+        expect(screen.getByText('Quiz Complete!')).toBeInTheDocument();
+        expect(screen.getByText('2/3')).toBeInTheDocument();
+        expect(screen.getByText('(67%)')).toBeInTheDocument();
+      }, { timeout: 2000 });
+
+      // Keep studying message for 67% (< 70%)
+      expect(screen.getByText('Keep studying! 📚')).toBeInTheDocument();
+    });
+
+    test('quiz flow with all incorrect answers shows keep studying message', async () => {
+      render(<QuizTab {...defaultProps} />);
+
+      // Start quiz
+      fireEvent.click(screen.getByText(/start.*quiz/i));
+      await waitFor(() => {
+        expect(screen.getByText('Which antibiotic is first-line for pneumonia?')).toBeInTheDocument();
+      });
+
+      // Q1: Wrong
+      fireEvent.click(screen.getByText(/Vancomycin/i));
+      await waitFor(() => {
+        expect(screen.getByText('What is the mechanism of action of penicillins?')).toBeInTheDocument();
+      }, { timeout: 2000 });
+
+      // Q2: Wrong
+      fireEvent.click(screen.getByText(/Protein synthesis inhibition/i));
+      await waitFor(() => {
+        expect(screen.getByText('Which organism is associated with MRSA infections?')).toBeInTheDocument();
+      }, { timeout: 2000 });
+
+      // Q3: Wrong
+      fireEvent.click(screen.getByText(/Streptococcus pneumoniae/i));
+
+      // Verify final score (0/3)
+      await waitFor(() => {
+        expect(screen.getByText('Quiz Complete!')).toBeInTheDocument();
+        expect(screen.getByText('0/3')).toBeInTheDocument();
+        expect(screen.getByText('(0%)')).toBeInTheDocument();
+        expect(screen.getByText('Keep studying! 📚')).toBeInTheDocument();
+      }, { timeout: 2000 });
+    });
+
+    test('Northwestern visual quiz questions are filtered correctly', async () => {
+      const northwesternQuestion = {
+        id: 'nw1',
+        question: 'Identify the antibiotic coverage pattern',
+        options: ['Penicillin', 'Vancomycin', 'Meropenem', 'Ciprofloxacin'],
+        correct: 2,
+        explanation: 'Meropenem has broad-spectrum coverage',
+        difficulty: 'intermediate',
+        northwesternFocus: true
+      };
+
+      const propsWithNW = {
+        quizQuestions: [...mockQuizQuestions, northwesternQuestion],
+        setActiveTab: mockSetActiveTab
+      };
+
+      render(<QuizTab {...propsWithNW} />);
+
+      // Select Northwestern Visual difficulty
+      fireEvent.click(screen.getByText('Northwestern Visual'));
+
+      // Should show 1 Northwestern question
+      expect(screen.getByText('1')).toBeInTheDocument();
+    });
+
+    test('disables standard quiz mode when spaced repetition is toggled off', () => {
+      render(<QuizTab {...defaultProps} />);
+
+      // By default, adaptive learning is ON
+      expect(screen.getByText(/questions optimized for your learning/i)).toBeInTheDocument();
+
+      // Toggle it off
+      const toggle = screen.getByRole('switch');
+      fireEvent.click(toggle);
+
+      // Should show standard mode text
+      expect(screen.getByText(/standard quiz mode/i)).toBeInTheDocument();
+
+      // Button should change text
+      expect(screen.getByText(/start.*quiz/i)).not.toHaveTextContent('Adaptive');
+    });
+
+    test('score percentage calculation edge cases', async () => {
+      const singleQuestion = [{
+        id: 'q1',
+        question: 'Single question?',
+        options: ['A', 'B', 'C', 'D'],
+        correct: 0,
+        explanation: 'Test',
+        difficulty: 'beginner'
+      }];
+
+      render(<QuizTab quizQuestions={singleQuestion} setActiveTab={mockSetActiveTab} />);
+
+      fireEvent.click(screen.getByText(/start.*quiz/i));
+      await waitFor(() => {
+        expect(screen.getByText('Single question?')).toBeInTheDocument();
+      });
+
+      // Answer correctly
+      fireEvent.click(screen.getByText('A'));
+
+      await waitFor(() => {
+        expect(screen.getByText('1/1')).toBeInTheDocument();
+        expect(screen.getByText('(100%)')).toBeInTheDocument();
+      }, { timeout: 2000 });
     });
   });
 });
