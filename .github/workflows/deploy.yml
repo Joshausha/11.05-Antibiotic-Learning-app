@@ -38,7 +38,7 @@ jobs:
     - name: Build production bundle
       run: npm run build
       env:
-        PUBLIC_URL: /Antibiotic-Learning-app
+        PUBLIC_URL: /11.05-Antibiotic-Learning-app
     
     - name: Verify build output
       run: |
