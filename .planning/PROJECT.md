@@ -8,27 +8,43 @@ A personal learning tool for antibiotic and bacteria education that helps Josh (
 
 Accurate medical data with flexible, experimental interaction modes that transform antibiotic coverage knowledge into durable clinical recall.
 
+## Current State (v1.0 MVP — Shipped 2026-01-08)
+
+**What shipped:**
+- D3 force-directed network visualization with gram stain color coding
+- 3-mode comparison system (pair, reference, grid) with similarity scoring
+- Board-prep style quiz with UWorld/Board Vitals teaching pattern
+- Multi-modal learning flow with context preservation across modes
+- Learning analytics dashboard with weak spots identification
+- 80%+ test coverage with medical data accuracy validation
+
+**Tech stack:** React 18, TypeScript, D3.js, Jest, Tailwind CSS
+**Codebase:** ~102,530 LOC across 157 files
+
 ## Requirements
 
 ### Validated
 
-- ✓ Antibiotic and pathogen data structure — existing
-- ✓ Gram positive/negative classification system — existing
-- ✓ Antibiotic class and formulation taxonomy — existing
-- ✓ React/TypeScript/D3 technical foundation — existing
+- ✓ Antibiotic and pathogen data structure — v1.0
+- ✓ Gram positive/negative classification system — v1.0
+- ✓ Antibiotic class and formulation taxonomy — v1.0
+- ✓ React/TypeScript/D3 technical foundation — v1.0
+- ✓ Visual network/graph exploration showing antibiotic-bacteria relationships — v1.0
+- ✓ Side-by-side comparison interface for antibiotics and bacteria properties — v1.0
+- ✓ Quiz/flashcard system with teaching-focused explanations — v1.0
+- ✓ Multiple interaction modes that reinforce learning in different ways — v1.0
+- ✓ Learning analytics with weak spots identification — v1.0
 
 ### Active
 
-- [ ] Visual network/graph exploration showing antibiotic-bacteria relationships
-- [ ] Side-by-side comparison interface for antibiotics and bacteria properties
-- [ ] Quiz/flashcard system with spaced repetition for retention
-- [ ] Multiple interaction modes that reinforce learning in different ways
+(None currently — milestone complete, awaiting next direction)
 
 ### Out of Scope
 
 - **Patient care integration** — No clinical decision support, EMR integration, or real patient data. This is a learning tool, not a clinical tool.
 - **Multi-user/social features** — Solo learning experience. No collaboration, progress sharing, or comparing with other learners.
 - **Production deployment** — Personal learning sandbox for experimentation. Not a published or production application.
+- **Spaced repetition integration** — Pivoted to enhanced network interactivity in v1.0; may revisit in future milestone.
 
 ## Context
 
@@ -44,14 +60,6 @@ Accurate medical data with flexible, experimental interaction modes that transfo
 - Medical content is solid foundation — focus is on finding best interaction patterns
 - Experimentation encouraged — broken features and incomplete explorations are expected
 
-**Existing Codebase:**
-- 50+ React components (many experimental)
-- Medical data files (pathogens, antibiotics, quiz questions)
-- Northwestern visualization system (current main approach)
-- Custom hooks and utilities
-- Jest + React Testing Library setup
-- TypeScript with intentionally relaxed strictness for learning
-
 ## Constraints
 
 **None** — Full flexibility to experiment with approaches, technologies, and interaction patterns. This is a learning project optimizing for Josh's education, not production requirements.
@@ -60,10 +68,12 @@ Accurate medical data with flexible, experimental interaction modes that transfo
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Multiple learning modalities (visual, comparison, quiz) | These modes reinforce each other — visual exploration aids pattern recognition, comparison deepens understanding, testing drives retention | — Pending |
-| Medical accuracy, exploration, retention equally important | All three must work together — inaccurate data undermines trust, poor exploration blocks discovery, weak retention defeats learning purpose | — Pending |
-| Existing data structure is foundation | Antibiotic/bacteria content is validated and solid — implementation focus on interaction experimentation | — Pending |
-| Learning sandbox philosophy | Project optimizes for Josh's technical learning (React, TypeScript, D3) alongside medical learning — messiness and experimentation expected | — Pending |
+| D3 v7 force simulation over custom physics | D3's force simulation handles collision, gravity, convergence better | ✓ Good |
+| Gram stain color encoding (blue/red/gray) | Medical education convention, clear visual categorization | ✓ Good |
+| Reference mode as PRIMARY comparison mode | Best for learning: compare unfamiliar against known antibiotics | ✓ Good |
+| UWorld/Board Vitals quiz pattern | Familiar to medical learners, teaching-focused explanations | ✓ Good |
+| Accept 5 remaining TypeScript errors | Learning project, 99.2% fixed, diminishing returns | ✓ Good |
+| Pivot Phase 5 from spaced repetition to network interactivity | Visual exploration more valuable for this learning project | ✓ Good |
 
 ---
-*Last updated: 2026-01-06 after initialization*
+*Last updated: 2026-01-08 after v1.0 milestone*
