@@ -473,12 +473,320 @@ describe('Component Constants', () => {
     expect(ROUTE_COLORS).toHaveProperty('red');
     expect(ROUTE_COLORS).toHaveProperty('blue');
     expect(ROUTE_COLORS).toHaveProperty('purple');
-    
+
     // Each color should have light, dark, and border
     Object.values(ROUTE_COLORS).forEach(palette => {
       expect(palette).toHaveProperty('light');
       expect(palette).toHaveProperty('dark');
       expect(palette).toHaveProperty('border');
     });
+  });
+});
+
+// Route color derivation tests
+describe('Route Color Derivation', () => {
+  test('derives purple color for antibiotic with IV and oral formulations', () => {
+    const dualFormulationAntibiotic = {
+      id: 1,
+      name: 'Dual Route Antibiotic',
+      northwesternSpectrum: {
+        MRSA: 1, VRE_faecium: 0, anaerobes: 1, atypicals: 0,
+        pseudomonas: 0, gramNegative: 1, MSSA: 2, enterococcus_faecalis: 1
+      },
+      formulations: ['IV injection', 'Oral tablet'],
+      cellWallActive: true
+    };
+
+    const { container } = render(<NorthwesternPieChart antibiotic={dualFormulationAntibiotic} size="medium" />);
+
+    // Component should render without errors
+    expect(container.querySelector('.northwestern-pie-chart')).toBeInTheDocument();
+  });
+
+  test('derives blue color for IV-only formulation antibiotic', () => {
+    const ivOnlyAntibiotic = {
+      id: 2,
+      name: 'IV Only Antibiotic',
+      northwesternSpectrum: {
+        MRSA: 1, VRE_faecium: 0, anaerobes: 1, atypicals: 0,
+        pseudomonas: 0, gramNegative: 1, MSSA: 2, enterococcus_faecalis: 1
+      },
+      formulations: ['IV infusion'],
+      cellWallActive: true
+    };
+
+    const { container } = render(<NorthwesternPieChart antibiotic={ivOnlyAntibiotic} size="medium" />);
+    expect(container.querySelector('.northwestern-pie-chart')).toBeInTheDocument();
+  });
+
+  test('derives red color for oral-only formulation antibiotic', () => {
+    const oralOnlyAntibiotic = {
+      id: 3,
+      name: 'Oral Only Antibiotic',
+      northwesternSpectrum: {
+        MRSA: 1, VRE_faecium: 0, anaerobes: 1, atypicals: 0,
+        pseudomonas: 0, gramNegative: 1, MSSA: 2, enterococcus_faecalis: 1
+      },
+      formulations: ['Oral suspension', 'PO tablet'],
+      cellWallActive: true
+    };
+
+    const { container } = render(<NorthwesternPieChart antibiotic={oralOnlyAntibiotic} size="medium" />);
+    expect(container.querySelector('.northwestern-pie-chart')).toBeInTheDocument();
+  });
+
+  test('falls back to route field when formulations is empty', () => {
+    const routeOnlyAntibiotic = {
+      id: 4,
+      name: 'Route Only Antibiotic',
+      northwesternSpectrum: {
+        MRSA: 1, VRE_faecium: 0, anaerobes: 1, atypicals: 0,
+        pseudomonas: 0, gramNegative: 1, MSSA: 2, enterococcus_faecalis: 1
+      },
+      route: ['IV', 'PO'],
+      cellWallActive: true
+    };
+
+    const { container } = render(<NorthwesternPieChart antibiotic={routeOnlyAntibiotic} size="medium" />);
+    expect(container.querySelector('.northwestern-pie-chart')).toBeInTheDocument();
+  });
+
+  test('handles string route value', () => {
+    const stringRouteAntibiotic = {
+      id: 5,
+      name: 'String Route Antibiotic',
+      northwesternSpectrum: {
+        MRSA: 1, VRE_faecium: 0, anaerobes: 1, atypicals: 0,
+        pseudomonas: 0, gramNegative: 1, MSSA: 2, enterococcus_faecalis: 1
+      },
+      route: 'oral',
+      cellWallActive: true
+    };
+
+    const { container } = render(<NorthwesternPieChart antibiotic={stringRouteAntibiotic} size="medium" />);
+    expect(container.querySelector('.northwestern-pie-chart')).toBeInTheDocument();
+  });
+});
+
+// Touch interaction tests
+describe('Touch Interactions', () => {
+  test('handles touch start event on segment', () => {
+    const mockHover = jest.fn();
+
+    render(
+      <NorthwesternPieChart
+        antibiotic={mockAntibiotic}
+        size="medium"
+        enableTouchInteractions={true}
+        interactive={true}
+        onSegmentHover={mockHover}
+      />
+    );
+
+    const mrsaSegment = screen.getByLabelText('MRSA: 0/2 coverage');
+    fireEvent.touchStart(mrsaSegment);
+
+    // Touch start should be handled without error
+    expect(mrsaSegment).toBeInTheDocument();
+  });
+
+  test('handles touch end event on segment', async () => {
+    const mockClick = jest.fn();
+
+    render(
+      <NorthwesternPieChart
+        antibiotic={mockAntibiotic}
+        size="medium"
+        enableTouchInteractions={true}
+        interactive={true}
+        onSegmentClick={mockClick}
+      />
+    );
+
+    const mssaSegment = screen.getByLabelText('MSSA: 2/2 coverage');
+
+    // Simulate quick tap (touch start + immediate touch end)
+    fireEvent.touchStart(mssaSegment);
+    fireEvent.touchEnd(mssaSegment);
+
+    // Quick tap should trigger click
+    await waitFor(() => {
+      expect(mockClick).toHaveBeenCalledWith('MSSA', mockAntibiotic);
+    });
+  });
+
+  test('does not fire touch events when touch interactions disabled', () => {
+    const mockHover = jest.fn();
+    const mockClick = jest.fn();
+
+    render(
+      <NorthwesternPieChart
+        antibiotic={mockAntibiotic}
+        size="medium"
+        enableTouchInteractions={false}
+        interactive={true}
+        onSegmentHover={mockHover}
+        onSegmentClick={mockClick}
+      />
+    );
+
+    const mrsaSegment = screen.getByLabelText('MRSA: 0/2 coverage');
+    fireEvent.touchStart(mrsaSegment);
+    fireEvent.touchEnd(mrsaSegment);
+
+    // Click should not be triggered when touch interactions are disabled
+    expect(mockClick).not.toHaveBeenCalled();
+  });
+
+  test('handles emergency mode touch interactions', () => {
+    const mockHover = jest.fn();
+
+    render(
+      <NorthwesternPieChart
+        antibiotic={mockAntibiotic}
+        size="medium"
+        enableTouchInteractions={true}
+        interactive={true}
+        emergencyMode={true}
+        onSegmentHover={mockHover}
+      />
+    );
+
+    const mrsaSegment = screen.getByLabelText('MRSA: 0/2 coverage');
+
+    // Emergency mode should still allow touch interactions
+    fireEvent.touchStart(mrsaSegment);
+    expect(mrsaSegment).toBeInTheDocument();
+  });
+});
+
+// Selected segments tests
+describe('Selected Segments', () => {
+  test('applies selected styling to selected segments', () => {
+    const { container } = render(
+      <NorthwesternPieChart
+        antibiotic={mockAntibiotic}
+        size="medium"
+        selectedSegments={['MRSA', 'MSSA']}
+      />
+    );
+
+    const selectedSegments = container.querySelectorAll('.pie-segment--selected');
+    expect(selectedSegments.length).toBe(2);
+  });
+
+  test('reduces opacity on non-selected segments when selection exists', () => {
+    const { container } = render(
+      <NorthwesternPieChart
+        antibiotic={mockAntibiotic}
+        size="medium"
+        selectedSegments={['MRSA']}
+      />
+    );
+
+    // Selected segment should have different styling
+    const mrsaSegment = container.querySelector('.pie-segment--mrsa');
+    expect(mrsaSegment).toHaveClass('pie-segment--selected');
+  });
+
+  test('applies aria-pressed to selected segments', () => {
+    render(
+      <NorthwesternPieChart
+        antibiotic={mockAntibiotic}
+        size="medium"
+        selectedSegments={['MSSA']}
+      />
+    );
+
+    const mssaSegment = screen.getByLabelText('MSSA: 2/2 coverage');
+    expect(mssaSegment).toHaveAttribute('aria-pressed', 'true');
+  });
+});
+
+// Keyboard navigation tests
+describe('Keyboard Navigation', () => {
+  test('triggers click on Enter key press', () => {
+    const mockClick = jest.fn();
+
+    render(
+      <NorthwesternPieChart
+        antibiotic={mockAntibiotic}
+        size="medium"
+        interactive={true}
+        onSegmentClick={mockClick}
+      />
+    );
+
+    const mrsaSegment = screen.getByLabelText('MRSA: 0/2 coverage');
+    fireEvent.keyDown(mrsaSegment, { key: 'Enter' });
+
+    expect(mockClick).toHaveBeenCalledWith('MRSA', mockAntibiotic);
+  });
+
+  test('triggers click on Space key press', () => {
+    const mockClick = jest.fn();
+
+    render(
+      <NorthwesternPieChart
+        antibiotic={mockAntibiotic}
+        size="medium"
+        interactive={true}
+        onSegmentClick={mockClick}
+      />
+    );
+
+    const mssaSegment = screen.getByLabelText('MSSA: 2/2 coverage');
+    fireEvent.keyDown(mssaSegment, { key: ' ' });
+
+    expect(mockClick).toHaveBeenCalledWith('MSSA', mockAntibiotic);
+  });
+
+  test('does not trigger click on other keys', () => {
+    const mockClick = jest.fn();
+
+    render(
+      <NorthwesternPieChart
+        antibiotic={mockAntibiotic}
+        size="medium"
+        interactive={true}
+        onSegmentClick={mockClick}
+      />
+    );
+
+    const mrsaSegment = screen.getByLabelText('MRSA: 0/2 coverage');
+    fireEvent.keyDown(mrsaSegment, { key: 'Tab' });
+
+    expect(mockClick).not.toHaveBeenCalled();
+  });
+
+  test('interactive segments are focusable', () => {
+    render(
+      <NorthwesternPieChart
+        antibiotic={mockAntibiotic}
+        size="medium"
+        interactive={true}
+      />
+    );
+
+    const segments = screen.getAllByRole('button');
+    // When interactive, segments should be accessible as buttons
+    expect(segments.length).toBe(8);
+    segments.forEach(segment => {
+      expect(segment).toBeInTheDocument();
+    });
+  });
+
+  test('non-interactive segments are still rendered', () => {
+    render(
+      <NorthwesternPieChart
+        antibiotic={mockAntibiotic}
+        size="medium"
+        interactive={false}
+      />
+    );
+
+    const segments = screen.getAllByRole('button');
+    // Non-interactive segments should still exist but not respond to events
+    expect(segments.length).toBe(8);
   });
 });

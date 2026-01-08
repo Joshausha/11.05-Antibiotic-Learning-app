@@ -291,6 +291,7 @@ const NorthwesternPieChart: FC<NorthwesternPieChartProps> = ({
 
   // Derive route color once for use in validation and rendering
   const effectiveRouteColor = useMemo((): RouteColor => {
+    if (!antibiotic) return 'blue'; // Default for null/undefined
     return deriveRouteColor(antibiotic);
   }, [antibiotic]);
 
