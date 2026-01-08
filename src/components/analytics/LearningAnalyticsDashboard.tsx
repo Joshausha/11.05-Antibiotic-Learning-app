@@ -3,18 +3,22 @@
  * Main container for all learning analytics charts and metrics
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   BarChart3,
   Calendar,
   Filter,
   Download,
   RefreshCw,
+  Target,
 } from 'lucide-react';
 import ProgressMetricsCards from './ProgressMetricsCards';
 import RetentionCurveChart from './RetentionCurveChart';
+import WeakSpotsList from './WeakSpotsList';
 import { timePeriods } from './chartConfig';
 import { filterDataByPeriod } from './chartHelpers';
+import useQuizProgress from '../../hooks/useQuizProgress';
+import { useAppContext } from '../../contexts/AppContext';
 
 // Types
 interface QuizHistoryItem {
@@ -66,6 +70,20 @@ const LearningAnalyticsDashboard: React.FC<LearningAnalyticsDashboardProps> = ({
 }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>('month');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Get quiz progress stats for weak areas
+  const { stats } = useQuizProgress();
+
+  // Get setActiveTab for navigation to quiz
+  const { setActiveTab } = useAppContext();
+
+  // Handle navigation to quiz tab when studying a weak topic
+  const handleStudyTopic = useCallback((topic: string) => {
+    // Navigate to quiz tab
+    // Note: Full topic filtering would require additional work.
+    // For MVP, just navigate to quiz tab - user can select relevant questions.
+    setActiveTab('quiz');
+  }, [setActiveTab]);
 
   // Calculate basic quiz statistics from passed-in data
   const quizStats: QuizStats = useMemo(() => {
@@ -189,6 +207,18 @@ const LearningAnalyticsDashboard: React.FC<LearningAnalyticsDashboardProps> = ({
             timePeriod={selectedPeriod}
           />
         </div>
+      </div>
+
+      {/* Areas to Focus On - Quiz-based weak areas */}
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <Target size={20} className="text-gray-600" />
+          Areas to Focus On
+        </h2>
+        <WeakSpotsList
+          weakAreas={stats.weakAreas}
+          onStudyTopic={handleStudyTopic}
+        />
       </div>
 
       {/* Additional Analytics Section */}
