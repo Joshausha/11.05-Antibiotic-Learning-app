@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-08)
 
 **Core value:** Accurate medical data with flexible, experimental interaction modes that transform antibiotic coverage knowledge into durable clinical recall.
-**Current focus:** v1.0 MVP complete — awaiting next direction
+**Current focus:** v1.1 DevOps & CI/CD — mastering modern deployment and automation workflows
 
 ## Current Position
 
-Phase: 8 of 8 (Learning Analytics)
-Plan: 2 of 2 in current phase
-Status: v1.0 MVP SHIPPED
-Last activity: 2026-01-08 — Milestone v1.0 complete
+Phase: 9 of 18 (Testing Automation & Coverage)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-08 — Milestone v1.1 DevOps & CI/CD created
 
-Progress: ████████████████████████████ 100% (32 of 32 plans complete)
+Progress: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0%
 
 ## Performance Metrics
 
@@ -55,11 +55,16 @@ All v1.0 decisions archived — see PROJECT.md for summary.
 
 ### Blockers/Concerns
 
-None — v1.0 MVP shipped successfully.
+None — v1.1 milestone created, ready to begin Phase 9.
+
+### Roadmap Evolution
+
+- v1.0 MVP shipped: 8 phases (Jan 6-8, 2026) — Foundation, visualization, comparison, quiz, analytics
+- v1.1 DevOps & CI/CD created: 10 phases (Phase 9-18) — Testing automation, performance monitoring, deployment strategies
 
 ## Session Continuity
 
 Last session: 2026-01-08
-Stopped at: v1.0 MVP SHIPPED
-Next plan: None — milestone complete, awaiting next direction
+Stopped at: Milestone v1.1 initialization
+Next plan: Phase 9 — Testing Automation & Coverage (ready to plan)
 Resume file: None
