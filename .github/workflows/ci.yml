@@ -27,8 +27,10 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    # Tests disabled temporarily - timeout in CI environment
-    # Run locally before committing (1,509 tests pass 100%)
+    # Tests streamlined for learning sandbox (597 tests, 71% reduction from 2,034)
+    # Removed: medical data validation, service mocking, performance benchmarks
+    # Kept: component smoke tests, integration tests, essential hooks
+    # Run locally before committing (npm test)
     # - name: Run tests
     #   run: npm test -- --coverage --watchAll=false
 
