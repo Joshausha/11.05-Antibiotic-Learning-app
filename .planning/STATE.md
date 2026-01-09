@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-08)
 
 **Core value:** Accurate medical data with flexible, experimental interaction modes that transform antibiotic coverage knowledge into durable clinical recall.
-**Current focus:** v1.1 DevOps & CI/CD — mastering modern deployment and automation workflows
+**Current focus:** Learning React/TypeScript/D3.js through feature development (v1.1 DevOps milestone skipped)
 
 ## Current Position
 
-Phase: 9 of 18 (Testing Automation & Coverage)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-01-08 — Milestone v1.1 DevOps & CI/CD created
+Phase: Completed v1.0 MVP (8 phases) + Phase 9 learning
+Plan: N/A - Skipping formal v1.1 DevOps milestone
+Status: Ready for feature development
+Last activity: 2026-01-08 — Phase 9 learning completed (test suite streamlined 71%), v1.1 DevOps skipped
 
-Progress: ░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+Progress: v1.0: ████████████████████████████ 100% | v1.1: Skipped (DevOps not needed for learning sandbox)
 
 ## Performance Metrics
 
@@ -43,6 +43,17 @@ Progress: ░░░░░░░░░░░░░░░░░░░░░░░�
 Decisions are logged in PROJECT.md Key Decisions table.
 All v1.0 decisions archived — see PROJECT.md for summary.
 
+### Phase 9 Learnings (Completed without formal plans)
+
+**What we learned:**
+- CI/CD archaeology: Explored existing workflows (ci.yml, deploy.yml, quality-check.yml)
+- Test categorization: Identified which tests provide learning value vs production quality gates
+- Test streamlining: Reduced test suite from 2,034 → 597 tests (71% reduction)
+- Deleted: Medical data validation, service mocking, performance benchmarks (not needed for learning)
+- Kept: Component smoke tests, integration tests, essential hooks
+
+**Key insight:** Production-grade testing/DevOps automation not needed for personal learning projects.
+
 ### Deferred Issues
 
 **From v1.0 (Non-blocking):**
@@ -53,18 +64,24 @@ All v1.0 decisions archived — see PROJECT.md for summary.
 2. Spaced repetition integration - pivoted in Phase 5
    - May revisit in future milestone if learning retention needs improvement
 
+**v1.1 DevOps Milestone (Phases 10-18): Skipped**
+- Reason: All 10 phases are infrastructure/tooling (build optimization, deployment, monitoring)
+- Not needed for learning sandbox focused on React/TypeScript/D3.js development
+- Can revisit if project transitions to production medical application
+
 ### Blockers/Concerns
 
-None — v1.1 milestone created, ready to begin Phase 9.
+None — Ready for feature development outside formal roadmap.
 
 ### Roadmap Evolution
 
-- v1.0 MVP shipped: 8 phases (Jan 6-8, 2026) — Foundation, visualization, comparison, quiz, analytics
-- v1.1 DevOps & CI/CD created: 10 phases (Phase 9-18) — Testing automation, performance monitoring, deployment strategies
+- v1.0 MVP shipped: 8 phases (Jan 6-8, 2026) — Foundation, visualization, comparison, quiz, analytics ✅
+- Phase 9 (partial): Testing automation learning (2026-01-08) — Test streamlining, CI/CD archaeology ✅
+- v1.1 DevOps & CI/CD (Phases 10-18): **SKIPPED** — Infrastructure/tooling not needed for learning sandbox
 
 ## Session Continuity
 
 Last session: 2026-01-08
-Stopped at: Milestone v1.1 initialization
-Next plan: Phase 9 — Testing Automation & Coverage (ready to plan)
+Stopped at: Phase 9 learning completed, v1.1 DevOps milestone skipped
+Next steps: Feature development (user's choice) - explore new visualizations, add features, learn new React patterns, or use app for board prep
 Resume file: None
