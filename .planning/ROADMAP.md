@@ -7,7 +7,8 @@ Transform antibiotic and pathogen education through three reinforcing learning m
 ## Milestones
 
 - ✅ **[v1.0 MVP](milestones/v1.0-ROADMAP.md)** — Phases 1-8 (shipped 2026-01-08)
-- 🚧 **v1.1 DevOps & CI/CD** — Phases 9-18 (in progress)
+- ⏭️ **v1.1 DevOps & CI/CD** — Phases 9-18 (skipped - not needed for learning sandbox)
+- 🚧 **v1.2 Visualizations** — Phases 19-26 (in progress)
 
 ## Completed Milestones
 
@@ -39,129 +40,116 @@ Transform antibiotic and pathogen education through three reinforcing learning m
 | 6. Multi-Modal Learning Flow | v1.0 | 2/2 | ✅ Complete | 2026-01-07 |
 | 7. Performance & Polish | v1.0 | 9/9 | ✅ Complete | 2026-01-08 |
 | 8. Learning Analytics | v1.0 | 2/2 | ✅ Complete | 2026-01-08 |
-| 9. Testing Automation & Coverage | v1.1 | 0/? | Not started | - |
-| 10. Build Optimization & Caching | v1.1 | 0/? | Not started | - |
-| 11. Deployment Preview Environments | v1.1 | 0/? | Not started | - |
-| 12. Performance Monitoring & Lighthouse | v1.1 | 0/? | Not started | - |
-| 13. Error Tracking & Logging | v1.1 | 0/? | Not started | - |
-| 14. Security Scanning & Dependabot | v1.1 | 0/? | Not started | - |
-| 15. Bundle Analysis & Optimization | v1.1 | 0/? | Not started | - |
-| 16. Automated Documentation | v1.1 | 0/? | Not started | - |
-| 17. Deployment Rollback Strategies | v1.1 | 0/? | Not started | - |
-| 18. Health Checks & Uptime Monitoring | v1.1 | 0/? | Not started | - |
+| 9-18. DevOps & CI/CD | v1.1 | - | ⏭️ Skipped | - |
+| 19. Network Graph Polish | v1.2 | 0/? | Not started | - |
+| 20. Interactive Filtering | v1.2 | 0/? | Not started | - |
+| 21. Antibiotic Detail Cards | v1.2 | 0/? | Not started | - |
+| 22. Pathogen Exploration | v1.2 | 0/? | Not started | - |
+| 23. Coverage Heatmap | v1.2 | 0/? | Not started | - |
+| 24. Animation Enhancements | v1.2 | 0/? | Not started | - |
+| 25. Mobile Responsive | v1.2 | 0/? | Not started | - |
+| 26. Export & Sharing | v1.2 | 0/? | Not started | - |
 
-**Total:** 18 phases — v1.0: 8 phases, 32 plans (100% complete) | v1.1: 10 phases, 0 plans (0% complete)
+**Total:** 26 phases — v1.0: 8 phases, 32 plans (100%) | v1.1: 10 phases (skipped) | v1.2: 8 phases, 0 plans (0%)
+
+## Skipped Milestone
+
+<details>
+<summary>⏭️ v1.1 DevOps & CI/CD (Phases 9-18) — SKIPPED</summary>
+
+**Reason:** Infrastructure/tooling not needed for learning sandbox focused on React/TypeScript/D3.js development.
+
+Phases 9-18 covered: Testing Automation, Build Optimization, Preview Environments, Performance Monitoring, Error Tracking, Security Scanning, Bundle Analysis, Automated Documentation, Deployment Rollback, Health Checks.
+
+Can revisit if project transitions to production medical application.
+
+</details>
 
 ## Current Milestone
 
-### 🚧 v1.1 DevOps & CI/CD (In Progress)
+### 🚧 v1.2 Visualizations (In Progress)
 
-**Milestone Goal:** Master modern DevOps practices and CI/CD workflows through hands-on implementation of automated testing, deployment pipelines, monitoring, and production-ready infrastructure.
+**Milestone Goal:** Deepen D3.js and data visualization skills by building rich, interactive exploration tools for antibiotic-pathogen relationships.
 
-#### Phase 9: Testing Automation & Coverage
+#### Phase 19: Network Graph Polish
 
-**Goal**: Automate test execution in CI with coverage reporting and quality gates
-**Depends on**: Phase 8 (Learning Analytics)
-**Research**: Likely (GitHub Actions test reporting, Codecov integration)
-**Research topics**: Jest coverage in CI, GitHub Actions test reporters, coverage badge generation
+**Goal**: Improve existing D3 force-directed network styling and interactions
+**Depends on**: v1.0 MVP (Phase 8)
+**Research**: Unlikely (internal patterns, existing D3 code)
 **Plans**: TBD
 
 Plans:
-- [ ] 09-01: TBD (run /gsd:plan-phase 9 to break down)
+- [ ] 19-01: TBD (run /gsd:plan-phase 19 to break down)
 
-#### Phase 10: Build Optimization & Caching
+#### Phase 20: Interactive Filtering
 
-**Goal**: Speed up CI builds with dependency caching and build artifact optimization
-**Depends on**: Phase 9
-**Research**: Unlikely (standard GitHub Actions caching patterns)
+**Goal**: Add filter controls to network (by gram stain, mechanism, coverage)
+**Depends on**: Phase 19
+**Research**: Unlikely (React state + D3 update patterns)
 **Plans**: TBD
 
 Plans:
-- [ ] 10-01: TBD
+- [ ] 20-01: TBD
 
-#### Phase 11: Deployment Preview Environments
+#### Phase 21: Antibiotic Detail Cards
 
-**Goal**: Create preview deployments for pull requests to test changes before merging
-**Depends on**: Phase 10
-**Research**: Likely (GitHub Actions environments, preview URL generation)
-**Research topics**: GitHub deployment environments, PR preview strategies, environment cleanup
+**Goal**: Rich hover/click cards showing antibiotic details within network view
+**Depends on**: Phase 20
+**Research**: Unlikely (D3 + React integration)
 **Plans**: TBD
 
 Plans:
-- [ ] 11-01: TBD
+- [ ] 21-01: TBD
 
-#### Phase 12: Performance Monitoring & Lighthouse
+#### Phase 22: Pathogen Exploration
 
-**Goal**: Integrate Lighthouse CI for automated performance, accessibility, and SEO audits
-**Depends on**: Phase 11
-**Research**: Likely (Lighthouse CI setup, performance budgets)
-**Research topics**: Lighthouse CI configuration, performance budget thresholds, CI integration patterns
+**Goal**: New view focusing on pathogen-centric exploration (select pathogen, see coverage)
+**Depends on**: Phase 21
+**Research**: Unlikely (internal patterns)
 **Plans**: TBD
 
 Plans:
-- [ ] 12-01: TBD
+- [ ] 22-01: TBD
 
-#### Phase 13: Error Tracking & Logging
+#### Phase 23: Coverage Heatmap
 
-**Goal**: Set up Sentry for production error monitoring and debugging
-**Depends on**: Phase 12
-**Research**: Likely (Sentry integration for React applications)
-**Research topics**: Sentry SDK setup, error boundaries, source map upload, alert configuration
+**Goal**: D3 heatmap visualization showing antibiotic-pathogen coverage matrix
+**Depends on**: Phase 22
+**Research**: Likely (D3 heatmap patterns, color scales)
+**Research topics**: D3 heatmap implementations, color interpolation, matrix layouts
 **Plans**: TBD
 
 Plans:
-- [ ] 13-01: TBD
+- [ ] 23-01: TBD
 
-#### Phase 14: Security Scanning & Dependabot
+#### Phase 24: Animation Enhancements
 
-**Goal**: Enable automated dependency updates and vulnerability scanning
-**Depends on**: Phase 13
-**Research**: Unlikely (GitHub native Dependabot and code scanning features)
+**Goal**: Add smooth transitions, entrance animations to visualizations
+**Depends on**: Phase 23
+**Research**: Likely (D3 transitions, animation libraries)
+**Research topics**: D3 transition API, GSAP integration, React animation patterns
 **Plans**: TBD
 
 Plans:
-- [ ] 14-01: TBD
+- [ ] 24-01: TBD
 
-#### Phase 15: Bundle Analysis & Optimization
+#### Phase 25: Mobile Responsive
 
-**Goal**: Analyze webpack bundle size and optimize for faster load times
-**Depends on**: Phase 14
-**Research**: Likely (webpack-bundle-analyzer, code splitting strategies)
-**Research topics**: Webpack bundle analysis, dynamic imports, tree shaking, code splitting patterns
+**Goal**: Make visualizations work well on tablet/mobile screens
+**Depends on**: Phase 24
+**Research**: Unlikely (CSS/responsive patterns)
 **Plans**: TBD
 
 Plans:
-- [ ] 15-01: TBD
+- [ ] 25-01: TBD
 
-#### Phase 16: Automated Documentation
+#### Phase 26: Export & Sharing
 
-**Goal**: Generate API documentation and changelogs automatically from code and commits
-**Depends on**: Phase 15
-**Research**: Likely (TSDoc, conventional commits, changelog automation)
-**Research topics**: TypeScript documentation generators, conventional commit parsers, changelog automation tools
+**Goal**: Export visualizations as images, share specific views via URL
+**Depends on**: Phase 25
+**Research**: Likely (canvas/SVG export, URL state)
+**Research topics**: SVG to PNG conversion, html2canvas, URL state management
 **Plans**: TBD
 
 Plans:
-- [ ] 16-01: TBD
-
-#### Phase 17: Deployment Rollback Strategies
-
-**Goal**: Implement safe deployment practices with rollback capabilities
-**Depends on**: Phase 16
-**Research**: Likely (GitHub deployments API, versioning strategies)
-**Research topics**: GitHub deployment status API, semantic versioning, rollback workflows
-**Plans**: TBD
-
-Plans:
-- [ ] 17-01: TBD
-
-#### Phase 18: Health Checks & Uptime Monitoring
-
-**Goal**: Add health check endpoints and uptime monitoring for deployed application
-**Depends on**: Phase 17
-**Research**: Likely (monitoring services, health check patterns)
-**Research topics**: Health check endpoints, uptime monitoring services (UptimeRobot, etc.), status pages
-**Plans**: TBD
-
-Plans:
-- [ ] 18-01: TBD
+- [ ] 26-01: TBD
