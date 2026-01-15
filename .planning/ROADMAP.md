@@ -41,7 +41,7 @@ Transform antibiotic and pathogen education through three reinforcing learning m
 | 7. Performance & Polish | v1.0 | 9/9 | ✅ Complete | 2026-01-08 |
 | 8. Learning Analytics | v1.0 | 2/2 | ✅ Complete | 2026-01-08 |
 | 9-18. DevOps & CI/CD | v1.1 | - | ⏭️ Skipped | - |
-| 19. Network Graph Polish | v1.2 | 0/? | Not started | - |
+| 19. Network Graph Polish | v1.2 | 0/1 | Planning | - |
 | 20. Interactive Filtering | v1.2 | 0/? | Not started | - |
 | 21. Antibiotic Detail Cards | v1.2 | 0/? | Not started | - |
 | 22. Pathogen Exploration | v1.2 | 0/? | Not started | - |
@@ -76,10 +76,10 @@ Can revisit if project transitions to production medical application.
 **Goal**: Improve existing D3 force-directed network styling and interactions
 **Depends on**: v1.0 MVP (Phase 8)
 **Research**: Unlikely (internal patterns, existing D3 code)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 19-01: TBD (run /gsd:plan-phase 19 to break down)
+- [ ] 19-01: Gram stain colors, label polish, edge highlighting
 
 #### Phase 20: Interactive Filtering
 
